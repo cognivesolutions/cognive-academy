@@ -159,3 +159,12 @@
   overflow: visible;
   z-index: 9999;
 }
+
+/* Utility to hide scrollbars while preserving scroll behavior */
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* WebKit */
+}
