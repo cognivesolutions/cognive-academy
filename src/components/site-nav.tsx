@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 
 const coursesMenu = [
   { label: "Data Analytics", href: "#courses" },
@@ -32,10 +33,12 @@ const navItems = [
 ] as const;
 
 export function SiteNav() {
+  const pathname = usePathname();
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [activeLabel, setActiveLabel] = useState<string | null>(null);
   const closeTimeoutRef = useRef<number | null>(null);
   const navRef = useRef<HTMLDivElement | null>(null);
+  const menuFirstRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
@@ -48,20 +51,43 @@ export function SiteNav() {
     return () => document.removeEventListener("mousedown", handlePointerDown);
   }, []);
 
-  // Sync active nav item with URL hash and hash changes
+  // Derive active nav item from pathname when available (more reliable than hash/click state)
   useEffect(() => {
-    function setFromHash() {
-      if (typeof window === "undefined") return;
-      const hash = window.location.hash;
-      if (!hash) return;
-      const match = navItems.find((n) => n.href === hash);
-      if (match) setActiveLabel(match.label);
+    if (!pathname) return;
+
+    // If the nav item hrefs are hashes, map pathname to sections if possible.
+    // Prefer exact matches first, then try to match anchors by pathname+hash.
+    const exactMatch = navItems.find((n) => n.href === pathname || n.href === `#${pathname.replace(/\/#?/, "")}`);
+    if (exactMatch) {
+      setActiveLabel(exactMatch.label);
+      return;
     }
 
-    setFromHash();
-    window.addEventListener("hashchange", setFromHash);
-    return () => window.removeEventListener("hashchange", setFromHash);
-  }, []);
+    // If current path includes a section anchor (e.g. /#courses), extract hash
+    if (typeof window !== "undefined") {
+      const hash = window.location.hash;
+      if (hash) {
+        const match = navItems.find((n) => n.href === hash);
+        if (match) {
+          setActiveLabel(match.label);
+          return;
+        }
+      }
+    }
+
+    // Fallback: clear active label when no match
+    setActiveLabel(null);
+  }, [pathname]);
+
+  // When a menu opens, focus its first item for keyboard users
+  useEffect(() => {
+    if (!openMenu) return;
+    const first = menuFirstRefs.current[openMenu];
+    if (first) {
+      // focus in next tick
+      setTimeout(() => first.focus(), 0);
+    }
+  }, [openMenu]);
 
   return (
     <div ref={navRef} className="hidden items-center gap-4 text-sm font-medium md:flex">
@@ -88,16 +114,30 @@ export function SiteNav() {
                           setOpenMenu(null);
                           setActiveLabel(null);
                           closeTimeoutRef.current = null;
-                        }, 150);
+                        }, 250);
                       }}
             >
               <button
                 type="button"
+                aria-haspopup="menu"
+                aria-expanded={isOpen}
                 onClick={() => {
                   setOpenMenu(isOpen ? null : item.label);
                   if (!isOpen) setActiveLabel(item.label);
                 }}
-                className={`group flex flex-col items-center rounded-full px-2 py-1.5 transition ${isOpen || activeLabel === item.label ? "text-indigo-700" : "hover:text-indigo-700"} focus-visible:text-indigo-700`}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setOpenMenu(isOpen ? null : item.label);
+                    if (!isOpen) setActiveLabel(item.label);
+                  } else if (e.key === "ArrowDown") {
+                    e.preventDefault();
+                    setOpenMenu(item.label);
+                  } else if (e.key === "Escape") {
+                    setOpenMenu(null);
+                  }
+                }}
+                className={`group flex flex-col items-center rounded-full px-3 py-2 transition ${isOpen || activeLabel === item.label ? "text-indigo-700" : "hover:text-indigo-700"} focus-visible:text-indigo-700`}
               >
                 <div className="inline-flex items-center gap-1.5">
                   <span className={`leading-none group-hover:font-bold group-active:font-bold group-focus-visible:font-bold group-active:text-indigo-700 group-focus-visible:text-indigo-700 active:font-bold active:text-indigo-700 ${isOpen || activeLabel === item.label ? "font-bold text-indigo-700" : ""}`}>{item.label}</span>
@@ -108,9 +148,11 @@ export function SiteNav() {
                 <span className={`mt-1 block h-[2px] w-full bg-indigo-600 transform ${isOpen || activeLabel === item.label ? 'scale-x-100' : 'scale-x-0'} origin-left transition-transform duration-200 group-hover:scale-x-100`} />
               </button>
 
-              {isOpen ? (
+                {isOpen ? (
                 <div
-                  className="absolute left-0 top-full z-50 mt-3 w-52 rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_18px_40px_rgba(15,23,42,0.12)]"
+                  role="menu"
+                  aria-label={item.label}
+                  className="absolute left-0 top-full z-50 mt-3 w-52 rounded-2xl bg-white p-0 shadow-[0_18px_40px_rgba(15,23,42,0.12)] pointer-events-auto"
                   onMouseEnter={() => {
                     if (closeTimeoutRef.current) {
                       window.clearTimeout(closeTimeoutRef.current);
@@ -123,14 +165,23 @@ export function SiteNav() {
                       setOpenMenu(null);
                       setActiveLabel(null);
                       closeTimeoutRef.current = null;
-                    }, 150);
+                    }, 250);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      setOpenMenu(null);
+                    }
                   }}
                 >
-                  {item.items?.map((subItem) => (
+                  {item.items?.map((subItem, idx) => (
                     <Link
                       key={subItem.label}
                       href={subItem.href}
-                      className="block rounded-xl px-3 py-2 text-sm text-slate-600 transition hover:bg-indigo-50 hover:text-indigo-700"
+                      role="menuitem"
+                      ref={(el) => {
+                        if (idx === 0) menuFirstRefs.current[item.label] = el;
+                      }}
+                      className="block w-full px-3 py-2 text-sm text-slate-600 transition hover:bg-indigo-50 hover:text-indigo-700 rounded-none !border-0 bg-transparent focus:outline-none focus:ring-0"
                       onClick={() => {
                         setOpenMenu(null);
                         setActiveLabel(item.label);
@@ -146,7 +197,7 @@ export function SiteNav() {
             <Link
               key={item.label}
               href={item.href}
-              className={`group inline-flex flex-col items-center rounded-full px-2 py-1.5 transition ${activeLabel === item.label ? 'text-indigo-700' : 'hover:text-indigo-700'} focus-visible:text-indigo-700`}
+              className={`group inline-flex flex-col items-center rounded-full px-3 py-2 transition ${activeLabel === item.label ? 'text-indigo-700' : 'hover:text-indigo-700'} focus-visible:text-indigo-700`}
               onClick={() => setActiveLabel(item.label)}
             >
               <span className={`leading-none group-hover:font-bold group-active:font-bold group-focus-visible:font-bold group-active:text-indigo-700 group-focus-visible:text-indigo-700 active:font-bold active:text-indigo-700 ${activeLabel === item.label ? 'font-bold' : ''}`}>{item.label}</span>

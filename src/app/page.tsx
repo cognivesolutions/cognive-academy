@@ -127,7 +127,7 @@ export default async function HomePage({
   });
 
   return (
-    <main className="min-h-screen bg-white text-slate-900">
+    <main id="main" className="min-h-screen bg-white text-slate-900">
       <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-20 items-center justify-between gap-3">
