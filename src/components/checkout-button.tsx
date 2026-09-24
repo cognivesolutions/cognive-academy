@@ -31,7 +31,7 @@ export default function CheckoutButton({
     return (
       <a
         href="/login"
-        className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-3 font-semibold text-white hover:bg-slate-700"
+        className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-3 font-semibold text-white shadow-[0_14px_30px_rgba(15,23,42,0.18)] transition hover:bg-slate-700"
       >
         Login to buy
       </a>
@@ -102,7 +102,7 @@ export default function CheckoutButton({
       type="button"
       onClick={handleCheckout}
       disabled={loading}
-      className="mt-6 w-full rounded-full bg-slate-900 px-5 py-3 font-semibold text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-70"
+      className="mt-6 w-full rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 px-5 py-3.5 text-base font-semibold text-white shadow-[0_18px_40px_rgba(79,70,229,0.35)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
     >
       {loading ? "Preparing checkout..." : "Buy Now"}
     </button>

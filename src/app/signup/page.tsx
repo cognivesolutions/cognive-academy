@@ -42,9 +42,15 @@ export default function SignupPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-6 py-12">
-      <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">Create account</p>
-        <h1 className="mt-3 text-3xl font-bold text-slate-900">Join Cognive Academy</h1>
+      <div className="w-full max-w-md rounded-[30px] border border-slate-200 bg-white p-8 shadow-[0_28px_70px_rgba(15,23,42,0.08)] sm:p-9">
+        <div className="mb-6 flex items-center justify-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 via-violet-600 to-sky-500 text-lg font-black text-white shadow-lg shadow-indigo-200">
+            C
+          </div>
+        </div>
+
+        <p className="text-center text-xs font-semibold uppercase tracking-[0.24em] text-indigo-600">Create account</p>
+        <h1 className="mt-3 text-center text-3xl font-black tracking-tight text-slate-900">Join Cognive Academy</h1>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
@@ -53,7 +59,7 @@ export default function SignupPage() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 outline-none ring-0 focus:border-indigo-500"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:bg-white"
               required
             />
           </div>
@@ -64,7 +70,7 @@ export default function SignupPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 outline-none ring-0 focus:border-indigo-500"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:bg-white"
               required
             />
           </div>
@@ -75,7 +81,7 @@ export default function SignupPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 outline-none ring-0 focus:border-indigo-500"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:bg-white"
               minLength={6}
               required
             />
@@ -90,7 +96,7 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-full bg-indigo-600 px-5 py-3 font-semibold text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-70"
+            className="w-full rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 px-5 py-3 font-semibold text-white shadow-[0_16px_35px_rgba(79,70,229,0.3)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {loading ? "Creating account..." : "Create account"}
           </button>
