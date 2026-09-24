@@ -1,13 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
-export default function LoginPage() {
-  const [email, setEmail] = useState("student@cognive.academy");
-  const [password, setPassword] = useState("password123");
+function LoginForm() {
+  const searchParams = useSearchParams();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const callbackUrl = searchParams.get("callbackUrl") ?? "/";
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -17,7 +21,7 @@ export default function LoginPage() {
       email,
       password,
       redirect: true,
-      callbackUrl: "/dashboard",
+      callbackUrl,
     });
 
     setLoading(false);
@@ -42,7 +46,8 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:bg-white"
+              placeholder="Enter your email address"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-indigo-500 focus:bg-white"
             />
           </div>
           <div>
@@ -51,7 +56,8 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:bg-white"
+              placeholder="Enter your password"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-indigo-500 focus:bg-white"
             />
           </div>
           <button
@@ -78,5 +84,30 @@ export default function LoginPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <main className="flex min-h-screen items-center justify-center bg-slate-50 px-6 py-12">
+        <div className="w-full max-w-md rounded-[30px] border border-slate-200 bg-white p-8 shadow-[0_28px_70px_rgba(15,23,42,0.08)] sm:p-9">
+          <div className="mb-6 flex items-center justify-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 via-violet-600 to-sky-500 text-lg font-black text-white shadow-lg shadow-indigo-200">
+              C
+            </div>
+          </div>
+          <p className="text-center text-xs font-semibold uppercase tracking-[0.24em] text-indigo-600">Student login</p>
+          <h1 className="mt-3 text-center text-3xl font-black tracking-tight text-slate-900">Welcome back</h1>
+          <div className="mt-6 animate-pulse space-y-4">
+            <div className="h-11 rounded-xl bg-slate-200" />
+            <div className="h-11 rounded-xl bg-slate-200" />
+            <div className="h-12 rounded-full bg-slate-200" />
+          </div>
+        </div>
+      </main>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }

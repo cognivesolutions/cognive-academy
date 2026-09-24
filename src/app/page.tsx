@@ -2,6 +2,9 @@ import Link from "next/link";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { GlobalCourseSearch } from "@/components/global-course-search";
+import { SiteNav } from "@/components/site-nav";
+import { UserMenu } from "@/components/user-menu";
 
 const faqs = [
   {
@@ -33,209 +36,287 @@ const testimonials = [
   },
 ];
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>> | Record<string, string | string[] | undefined>;
+}) {
   const session = await auth();
   const isLoggedIn = Boolean(session?.user?.id);
+  const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
+  const activeQuery = typeof resolvedSearchParams.q === "string" ? resolvedSearchParams.q.trim().toLowerCase() : "";
+  const activeCategory = typeof resolvedSearchParams.category === "string" ? resolvedSearchParams.category : "All";
+
+  const desiredCourseOrder = [
+    "python-for-data-tasks",
+    "sql-for-analytics",
+    "django-for-backend-development",
+    "react-for-frontend-development",
+    "power-bi-dashboarding",
+    "excel-for-business-analysis",
+  ];
 
   const courses = await prisma.course.findMany({
     where: { isPublished: true },
-    orderBy: [{ featured: "desc" }, { createdAt: "asc" }],
     include: { modules: true },
   });
 
-  const featured = courses.find((course) => course.featured) ?? courses[0];
+  const orderedCourses = [...courses].sort((a, b) => {
+    const indexA = desiredCourseOrder.indexOf(a.slug);
+    const indexB = desiredCourseOrder.indexOf(b.slug);
+    const safeIndexA = indexA === -1 ? Number.MAX_SAFE_INTEGER : indexA;
+    const safeIndexB = indexB === -1 ? Number.MAX_SAFE_INTEGER : indexB;
+    return safeIndexA - safeIndexB;
+  });
+
+  const displayedCourses = orderedCourses;
+  const featured = displayedCourses[0];
+  const heroSequence = displayedCourses.slice(0, 5);
+
+  const formatCategory = (value?: string | null) => {
+    const raw = value?.trim();
+    if (!raw) return "General";
+
+    const normalized = raw.replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
+    const key = normalized.toLowerCase();
+
+    const overrides: Record<string, string> = {
+      "powr bi": "Power BI",
+      "power bi": "Power BI",
+      "python": "Python",
+      "sql": "SQL",
+      "excel": "Excel",
+      "react": "React",
+      "django": "Django",
+      "git": "Git",
+      "mysql": "MySQL",
+    };
+
+    if (overrides[key]) return overrides[key];
+
+    return normalized
+      .split(" ")
+      .map((part) => (part ? part.charAt(0).toUpperCase() + part.slice(1).toLowerCase() : ""))
+      .join(" ");
+  };
+
+  const categoryFilters = Array.from(
+    new Set(displayedCourses.map((course) => formatCategory(course.category)))
+  );
+
+  const filteredCourses = displayedCourses.filter((course) => {
+    const courseCategory = formatCategory(course.category);
+    const searchableText = [
+      course.title,
+      course.shortDescription ?? "",
+      course.description ?? "",
+      courseCategory,
+      course.level,
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    const matchesQuery = !activeQuery || searchableText.includes(activeQuery);
+    const matchesCategory = activeCategory === "All" || courseCategory === activeCategory;
+
+    return matchesQuery && matchesCategory;
+  });
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/80 backdrop-blur-xl">
+    <main className="min-h-screen bg-white text-slate-900">
+      <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-20 items-center justify-between gap-4">
+          <div className="flex h-20 items-center justify-between gap-3">
             <Link href="/" className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 via-violet-600 to-sky-500 text-sm font-black text-white shadow-lg shadow-indigo-200 ring-4 ring-indigo-50">
                 C
               </div>
-              <div className="leading-none">
-                <div className="text-base font-bold tracking-tight text-slate-900">Cognive Academy</div>
-                <div className="mt-1 text-[10px] font-medium uppercase tracking-[0.24em] text-slate-500">Learning studio</div>
-              </div>
+              <div className="text-xl font-black tracking-tight text-slate-900">Cognive Academy</div>
             </Link>
 
-            <nav className="hidden items-center gap-8 text-sm font-medium text-slate-600 md:flex">
-              <a href="#courses" className="transition hover:text-slate-900">Courses</a>
-              <a href="#testimonials" className="transition hover:text-slate-900">Testimonials</a>
-              <a href="#faqs" className="transition hover:text-slate-900">FAQs</a>
-              <a href="#pricing" className="transition hover:text-slate-900">Pricing</a>
-            </nav>
+            <SiteNav />
 
             <div className="flex items-center gap-2 sm:gap-3">
               {isLoggedIn ? (
-                <>
-                  <Link href="/dashboard" className="hidden rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 sm:inline-flex">
-                    Dashboard
-                  </Link>
-                  <Link href="/profile" className="hidden rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 sm:inline-flex">
-                    Profile
-                  </Link>
-                </>
+                <UserMenu />
               ) : (
-                <Link href="/login" className="hidden rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 sm:inline-flex">
-                  Login
+                <Link href="/login" className="inline-flex rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_20px_rgba(99,102,241,0.25)] transition hover:opacity-95">
+                  LMS Login
                 </Link>
               )}
-              <Link href="/signup" className="inline-flex rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_30px_rgba(15,23,42,0.18)] transition hover:bg-slate-700">
-                Get started
-              </Link>
             </div>
           </div>
         </div>
       </header>
 
-      <section className="mx-auto max-w-6xl px-6 pb-16 pt-12 lg:pb-20 lg:pt-16">
-        <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+      <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(147,197,253,0.35),_transparent_36%),linear-gradient(135deg,_#dfeffc_0%,_#f2ebff_100%)]">
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-6 pb-16 pt-12 lg:grid-cols-[1.1fr_0.9fr] lg:pb-20 lg:pt-16">
           <div className="max-w-2xl">
             <span className="inline-flex rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-indigo-700">
-              Career-focused learning
+              <span className="mr-2">✦</span> Learn practical skills that drive real growth
             </span>
-            <h1 className="mt-6 text-5xl font-black leading-[1.05] tracking-[-0.05em] text-slate-900 sm:text-6xl">
-              Build the skills that land real opportunities.
-            </h1>
-            <p className="mt-5 max-w-xl text-lg leading-8 text-slate-600">
-              Learn practical data, product, and business skills through structured cohorts designed for career growth.
-            </p>
 
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link href={isLoggedIn ? "/dashboard" : "/signup"} className="rounded-full bg-slate-900 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_16px_35px_rgba(15,23,42,0.18)] transition hover:bg-slate-700">
-                {isLoggedIn ? "Go to dashboard" : "Get started"}
-              </Link>
-              <Link href="#courses" className="rounded-full border border-slate-300 bg-white px-6 py-3.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-50">
-                Browse programs
-              </Link>
+            <h1 className="mt-6 text-5xl font-black leading-[0.96] tracking-[-0.06em] text-slate-900 sm:text-6xl">
+              Build Real Skills and Launch Your Career
+              <span className="mt-2 block text-slate-800">With Cognive Academy</span>
+            </h1>
+
+            <div className="mt-8 flex items-center gap-4">
+              <div className="flex -space-x-2">
+                {["A", "K", "S", "J"].map((letter, index) => (
+                  <div
+                    key={letter}
+                    className={`flex h-11 w-11 items-center justify-center rounded-full border-2 border-white text-xs font-bold text-white ${
+                      ["bg-cyan-500", "bg-violet-500", "bg-emerald-500", "bg-amber-500"][index]
+                    }`}
+                  >
+                    {letter}
+                  </div>
+                ))}
+              </div>
+              <div className="text-slate-700">
+                <div className="text-lg font-bold text-slate-900">Join our learner community</div>
+                <div className="text-sm text-slate-600">Students building practical skills and landing stronger roles</div>
+              </div>
             </div>
 
-            <div className="mt-10 flex flex-wrap items-center gap-6 text-sm text-slate-600">
-              <div>
-                <div className="text-2xl font-black text-slate-900">10k+</div>
-                <div className="mt-0.5">Students trained</div>
-              </div>
-              <div>
-                <div className="text-2xl font-black text-slate-900">4.9/5</div>
-                <div className="mt-0.5">Average rating</div>
-              </div>
-              <div>
-                <div className="text-2xl font-black text-slate-900">96%</div>
-                <div className="mt-0.5">Course completion</div>
-              </div>
+            <div className="mt-8 flex flex-wrap gap-4">
+              <Link href="#courses" className="rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(99,102,241,0.25)] transition hover:opacity-95">
+                Explore Courses
+              </Link>
+              <Link href="/signup" className="rounded-xl border border-indigo-200 bg-white px-6 py-3.5 text-sm font-semibold text-indigo-700 shadow-sm transition hover:bg-indigo-50">
+                Book a Call
+              </Link>
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] sm:p-6">
-            <div className="rounded-[24px] bg-gradient-to-br from-indigo-600 via-violet-600 to-sky-500 p-6 text-white shadow-xl">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-[11px] font-medium uppercase tracking-[0.24em] text-indigo-100">Featured cohort</p>
-                  <h2 className="mt-3 text-3xl font-black tracking-tight">{featured?.title ?? "Analytics Bootcamp"}</h2>
-                </div>
-                <div className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.2em]">
-                  Live
-                </div>
+          <div className="relative mx-auto flex w-full max-w-[500px] items-center justify-center py-8">
+            <div className="relative h-[390px] w-[390px]">
+              <div className="absolute inset-6 rounded-full bg-[radial-gradient(circle_at_center,_rgba(8,145,178,0.18),_rgba(15,23,42,0.02)_58%,_transparent_70%)]" />
+              <div className="absolute inset-0 rounded-full border-[16px] border-white/40 bg-[radial-gradient(circle_at_center,_#0a4e67_0%,_#08384d_52%,_#0a2735_100%)] shadow-[0_25px_70px_rgba(8,47,76,0.2)]" />
+
+              <div className="absolute left-1/2 top-1/2 h-[220px] w-[220px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/30 bg-white/5 backdrop-blur-sm" />
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-white">
+                <div className="text-[48px] font-black leading-none">BIG</div>
+                <div className="text-[48px] font-black leading-none">DATA</div>
               </div>
 
-              <p className="mt-4 max-w-md text-sm leading-7 text-indigo-50">
-                {featured?.shortDescription ?? "Hands-on SQL, Excel, and Power BI training for business-ready analysis careers."}
-              </p>
-
-              <div className="mt-6 flex items-end justify-between gap-4 rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm">
-                <div>
-                  <div className="text-[11px] uppercase tracking-[0.2em] text-indigo-100">Starting at</div>
-                  <div className="mt-2 text-3xl font-black">₹{featured ? Number(featured.price).toLocaleString("en-IN") : 4999}</div>
-                </div>
-                <Link href={featured ? `/courses/${featured.slug}` : "/login"} className="rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-50">
-                  Enroll now
-                </Link>
-              </div>
-            </div>
-
-            <div className="mt-5 space-y-3">
-              {courses.slice(0, 5).map((course) => (
-                <div key={course.id} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                  <div>
-                    <div className="font-semibold text-slate-800">{course.title}</div>
-                    <div className="text-xs text-slate-500">{course.category}</div>
+              {[
+                { text: "Power BI", x: "50%", y: "5%", clr: "bg-cyan-500" },
+                { text: "Python", x: "78%", y: "18%", clr: "bg-amber-400" },
+                { text: "SQL", x: "84%", y: "43%", clr: "bg-indigo-500" },
+                { text: "Excel", x: "77%", y: "72%", clr: "bg-emerald-500" },
+                { text: "AI", x: "52%", y: "86%", clr: "bg-pink-500" },
+                { text: "GenAI", x: "22%", y: "83%", clr: "bg-red-500" },
+                { text: "Tableau", x: "7%", y: "62%", clr: "bg-violet-500" },
+                { text: "React", x: "10%", y: "28%", clr: "bg-sky-500" },
+              ].map((item, index) => (
+                <div
+                  key={item.text}
+                  className="absolute -translate-x-1/2 -translate-y-1/2"
+                  style={{ left: item.x, top: item.y }}
+                >
+                  <div className={`flex items-center gap-2 rounded-full border border-white/30 bg-white/95 px-2 py-1 text-[11px] font-bold text-slate-700 shadow-lg`}>
+                    <span className={`inline-block h-2.5 w-2.5 rounded-full ${item.clr}`} />
+                    {item.text}
                   </div>
-                  <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                    Active
-                  </span>
                 </div>
               ))}
+
+              <div className="absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-[6px] border-white/60 bg-white text-lg shadow-xl text-slate-700">✦</div>
             </div>
+          </div>
+        </div>
+
+        <div className="mx-auto max-w-6xl px-6 pb-14">
+          <div className="grid gap-4 rounded-[28px] border border-slate-200 bg-white/80 p-4 shadow-[0_18px_40px_rgba(15,23,42,0.05)] backdrop-blur-sm md:grid-cols-4">
+            {[
+              { value: "100+", label: "Learners across the countries" },
+              { value: "4.9/5", label: "Average course rating" },
+              { value: "10+", label: "Courses" },
+            ].map((item) => (
+              <div key={item.value} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 text-center md:text-left">
+                <div className="text-3xl font-black tracking-tight text-slate-900">{item.value}</div>
+                <div className="mt-2 text-sm text-slate-600">{item.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      <section id="courses" className="mx-auto max-w-6xl px-6 py-20">
-        <div className="mb-10 flex items-end justify-between gap-4">
+      <section id="courses" className="scroll-mt-28 mx-auto max-w-6xl px-6 py-20">
+        <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">Course catalog</p>
             <h2 className="mt-2 text-3xl font-bold">Explore certified learning tracks</h2>
           </div>
-          <div className="flex flex-wrap gap-2 text-sm text-slate-500">
-            {courses.slice(0, 5).map((course) => (
-              <button key={course.id} className="rounded-full border border-slate-200 bg-white px-3 py-1.5 hover:border-indigo-200 hover:text-indigo-700">
-                {course.category}
-              </button>
-            ))}
+
+          <div className="w-full max-w-md">
+            <form action="/#courses" method="get" className="relative block">
+              <label className="relative block">
+                <span className="sr-only">Search courses</span>
+                <div className="relative overflow-hidden rounded-full border border-slate-200 bg-white/85 shadow-[0_8px_20px_rgba(15,23,42,0.04)] ring-1 ring-slate-100 transition-all duration-200 hover:border-indigo-200 hover:shadow-[0_10px_25px_rgba(79,70,229,0.07)] focus-within:border-indigo-300 focus-within:ring-4 focus-within:ring-indigo-100/70">
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                    className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <circle cx="11" cy="11" r="6" />
+                    <path d="M16 16L21 21" />
+                  </svg>
+                  <input
+                    type="text"
+                    name="q"
+                    defaultValue={activeQuery}
+                    placeholder="Search courses or skills"
+                    className="w-full rounded-full bg-transparent py-2 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none"
+                  />
+                </div>
+              </label>
+            </form>
           </div>
         </div>
 
+        <div className="mb-6 flex items-center gap-3 text-sm text-slate-500">
+          <span>{filteredCourses.length} course{filteredCourses.length === 1 ? "" : "s"}</span>
+          {activeCategory !== "All" || activeQuery ? (
+            <Link href="/#courses" className="font-medium text-indigo-600 hover:text-indigo-700">
+              Clear filters
+            </Link>
+          ) : null}
+        </div>
+
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {courses.map((course) => (
-            <article key={course.id} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          {filteredCourses.map((course) => (
+            <article
+              key={course.id}
+              className="group flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-[0_18px_38px_rgba(79,70,229,0.08)]"
+            >
               <div className="mb-4 flex items-center justify-between">
-                <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">{course.category}</span>
+                <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">{formatCategory(course.category)}</span>
                 <span className="text-sm font-medium text-slate-500">{course.modules.length} modules</span>
               </div>
-              <h3 className="text-2xl font-bold text-slate-900">{course.title}</h3>
+              <h3 className="text-2xl font-bold text-slate-900 transition-colors duration-200 group-hover:text-indigo-700">{course.title}</h3>
               <p className="mt-3 text-slate-600">{course.shortDescription ?? course.description}</p>
-              <div className="mt-6 flex items-center justify-between text-sm text-slate-500">
-                <span>{course.level}</span>
-                <span className="font-bold text-slate-900">₹{Number(course.price).toLocaleString("en-IN")}</span>
+
+              <div className="mt-auto pt-6">
+                <div className="flex items-center justify-between text-sm text-slate-500">
+                  <span>{course.level}</span>
+                  <span className="font-bold text-slate-900">₹{Number(course.price).toLocaleString("en-IN")}</span>
+                </div>
+                <Link href={`/courses/${course.slug}`} className="mt-6 inline-flex rounded-full bg-slate-900 px-4 py-2.5 font-semibold text-white transition-colors duration-200 hover:bg-slate-700">
+                  View details
+                </Link>
               </div>
-              <Link href={`/courses/${course.slug}`} className="mt-6 inline-flex rounded-full bg-slate-900 px-4 py-2.5 font-semibold text-white hover:bg-slate-700">
-                View details
-              </Link>
             </article>
           ))}
         </div>
       </section>
 
-      <section className="bg-slate-900 py-20 text-white">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="mb-10 max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-300">Why learners choose us</p>
-            <h2 className="mt-3 text-4xl font-black tracking-tight">A learning experience built for momentum.</h2>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-3">
-            <div className="rounded-3xl border border-slate-700 bg-slate-800 p-6">
-              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10 text-2xl">📘</div>
-              <div className="text-4xl font-black text-indigo-300">12+</div>
-              <p className="mt-3 text-slate-300">Years of combined experience in product analytics, SQL, and business intelligence.</p>
-            </div>
-            <div className="rounded-3xl border border-slate-700 bg-slate-800 p-6">
-              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10 text-2xl">🎯</div>
-              <div className="text-4xl font-black text-indigo-300">200+</div>
-              <p className="mt-3 text-slate-300">Portfolio reviews, mentor sessions, and guided project feedback across our career tracks.</p>
-            </div>
-            <div className="rounded-3xl border border-slate-700 bg-slate-800 p-6">
-              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10 text-2xl">🚀</div>
-              <div className="text-4xl font-black text-indigo-300">7x</div>
-              <p className="mt-3 text-slate-300">Faster progress through structured lessons, live support, and hands-on exercises.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="pricing" className="mx-auto max-w-6xl px-6 py-20">
+      <section id="pricing" className="scroll-mt-28 mx-auto max-w-6xl px-6 py-20">
         <div className="mb-10 text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">Simple pricing</p>
           <h2 className="mt-3 text-4xl font-black tracking-tight text-slate-900">Choose a learning plan that fits your goals.</h2>
@@ -291,7 +372,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section id="testimonials" className="mx-auto max-w-6xl px-6 py-20">
+      <section id="testimonials" className="scroll-mt-28 mx-auto max-w-6xl px-6 py-20">
         <h2 className="text-3xl font-bold">What learners say</h2>
         <div className="mt-8 grid gap-6 md:grid-cols-2">
           {testimonials.map((item) => (
@@ -306,7 +387,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section id="faqs" className="mx-auto max-w-4xl px-6 pb-20">
+      <section id="faqs" className="scroll-mt-28 mx-auto max-w-4xl px-6 pb-20">
         <h2 className="text-3xl font-bold">Frequently asked questions</h2>
         <div className="mt-8 space-y-4">
           {faqs.map((faq) => (
@@ -315,6 +396,33 @@ export default async function HomePage() {
               <p className="mt-2 text-slate-600">{faq.a}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="bg-slate-900 py-20 text-white">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="mb-10 max-w-2xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-300">Why learners choose us</p>
+            <h2 className="mt-3 text-4xl font-black tracking-tight">A learning experience built for momentum.</h2>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="rounded-3xl border border-slate-700 bg-slate-800 p-6">
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10 text-2xl">📘</div>
+              <div className="text-4xl font-black text-indigo-300">12+</div>
+              <p className="mt-3 text-slate-300">Years of combined experience in product analytics, SQL, and business intelligence.</p>
+            </div>
+            <div className="rounded-3xl border border-slate-700 bg-slate-800 p-6">
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10 text-2xl">🎯</div>
+              <div className="text-4xl font-black text-indigo-300">200+</div>
+              <p className="mt-3 text-slate-300">Portfolio reviews, mentor sessions, and guided project feedback across our career tracks.</p>
+            </div>
+            <div className="rounded-3xl border border-slate-700 bg-slate-800 p-6">
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10 text-2xl">🚀</div>
+              <div className="text-4xl font-black text-indigo-300">7x</div>
+              <p className="mt-3 text-slate-300">Faster progress through structured lessons, live support, and hands-on exercises.</p>
+            </div>
+          </div>
         </div>
       </section>
 

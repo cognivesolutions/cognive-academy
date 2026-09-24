@@ -19,6 +19,35 @@ async function main() {
 
   const courses = [
     {
+      slug: "python-for-data-tasks",
+      title: "Python for Data Tasks",
+      shortDescription: "Use Python to automate analysis and work with datasets efficiently.",
+      description: "Covers Python data structures, pandas, analytics automation, and practical examples for learning teams.",
+      category: "Python",
+      level: "Beginner",
+      durationHours: 22,
+      price: 5499,
+      featured: false,
+      imageUrl: "/images/python.jpg",
+      instructorName: "Manav Shah",
+      instructorTitle: "Automation Engineer",
+      previewLectureUrl: "https://example.com/preview",
+      modules: {
+        create: [
+          {
+            title: "Python Essentials",
+            description: "Learn Python for data operations and automation.",
+            position: 1,
+            lectures: {
+              create: [
+                { title: "Python syntax and workflow", position: 1, isPreview: true, hlsUrl: "https://example.com/hls/python-intro.m3u8" },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
       slug: "sql-for-analytics",
       title: "SQL for Analytics",
       shortDescription: "Query data, build reports, and analyze business metrics with confidence.",
@@ -60,11 +89,69 @@ async function main() {
       },
     },
     {
+      slug: "django-for-backend-development",
+      title: "Django for Backend Development",
+      shortDescription: "Create secure, scalable backend systems with Django and Python.",
+      description: "Strengthen your backend skills with Django models, views, auth, and API-driven web applications.",
+      category: "Django",
+      level: "Intermediate",
+      durationHours: 26,
+      price: 7499,
+      featured: false,
+      imageUrl: "/images/django.jpg",
+      instructorName: "Sahil Verma",
+      instructorTitle: "Backend Architect",
+      previewLectureUrl: "https://example.com/preview",
+      modules: {
+        create: [
+          {
+            title: "Django Foundations",
+            description: "Learn project setup, routing, and database models.",
+            position: 1,
+            lectures: {
+              create: [
+                { title: "Django setup and app flow", position: 1, isPreview: true, hlsUrl: "https://example.com/hls/django-intro.m3u8" },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      slug: "react-for-frontend-development",
+      title: "React for Frontend Development",
+      shortDescription: "Build interactive interfaces and scalable UI experiences with React.",
+      description: "Learn component architecture, state management, hooks, and production-ready frontend patterns in React.",
+      category: "React",
+      level: "Intermediate",
+      durationHours: 24,
+      price: 6999,
+      featured: false,
+      imageUrl: "/images/react.jpg",
+      instructorName: "Priya Nair",
+      instructorTitle: "Frontend Engineer",
+      previewLectureUrl: "https://example.com/preview",
+      modules: {
+        create: [
+          {
+            title: "React Fundamentals",
+            description: "Build components, props, and reusable UI.",
+            position: 1,
+            lectures: {
+              create: [
+                { title: "Introduction to React", position: 1, isPreview: true, hlsUrl: "https://example.com/hls/react-intro.m3u8" },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
       slug: "power-bi-dashboarding",
       title: "Power BI Dashboarding",
       shortDescription: "Turn raw data into story-driven dashboards and insights.",
       description: "Master data modeling, dashboard design, and KPI storytelling for business intelligence roles.",
-      category: "POWER_BI",
+      category: "Power BI",
       level: "Intermediate",
       durationHours: 20,
       price: 5999,
@@ -89,28 +176,28 @@ async function main() {
       },
     },
     {
-      slug: "python-for-data-tasks",
-      title: "Python for Data Tasks",
-      shortDescription: "Use Python to automate analysis and work with datasets efficiently.",
-      description: "Covers Python data structures, pandas, analytics automation, and practical examples for learning teams.",
-      category: "PYTHON",
+      slug: "excel-for-business-analysis",
+      title: "Excel for Business Analysis",
+      shortDescription: "Analyze data, create reports, and automate everyday business tasks in Excel.",
+      description: "Cover formulas, PivotTables, dashboards, and business reporting workflows that make Excel a daily data tool.",
+      category: "Excel",
       level: "Beginner",
-      durationHours: 22,
-      price: 5499,
+      durationHours: 16,
+      price: 3999,
       featured: false,
-      imageUrl: "/images/python.jpg",
-      instructorName: "Manav Shah",
-      instructorTitle: "Automation Engineer",
+      imageUrl: "/images/excel.jpg",
+      instructorName: "Ananya Kulkarni",
+      instructorTitle: "Business Analyst",
       previewLectureUrl: "https://example.com/preview",
       modules: {
         create: [
           {
-            title: "Python Essentials",
-            description: "Learn Python for data operations and automation.",
+            title: "Excel Essentials",
+            description: "Learn formulas, formatting, and analysis workflows.",
             position: 1,
             lectures: {
               create: [
-                { title: "Python syntax and workflow", position: 1, isPreview: true, hlsUrl: "https://example.com/hls/python-intro.m3u8" },
+                { title: "Excel basics and workbook setup", position: 1, isPreview: true, hlsUrl: "https://example.com/hls/excel-intro.m3u8" },
               ],
             },
           },

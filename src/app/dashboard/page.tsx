@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { LogoutButton } from "@/components/logout-button";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -46,9 +48,12 @@ export default async function DashboardPage() {
             <a href="#transactions" className="transition hover:text-slate-900">Transactions</a>
           </div>
 
-          <button className="rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(15,23,42,0.18)] transition hover:bg-slate-700">
-            Edit profile
-          </button>
+          <div className="flex items-center gap-3">
+            <button className="rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(15,23,42,0.18)] transition hover:bg-slate-700">
+              Edit profile
+            </button>
+            <LogoutButton />
+          </div>
         </div>
       </header>
 
@@ -89,7 +94,7 @@ export default async function DashboardPage() {
         <section id="courses" className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-2xl font-black tracking-tight text-slate-900">My Courses</h2>
-            <a href="/" className="text-sm font-semibold text-indigo-600">Browse catalog</a>
+            <Link href="/" className="text-sm font-semibold text-indigo-600">Browse catalog</Link>
           </div>
 
           <div className="space-y-5">
