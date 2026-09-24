@@ -1,11 +1,6 @@
-const courses = [
-  "SQL",
-  "Python",
-  "Power BI",
-  "Git",
-  "MySQL",
-  "Excel",
-];
+import Link from "next/link";
+
+import { prisma } from "@/lib/prisma";
 
 const faqs = [
   {
@@ -37,27 +32,51 @@ const testimonials = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const courses = await prisma.course.findMany({
+    where: { isPublished: true },
+    orderBy: [{ featured: "desc" }, { createdAt: "asc" }],
+    include: { modules: true },
+  });
+
+  const featured = courses.find((course) => course.featured) ?? courses[0];
+
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
+      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-sm font-black text-white shadow-lg shadow-indigo-200">
+              C
+            </div>
+            <div>
+              <div className="text-base font-bold tracking-tight text-slate-900">Cognive Academy</div>
+              <div className="text-[10px] font-medium uppercase tracking-[0.24em] text-slate-500">Learning studio</div>
+            </div>
+          </Link>
+
+          <nav className="hidden items-center gap-8 text-sm font-medium text-slate-600 md:flex">
+            <a href="#courses" className="transition hover:text-slate-900">Courses</a>
+            <a href="#testimonials" className="transition hover:text-slate-900">Testimonials</a>
+            <a href="#faqs" className="transition hover:text-slate-900">FAQs</a>
+            <a href="#pricing" className="transition hover:text-slate-900">Pricing</a>
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <Link href="/login" className="hidden rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 sm:inline-flex">
+              Login
+            </Link>
+            <Link href="/profile" className="hidden rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 sm:inline-flex">
+              Profile
+            </Link>
+            <Link href="#courses" className="inline-flex rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-700">
+              Explore Courses
+            </Link>
+          </div>
+        </div>
+      </header>
+
       <section className="mx-auto max-w-6xl px-6 py-16">
-        <nav className="flex items-center justify-between rounded-full border border-slate-200 bg-white/80 px-5 py-3 shadow-sm backdrop-blur">
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600 text-sm font-bold text-white">C</div>
-            <span className="text-lg font-semibold">Cognive Academy</span>
-          </div>
-          <div className="hidden items-center gap-8 text-sm font-medium text-slate-600 md:flex">
-            <a href="#courses">Courses</a>
-            <a href="#testimonials">Testimonials</a>
-            <a href="#faqs">FAQs</a>
-          </div>
-          <a
-            href="#courses"
-            className="rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500"
-          >
-            Explore Courses
-          </a>
-        </nav>
 
         <div className="mt-16 grid items-center gap-10 lg:grid-cols-2">
           <div>
@@ -71,18 +90,12 @@ export default function HomePage() {
               Learn from industry experts through structured pathways in SQL, Python, Power BI, Git, MySQL, and Excel.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
-              <a
-                href="#courses"
-                className="rounded-full bg-slate-900 px-6 py-3 font-semibold text-white hover:bg-slate-700"
-              >
+              <a href="#courses" className="rounded-full bg-slate-900 px-6 py-3 font-semibold text-white hover:bg-slate-700">
                 Browse programs
               </a>
-              <a
-                href="/dashboard"
-                className="rounded-full border border-slate-300 bg-white px-6 py-3 font-semibold text-slate-800 hover:bg-slate-100"
-              >
+              <Link href="/dashboard" className="rounded-full border border-slate-300 bg-white px-6 py-3 font-semibold text-slate-800 hover:bg-slate-100">
                 Student dashboard
-              </a>
+              </Link>
             </div>
             <div className="mt-10 flex flex-wrap gap-6 text-sm text-slate-600">
               <div>
@@ -103,20 +116,24 @@ export default function HomePage() {
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl">
             <div className="rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 p-6 text-white">
               <p className="text-sm font-medium uppercase tracking-[0.2em] text-indigo-100">Featured cohort</p>
-              <h2 className="mt-3 text-3xl font-bold">Analytics Bootcamp</h2>
-              <p className="mt-3 text-indigo-100">Hands-on SQL, Excel, and Power BI training for business-ready analysis careers.</p>
+              <h2 className="mt-3 text-3xl font-bold">{featured?.title ?? "Analytics Bootcamp"}</h2>
+              <p className="mt-3 text-indigo-100">
+                {featured?.shortDescription ?? "Hands-on SQL, Excel, and Power BI training for business-ready analysis careers."}
+              </p>
               <div className="mt-6 flex items-center justify-between rounded-2xl bg-white/10 p-4">
                 <div>
                   <div className="text-xs uppercase tracking-[0.2em] text-indigo-100">Starting at</div>
-                  <div className="text-3xl font-black">₹4,999</div>
+                  <div className="text-3xl font-black">₹{featured ? Number(featured.price).toLocaleString("en-IN") : 4999}</div>
                 </div>
-                <div className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-indigo-700">Enroll now</div>
+                <Link href={featured ? `/courses/${featured.slug}` : "/login"} className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-indigo-700">
+                  Enroll now
+                </Link>
               </div>
             </div>
             <div className="mt-6 space-y-3">
-              {courses.map((course) => (
-                <div key={course} className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3">
-                  <span className="font-medium text-slate-700">{course}</span>
+              {courses.slice(0, 5).map((course) => (
+                <div key={course.id} className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3">
+                  <span className="font-medium text-slate-700">{course.title}</span>
                   <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">Live</span>
                 </div>
               ))}
@@ -131,33 +148,31 @@ export default function HomePage() {
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">Course catalog</p>
             <h2 className="mt-2 text-3xl font-bold">Explore certified learning tracks</h2>
           </div>
-          <div className="flex gap-2 text-sm text-slate-500">
-            {courses.map((course) => (
-              <button key={course} className="rounded-full border border-slate-200 bg-white px-3 py-1.5 hover:border-indigo-200 hover:text-indigo-700">
-                {course}
+          <div className="flex flex-wrap gap-2 text-sm text-slate-500">
+            {courses.slice(0, 5).map((course) => (
+              <button key={course.id} className="rounded-full border border-slate-200 bg-white px-3 py-1.5 hover:border-indigo-200 hover:text-indigo-700">
+                {course.category}
               </button>
             ))}
           </div>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {courses.map((course, index) => (
-            <article key={course} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          {courses.map((course) => (
+            <article key={course.id} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
               <div className="mb-4 flex items-center justify-between">
-                <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">{course}</span>
-                <span className="text-sm font-medium text-slate-500">{index + 1} modules</span>
+                <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">{course.category}</span>
+                <span className="text-sm font-medium text-slate-500">{course.modules.length} modules</span>
               </div>
-              <h3 className="text-2xl font-bold text-slate-900">{course} Mastery</h3>
-              <p className="mt-3 text-slate-600">
-                Structured coursework designed to help you build practical, job-ready confidence with hands-on exercises.
-              </p>
+              <h3 className="text-2xl font-bold text-slate-900">{course.title}</h3>
+              <p className="mt-3 text-slate-600">{course.shortDescription ?? course.description}</p>
               <div className="mt-6 flex items-center justify-between text-sm text-slate-500">
-                <span>Beginner to advanced</span>
-                <span className="font-bold text-slate-900">₹{index % 2 === 0 ? 3999 : 4999}</span>
+                <span>{course.level}</span>
+                <span className="font-bold text-slate-900">₹{Number(course.price).toLocaleString("en-IN")}</span>
               </div>
-              <a href={`/courses/${course.toLowerCase().replace(/\s+/g, "-")}`} className="mt-6 inline-flex rounded-full bg-slate-900 px-4 py-2.5 font-semibold text-white hover:bg-slate-700">
+              <Link href={`/courses/${course.slug}`} className="mt-6 inline-flex rounded-full bg-slate-900 px-4 py-2.5 font-semibold text-white hover:bg-slate-700">
                 View details
-              </a>
+              </Link>
             </article>
           ))}
         </div>
