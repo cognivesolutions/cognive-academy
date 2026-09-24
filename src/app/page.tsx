@@ -5,6 +5,10 @@ import { prisma } from "@/lib/prisma";
 import { GlobalCourseSearch } from "@/components/global-course-search";
 import { SiteNav } from "@/components/site-nav";
 import { UserMenu } from "@/components/user-menu";
+import HeroShowcase from "@/components/hero-showcase";
+import AnimatedTyping from "@/components/animated-typing";
+import MobileMenu from "@/components/mobile-menu";
+// `BigDataWheel` is a client component; import it inside a client wrapper below.
 
 const faqs = [
   {
@@ -134,31 +138,43 @@ export default async function HomePage({
               <div className="text-xl font-black tracking-tight text-slate-900">Cognive Academy</div>
             </Link>
 
-            <SiteNav />
+            <div className="hidden md:block">
+              <SiteNav />
+            </div>
 
             <div className="flex items-center gap-2 sm:gap-3">
               {isLoggedIn ? (
                 <UserMenu />
               ) : (
-                <Link href="/login" className="inline-flex rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_20px_rgba(99,102,241,0.25)] transition hover:opacity-95">
-                  LMS Login
-                </Link>
+                <div className="hidden md:block">
+                  <Link
+                    href="/login"
+                    className="inline-flex rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_20px_rgba(99,102,241,0.25)] transition hover:opacity-95 hover:shadow-lg hover:scale-[1.02] focus-visible:ring-4 focus-visible:ring-indigo-200"
+                  >
+                    LMS Login
+                  </Link>
+                </div>
               )}
+              {/* mobile menu placed to left of avatar/login */}
+              <div className="md:hidden">
+                <MobileMenu />
+              </div>
             </div>
           </div>
         </div>
       </header>
 
-      <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(147,197,253,0.35),_transparent_36%),linear-gradient(135deg,_#dfeffc_0%,_#f2ebff_100%)]">
+      <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(147,197,253,0.35),_transparent_36%),linear-gradient(135deg,_#dfeffc_0%,_#f2ebff_100%)] min-h-[calc(100vh-5rem)]">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-6 pb-16 pt-12 lg:grid-cols-[1.1fr_0.9fr] lg:pb-20 lg:pt-16">
-          <div className="max-w-2xl">
-            <span className="inline-flex rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-indigo-700">
+          <div className="max-w-2xl h-full flex flex-col justify-center gap-6">
+            <span className="inline-flex whitespace-nowrap rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-indigo-700">
               <span className="mr-2">✦</span> Learn practical skills that drive real growth
             </span>
 
-            <h1 className="mt-6 text-5xl font-black leading-[0.96] tracking-[-0.06em] text-slate-900 sm:text-6xl">
-              Build Real Skills and Launch Your Career
-              <span className="mt-2 block text-slate-800">With Cognive Academy</span>
+            <h1 className="mt-6 mb-6 text-5xl whitespace-nowrap font-black leading-[1.02] tracking-[-0.03em] text-slate-900 sm:text-6xl max-w-[36ch] whitespace-normal">
+              Build Real Skills and
+              <span className="block">Launch Your Career</span>
+              <span className="mt-2 block text-slate-800">With <AnimatedTyping text={"Cognive Academy"} className={"bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500"} cursorClassName={"text-indigo-600"} /></span>
             </h1>
 
             <div className="mt-8 flex items-center gap-4">
@@ -185,46 +201,14 @@ export default async function HomePage({
                 Explore Courses
               </Link>
               <Link href="/signup" className="rounded-xl border border-indigo-200 bg-white px-6 py-3.5 text-sm font-semibold text-indigo-700 shadow-sm transition hover:bg-indigo-50">
-                Book a Call
+                Request a Callback
               </Link>
             </div>
           </div>
 
-          <div className="relative mx-auto flex w-full max-w-[500px] items-center justify-center py-8">
-            <div className="relative h-[390px] w-[390px]">
-              <div className="absolute inset-6 rounded-full bg-[radial-gradient(circle_at_center,_rgba(8,145,178,0.18),_rgba(15,23,42,0.02)_58%,_transparent_70%)]" />
-              <div className="absolute inset-0 rounded-full border-[16px] border-white/40 bg-[radial-gradient(circle_at_center,_#0a4e67_0%,_#08384d_52%,_#0a2735_100%)] shadow-[0_25px_70px_rgba(8,47,76,0.2)]" />
-
-              <div className="absolute left-1/2 top-1/2 h-[220px] w-[220px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/30 bg-white/5 backdrop-blur-sm" />
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-white">
-                <div className="text-[48px] font-black leading-none">BIG</div>
-                <div className="text-[48px] font-black leading-none">DATA</div>
-              </div>
-
-              {[
-                { text: "Power BI", x: "50%", y: "5%", clr: "bg-cyan-500" },
-                { text: "Python", x: "78%", y: "18%", clr: "bg-amber-400" },
-                { text: "SQL", x: "84%", y: "43%", clr: "bg-indigo-500" },
-                { text: "Excel", x: "77%", y: "72%", clr: "bg-emerald-500" },
-                { text: "AI", x: "52%", y: "86%", clr: "bg-pink-500" },
-                { text: "GenAI", x: "22%", y: "83%", clr: "bg-red-500" },
-                { text: "Tableau", x: "7%", y: "62%", clr: "bg-violet-500" },
-                { text: "React", x: "10%", y: "28%", clr: "bg-sky-500" },
-              ].map((item, index) => (
-                <div
-                  key={item.text}
-                  className="absolute -translate-x-1/2 -translate-y-1/2"
-                  style={{ left: item.x, top: item.y }}
-                >
-                  <div className={`flex items-center gap-2 rounded-full border border-white/30 bg-white/95 px-2 py-1 text-[11px] font-bold text-slate-700 shadow-lg`}>
-                    <span className={`inline-block h-2.5 w-2.5 rounded-full ${item.clr}`} />
-                    {item.text}
-                  </div>
-                </div>
-              ))}
-
-              <div className="absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-[6px] border-white/60 bg-white text-lg shadow-xl text-slate-700">✦</div>
-            </div>
+          {/* Replaced heavy decorative wheel with a compact BigDataWheel component */}
+          <div>
+            <HeroShowcase />
           </div>
         </div>
 
@@ -232,12 +216,18 @@ export default async function HomePage({
           <div className="grid gap-4 rounded-[28px] border border-slate-200 bg-white/80 p-4 shadow-[0_18px_40px_rgba(15,23,42,0.05)] backdrop-blur-sm md:grid-cols-4">
             {[
               { value: "100+", label: "Learners across the countries" },
-              { value: "4.9/5", label: "Average course rating" },
               { value: "10+", label: "Courses" },
+              { value: "4.9/5", label: "Average course rating" },
+              { value: "25+", label: "Active Learners" },
             ].map((item) => (
-              <div key={item.value} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 text-center md:text-left">
-                <div className="text-3xl font-black tracking-tight text-slate-900">{item.value}</div>
-                <div className="mt-2 text-sm text-slate-600">{item.label}</div>
+              <div
+                key={item.value}
+                className="group rounded-2xl border border-slate-200 bg-slate-50/70 p-4 text-center md:text-left transform transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-indigo-200 hover:bg-gradient-to-r hover:from-indigo-600 hover:to-violet-600"
+              >
+                <div className="text-3xl font-black tracking-tight text-slate-900 group-hover:text-white">
+                  {item.value}
+                </div>
+                <div className="mt-2 text-sm text-slate-600 group-hover:text-indigo-100">{item.label}</div>
               </div>
             ))}
           </div>
@@ -467,6 +457,21 @@ export default async function HomePage({
                 <li><Link href="#courses" className="hover:text-white">Courses</Link></li>
                 <li><Link href="/dashboard" className="hover:text-white">Dashboard</Link></li>
                 <li><Link href="/login" className="hover:text-white">Login</Link></li>
+                <li>
+                  <Link href="#courses" className="group inline-flex items-center transition text-slate-300 hover:text-white focus-visible:text-white group-hover:font-bold group-active:font-bold active:text-white">
+                    <span className="leading-none">Courses</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/dashboard" className="group inline-flex items-center transition text-slate-300 hover:text-white focus-visible:text-white group-hover:font-bold group-active:font-bold active:text-white">
+                    <span className="leading-none">Dashboard</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/login" className="group inline-flex items-center transition text-slate-300 hover:text-white focus-visible:text-white group-hover:font-bold group-active:font-bold active:text-white">
+                    <span className="leading-none">Login</span>
+                  </Link>
+                </li>
               </ul>
             </div>
 
@@ -476,6 +481,21 @@ export default async function HomePage({
                 <li><Link href="/courses/analytics-bootcamp" className="hover:text-white">Analytics Bootcamp</Link></li>
                 <li><Link href="/courses/sql-for-data-analysts" className="hover:text-white">SQL for Analysts</Link></li>
                 <li><Link href="/courses/power-bi-mastery" className="hover:text-white">Power BI Mastery</Link></li>
+                <li>
+                  <Link href="/courses/analytics-bootcamp" className="group inline-flex items-center transition text-slate-300 hover:text-white focus-visible:text-white group-hover:font-bold group-active:font-bold active:text-white">
+                    <span className="leading-none">Analytics Bootcamp</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/courses/sql-for-data-analysts" className="group inline-flex items-center transition text-slate-300 hover:text-white focus-visible:text-white group-hover:font-bold group-active:font-bold active:text-white">
+                    <span className="leading-none">SQL for Analysts</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/courses/power-bi-mastery" className="group inline-flex items-center transition text-slate-300 hover:text-white focus-visible:text-white group-hover:font-bold group-active:font-bold active:text-white">
+                    <span className="leading-none">Power BI Mastery</span>
+                  </Link>
+                </li>
               </ul>
             </div>
 
@@ -485,6 +505,21 @@ export default async function HomePage({
                 <li><a href="#testimonials" className="hover:text-white">Testimonials</a></li>
                 <li><a href="#faqs" className="hover:text-white">FAQs</a></li>
                 <li><Link href="/signup" className="hover:text-white">Join now</Link></li>
+                <li>
+                  <a href="#testimonials" className="group inline-flex items-center transition text-slate-300 hover:text-white focus-visible:text-white group-hover:font-bold group-active:font-bold active:text-white">
+                    <span className="leading-none">Testimonials</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#faqs" className="group inline-flex items-center transition text-slate-300 hover:text-white focus-visible:text-white group-hover:font-bold group-active:font-bold active:text-white">
+                    <span className="leading-none">FAQs</span>
+                  </a>
+                </li>
+                <li>
+                  <Link href="/signup" className="group inline-flex items-center transition text-slate-300 hover:text-white focus-visible:text-white group-hover:font-bold group-active:font-bold active:text-white">
+                    <span className="leading-none">Join now</span>
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>
@@ -495,6 +530,9 @@ export default async function HomePage({
               <Link href="/" className="hover:text-white">Privacy</Link>
               <Link href="/" className="hover:text-white">Terms</Link>
               <Link href="/" className="hover:text-white">Support</Link>
+              <Link href="/" className="group inline-flex items-center transition text-slate-300 hover:text-white focus-visible:text-white group-hover:font-bold group-active:font-bold active:text-white">Privacy</Link>
+              <Link href="/" className="group inline-flex items-center transition text-slate-300 hover:text-white focus-visible:text-white group-hover:font-bold group-active:font-bold active:text-white">Terms</Link>
+              <Link href="/" className="group inline-flex items-center transition text-slate-300 hover:text-white focus-visible:text-white group-hover:font-bold group-active:font-bold active:text-white">Support</Link>
             </div>
           </div>
         </div>

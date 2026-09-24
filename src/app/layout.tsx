@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Cognive Academy",
   description: "Career-focused LMS for SQL, Python, Power BI, Git, MySQL, and Excel learning.",
+  icons: {
+    icon: '/brand-favicon.svg',
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
