@@ -100,112 +100,115 @@ export function SiteNav() {
           const isDropdown = item.type === "dropdown";
           const isOpen = openMenu === item.label;
 
-          return isDropdown ? (
-            <div
-              key={item.label}
-              className="relative"
-                      onMouseEnter={() => {
-                        if (closeTimeoutRef.current) {
-                          window.clearTimeout(closeTimeoutRef.current);
-                          closeTimeoutRef.current = null;
-                        }
-                        setOpenMenu(item.label);
-                        setActiveLabel(item.label);
-                      }}
-                      onMouseLeave={() => {
-                        // delay closing slightly to let mouse travel to submenu
-                        closeTimeoutRef.current = window.setTimeout(() => {
-                          setOpenMenu(null);
-                          setActiveLabel(null);
-                          closeTimeoutRef.current = null;
-                        }, 250);
-                      }}
-            >
-              <button
-                type="button"
-                aria-haspopup="menu"
-                aria-expanded={isOpen}
-                onClick={() => {
-                  setOpenMenu(isOpen ? null : item.label);
-                  if (!isOpen) setActiveLabel(item.label);
+          if (isDropdown) {
+            return (
+              <div
+                key={item.label}
+                className="relative"
+                onMouseEnter={() => {
+                  if (closeTimeoutRef.current) {
+                    window.clearTimeout(closeTimeoutRef.current);
+                    closeTimeoutRef.current = null;
+                  }
+                  setOpenMenu(item.label);
+                  setActiveLabel(item.label);
                 }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
+                onMouseLeave={() => {
+                  closeTimeoutRef.current = window.setTimeout(() => {
+                    setOpenMenu(null);
+                    setActiveLabel(null);
+                    closeTimeoutRef.current = null;
+                  }, 250);
+                }}
+              >
+                <button
+                  type="button"
+                  aria-haspopup="menu"
+                  aria-expanded={isOpen}
+                  onClick={() => {
                     setOpenMenu(isOpen ? null : item.label);
                     if (!isOpen) setActiveLabel(item.label);
-                  } else if (e.key === "ArrowDown") {
-                    e.preventDefault();
-                    setOpenMenu(item.label);
-                  } else if (e.key === "Escape") {
-                    setOpenMenu(null);
-                  }
-                }}
-                className={`group flex flex-col items-center rounded-full px-3 py-2 transition ${isOpen || activeLabel === item.label ? "text-indigo-700" : "hover:text-indigo-700"} focus-visible:text-indigo-700`}
-              >
-                <div className="inline-flex items-center gap-1.5">
-                  <span className={`leading-none group-hover:font-bold group-active:font-bold group-focus-visible:font-bold group-active:text-indigo-700 group-focus-visible:text-indigo-700 active:font-bold active:text-indigo-700 ${isOpen || activeLabel === item.label ? "font-bold text-indigo-700" : ""}`}>{item.label}</span>
-                  <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5 text-slate-500">
-                    <path d="M5.25 7.5 10 12.25 14.75 7.5H5.25Z" />
-                  </svg>
-                </div>
-                <span className={`mt-1 block h-[2px] w-full bg-indigo-600 transform ${isOpen || activeLabel === item.label ? 'scale-x-100' : 'scale-x-0'} origin-left transition-transform duration-200 group-hover:scale-x-100`} />
-              </button>
-
-                {isOpen ? (
-                <div
-                  role="menu"
-                  aria-label={item.label}
-                  className="absolute left-0 top-full z-50 mt-3 w-52 rounded-2xl bg-white p-0 shadow-[0_18px_40px_rgba(15,23,42,0.12)] pointer-events-auto"
-                  onMouseEnter={() => {
-                    if (closeTimeoutRef.current) {
-                      window.clearTimeout(closeTimeoutRef.current);
-                      closeTimeoutRef.current = null;
-                    }
-                    setOpenMenu(item.label);
-                  }}
-                  onMouseLeave={() => {
-                    closeTimeoutRef.current = window.setTimeout(() => {
-                      setOpenMenu(null);
-                      setActiveLabel(null);
-                      closeTimeoutRef.current = null;
-                    }, 250);
                   }}
                   onKeyDown={(e) => {
-                    if (e.key === "Escape") {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setOpenMenu(isOpen ? null : item.label);
+                      if (!isOpen) setActiveLabel(item.label);
+                    } else if (e.key === "ArrowDown") {
+                      e.preventDefault();
+                      setOpenMenu(item.label);
+                    } else if (e.key === "Escape") {
                       setOpenMenu(null);
                     }
                   }}
+                  className={`group flex flex-col items-center rounded-full px-3 py-2 transition ${isOpen || activeLabel === item.label ? "text-indigo-700" : "hover:text-indigo-700"} focus-visible:text-indigo-700`}
                 >
-                  {item.items.map((subItem: { label: string; href: string }, idx: number) => (
-                    <Link
-                      key={subItem.label}
-                      href={subItem.href}
-                      role="menuitem"
-                      ref={(el) => {
-                        if (idx === 0) menuFirstRefs.current[item.label] = el;
-                      }}
-                      className="block w-full px-3 py-2 text-sm text-slate-600 transition hover:bg-indigo-50 hover:text-indigo-700 rounded-none !border-0 bg-transparent focus:outline-none focus:ring-0"
-                      onClick={() => {
+                  <div className="inline-flex items-center gap-1.5">
+                    <span className={`leading-none group-hover:font-bold group-active:font-bold group-focus-visible:font-bold group-active:text-indigo-700 group-focus-visible:text-indigo-700 active:font-bold active:text-indigo-700 ${isOpen || activeLabel === item.label ? "font-bold text-indigo-700" : ""}`}>{item.label}</span>
+                    <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5 text-slate-500">
+                      <path d="M5.25 7.5 10 12.25 14.75 7.5H5.25Z" />
+                    </svg>
+                  </div>
+                  <span className={`mt-1 block h-[2px] w-full bg-indigo-600 transform ${isOpen || activeLabel === item.label ? "scale-x-100" : "scale-x-0"} origin-left transition-transform duration-200 group-hover:scale-x-100`} />
+                </button>
+
+                {isOpen ? (
+                  <div
+                    role="menu"
+                    aria-label={item.label}
+                    className="absolute left-0 top-full z-50 mt-3 w-52 rounded-2xl bg-white p-0 shadow-[0_18px_40px_rgba(15,23,42,0.12)] pointer-events-auto"
+                    onMouseEnter={() => {
+                      if (closeTimeoutRef.current) {
+                        window.clearTimeout(closeTimeoutRef.current);
+                        closeTimeoutRef.current = null;
+                      }
+                      setOpenMenu(item.label);
+                    }}
+                    onMouseLeave={() => {
+                      closeTimeoutRef.current = window.setTimeout(() => {
                         setOpenMenu(null);
-                        setActiveLabel(item.label);
-                      }}
-                    >
-                      {subItem.label}
-                    </Link>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          ) : (
+                        setActiveLabel(null);
+                        closeTimeoutRef.current = null;
+                      }, 250);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        setOpenMenu(null);
+                      }
+                    }}
+                  >
+                    {item.items.map((subItem, idx) => (
+                      <Link
+                        key={subItem.label}
+                        href={subItem.href}
+                        role="menuitem"
+                        ref={(el) => {
+                          if (idx === 0) menuFirstRefs.current[item.label] = el;
+                        }}
+                        className="block w-full px-3 py-2 text-sm text-slate-600 transition hover:bg-indigo-50 hover:text-indigo-700 rounded-none !border-0 bg-transparent focus:outline-none focus:ring-0"
+                        onClick={() => {
+                          setOpenMenu(null);
+                          setActiveLabel(item.label);
+                        }}
+                      >
+                        {subItem.label}
+                      </Link>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            );
+          }
+
+          return (
             <Link
               key={item.label}
               href={item.href}
-              className={`group inline-flex flex-col items-center rounded-full px-3 py-2 transition ${activeLabel === item.label ? 'text-indigo-700' : 'hover:text-indigo-700'} focus-visible:text-indigo-700`}
+              className={`group inline-flex flex-col items-center rounded-full px-3 py-2 transition ${activeLabel === item.label ? "text-indigo-700" : "hover:text-indigo-700"} focus-visible:text-indigo-700`}
               onClick={() => setActiveLabel(item.label)}
             >
-              <span className={`leading-none group-hover:font-bold group-active:font-bold group-focus-visible:font-bold group-active:text-indigo-700 group-focus-visible:text-indigo-700 active:font-bold active:text-indigo-700 ${activeLabel === item.label ? 'font-bold' : ''}`}>{item.label}</span>
-              <span className={`mt-1 block h-[2px] w-full bg-indigo-600 transform ${activeLabel === item.label ? 'scale-x-100' : 'scale-x-0'} origin-left transition-transform duration-200 group-hover:scale-x-100`} />
+              <span className={`leading-none group-hover:font-bold group-active:font-bold group-focus-visible:font-bold group-active:text-indigo-700 group-focus-visible:text-indigo-700 active:font-bold active:text-indigo-700 ${activeLabel === item.label ? "font-bold" : ""}`}>{item.label}</span>
+              <span className={`mt-1 block h-[2px] w-full bg-indigo-600 transform ${activeLabel === item.label ? "scale-x-100" : "scale-x-0"} origin-left transition-transform duration-200 group-hover:scale-x-100`} />
             </Link>
           );
         })}

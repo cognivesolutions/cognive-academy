@@ -5,10 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "generate:favicons": "node ./scripts/generate-favicons.js",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma skills sync || exit 0"
+    "postinstall": "prisma generate && prisma skills sync || exit 0"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
