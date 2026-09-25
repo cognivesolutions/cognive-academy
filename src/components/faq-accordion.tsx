@@ -59,7 +59,9 @@ export default function FAQAccordion({ items }: { items: Faq[] }) {
           return (
             <div key={faq.q} className="rounded-2xl border border-slate-200 bg-white">
               <button
-                ref={(el) => (btnRefs.current[i] = el)}
+                ref={(el) => {
+                  btnRefs.current[i] = el;
+                }}
                 className="w-full text-left px-5 py-4 flex items-center justify-between gap-4 focus:outline-none"
                 aria-expanded={open}
                 aria-controls={`faq-panel-${i}`}
@@ -83,7 +85,9 @@ export default function FAQAccordion({ items }: { items: Faq[] }) {
                 id={`faq-panel-${i}`}
                 role="region"
                 aria-labelledby={`faq-btn-${i}`}
-                ref={(el) => (panelRefs.current[i] = el)}
+                ref={(el) => {
+                  panelRefs.current[i] = el;
+                }}
                 style={{ maxHeight: open ? "none" : "0px", overflow: "hidden", transition: "max-height 260ms ease" }}
               >
                 <div className="px-5 pb-5 pt-0 text-slate-600">

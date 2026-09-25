@@ -23,14 +23,18 @@ const servicesMenu = [
   { label: "Corporate Training", href: "/corporate-training" },
 ];
 
-const navItems = [
+type NavItem =
+  | { label: string; type: "dropdown"; items: typeof coursesMenu; href: string }
+  | { label: string; type: "link"; href: string };
+
+const navItems: NavItem[] = [
   { label: "Courses", type: "dropdown", items: coursesMenu, href: "#courses" },
   { label: "Resources", type: "dropdown", items: resourcesMenu, href: "#resources" },
   { label: "Services", type: "dropdown", items: servicesMenu, href: "#services" },
-  { label: "Success Stories", href: "#success-stories" },
-  { label: "About Us", href: "#about-us" },
-  { label: "Contact Us", href: "#contact-us" },
-] as const;
+  { label: "Success Stories", type: "link", href: "#success-stories" },
+  { label: "About Us", type: "link", href: "#about-us" },
+  { label: "Contact Us", type: "link", href: "#contact-us" },
+];
 
 export function SiteNav() {
   const pathname = usePathname();
@@ -93,10 +97,10 @@ export function SiteNav() {
     <div ref={navRef} className="hidden items-center gap-4 text-sm font-medium md:flex">
       <nav className="flex items-center gap-5 text-sm font-medium text-slate-700">
         {navItems.map((item) => {
-          const hasDropdown = item.type === "dropdown";
+          const isDropdown = item.type === "dropdown";
           const isOpen = openMenu === item.label;
 
-          return hasDropdown ? (
+          return isDropdown ? (
             <div
               key={item.label}
               className="relative"
@@ -173,7 +177,7 @@ export function SiteNav() {
                     }
                   }}
                 >
-                  {item.items?.map((subItem, idx) => (
+                  {item.items.map((subItem: { label: string; href: string }, idx: number) => (
                     <Link
                       key={subItem.label}
                       href={subItem.href}
