@@ -7,7 +7,7 @@ type Course = any;
 
 const VISIBLE = 3;
 
-export default function RecordedCoursesCarousel({ courses }: { courses: Course[] }) {
+export default function LiveCoursesCarousel({ courses }: { courses: Course[] }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const rafRef = useRef<number | null>(null);
   const [pageCount, setPageCount] = useState(Math.max(1, Math.ceil(courses.length / VISIBLE)));
@@ -68,7 +68,6 @@ export default function RecordedCoursesCarousel({ courses }: { courses: Course[]
           >
             <div className="mb-4 h-40 w-full overflow-hidden rounded-xl bg-slate-100">
               {course.coverImage ? (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img src={course.coverImage} alt={course.title} className="h-full w-full object-cover" />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-slate-400">No image</div>
@@ -76,7 +75,7 @@ export default function RecordedCoursesCarousel({ courses }: { courses: Course[]
             </div>
 
             <div className="flex-1">
-              <div className="mb-2 text-sm font-semibold text-indigo-600">Recorded</div>
+              <div className="mb-2 text-sm font-semibold text-indigo-600">Live</div>
               <h3 className="text-xl font-bold text-slate-900">{course.title}</h3>
               <p className="mt-3 text-sm text-slate-600 line-clamp-2">{course.shortDescription ?? course.description}</p>
             </div>
@@ -91,7 +90,6 @@ export default function RecordedCoursesCarousel({ courses }: { courses: Course[]
         ))}
       </div>
 
-      {/* pagination dots and aligned arrows */}
       <div className="mt-4 relative">
         <div className="flex items-center justify-center">
           <div className="flex gap-2">
@@ -107,7 +105,6 @@ export default function RecordedCoursesCarousel({ courses }: { courses: Course[]
           </div>
         </div>
 
-        {/* bottom-right arrows aligned to center of dots */}
         <div className="absolute right-4 top-1/2 transform -translate-y-1/2 z-30 flex items-center gap-3">
           {(() => {
             const prevDisabled = currentPage <= 0;
@@ -121,9 +118,9 @@ export default function RecordedCoursesCarousel({ courses }: { courses: Course[]
                   prevDisabled ? "opacity-40 cursor-not-allowed pointer-events-none" : "hover:bg-white"
                 }`}
               >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-slate-700">
-              <path fillRule="evenodd" d="M12.293 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 1.414L8.414 10l3.879 3.879a1 1 0 010 1.414z" clipRule="evenodd" />
-            </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-slate-700">
+                  <path fillRule="evenodd" d="M12.293 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 1.414L8.414 10l3.879 3.879a1 1 0 010 1.414z" clipRule="evenodd" />
+                </svg>
               </button>
             );
           })()}
@@ -140,9 +137,9 @@ export default function RecordedCoursesCarousel({ courses }: { courses: Course[]
                   nextDisabled ? "opacity-40 cursor-not-allowed pointer-events-none" : "hover:bg-white"
                 }`}
               >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-slate-700">
-              <path fillRule="evenodd" d="M7.707 4.293a1 1 0 010 1.414L3.414 10l4.293 4.293a1 1 0 01-1.414 1.414l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 0z" clipRule="evenodd" transform="rotate(180 10 10)" />
-            </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-slate-700">
+                  <path fillRule="evenodd" d="M7.707 4.293a1 1 0 010 1.414L3.414 10l4.293 4.293a1 1 0 01-1.414 1.414l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 0z" clipRule="evenodd" transform="rotate(180 10 10)" />
+                </svg>
               </button>
             );
           })()}

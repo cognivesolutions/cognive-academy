@@ -12,7 +12,6 @@ export default function RecordedSection({ courses }: { courses: Course[] }) {
   const english = useMemo(() => courses.filter((c) => (c.language || c.lang || c.locale) === "en"), [courses]);
   const hindi = useMemo(() => courses.filter((c) => (c.language || c.lang || c.locale) === "hi"), [courses]);
 
-  // Fallback if no explicit language metadata: split deterministically
   const fallbackEnglish = courses.slice(0, 5);
   const fallbackHindi = courses.slice(5, 9).length ? courses.slice(5, 9) : courses.slice(0, 4);
 

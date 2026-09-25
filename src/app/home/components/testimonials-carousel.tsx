@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useRef } from "react";
-import { TESTIMONIALS } from "../data/testimonials";
+import { TESTIMONIALS } from "@/data/testimonials";
 
 type Testimonial = { name: string; role?: string; quote: string };
 
@@ -14,15 +14,12 @@ export default function TestimonialsCarousel({ items }: { items?: Testimonial[] 
     const el = containerRef.current;
     if (!el) return;
 
-    let speed = 1.2; // pixels per frame (increased for noticeable movement)
+    let speed = 1.2;
 
     const step = () => {
       if (!el) return;
-      // scroll right-to-left: increase scrollLeft
       el.scrollLeft = el.scrollLeft + speed;
-      // loop when reaching the end
       if (el.scrollLeft >= el.scrollWidth - el.clientWidth - 1) {
-        // when nearing the end, jump back slightly to create smooth loop
         el.scrollLeft = 0;
       }
       rafRef.current = requestAnimationFrame(step);

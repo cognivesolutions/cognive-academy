@@ -17,7 +17,6 @@ const badges: Badge[] = [
 ];
 
 export default function HeroShowcase() {
-  // Responsive tuning: on small screens we reduce badge count and shrink badge sizing.
   const isSmall = typeof window !== "undefined" && window.matchMedia("(max-width: 640px)").matches;
   const visibleBadges = isSmall ? badges.slice(0, 5) : badges;
   const badgePadding = isSmall ? "px-3 py-1.5" : "px-4 py-2";
@@ -26,21 +25,18 @@ export default function HeroShowcase() {
   return (
     <div className="relative mx-auto flex w-full max-w-[640px] items-center justify-center py-8">
       <div className="relative h-[360px] w-[640px]">
-        {/* Center circle: use fixed centering via left/top 50% on small screens to avoid translate drift */}
         <div className="absolute left-0 top-1/2 -translate-y-1/2 flex w-full items-center justify-center md:translate-x-[-60px]">
           <div className="h-[220px] w-[220px] rounded-full bg-gradient-to-b from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-xl ring-8 ring-white/10">
             <div className="text-2xl font-extrabold leading-none text-center">Skills & Tracks</div>
           </div>
         </div>
 
-        {/* Orbit container: rotates clockwise; badge inner content counter-rotates to stay upright */}
         <div className="absolute left-0 top-0 w-full h-full flex items-center justify-center md:translate-x-[-60px]">
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[360px] h-[360px]">
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 animate-[spin_20s_linear_infinite] motion-reduce:animate-none" style={{ width: 0, height: 0 }}>
               {visibleBadges.map((b, i) => {
-                const deg = (i / visibleBadges.length) * 360 - 90; // start at top
-                const radius = isSmall ? 140 : 180; // reduce radius on small screens
-
+                const deg = (i / visibleBadges.length) * 360 - 90;
+                const radius = isSmall ? 140 : 180;
                 const transform = `rotate(${deg}deg) translateX(${radius}px) rotate(${-deg}deg)`;
 
                 return (
