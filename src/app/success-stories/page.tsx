@@ -214,9 +214,9 @@ export default function SuccessStoriesPage() {
 
   return (
     <main className={`${rootClasses} pt-0`}>
-      <section className={`relative overflow-hidden ${heroBackground} pt-4 pb-10 md:pt-6 md:pb-12 lg:min-h-[calc(100vh-5.5rem)] lg:pt-8 lg:pb-10`}>
+      <section id="success-stories-hero" className={`relative overflow-hidden ${heroBackground} pt-5 pb-10 md:pt-8 md:pb-12 lg:min-h-[calc(100vh-5.25rem)] lg:pt-10 lg:pb-12 scroll-mt-28`}>
         <div className="mx-auto max-w-6xl px-6">
-          <div className="grid items-center gap-8 lg:min-h-[calc(100vh-9rem)] lg:grid-cols-[1.12fr_0.88fr] lg:gap-14">
+          <div className="grid items-center gap-8 lg:min-h-[calc(100vh-8.25rem)] lg:grid-cols-[1.12fr_0.88fr] lg:gap-14">
             <div>
               <span className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] ${isDark ? "border-indigo-500/40 bg-indigo-500/10 text-indigo-200" : "border-indigo-200 bg-indigo-50 text-indigo-700"}`}>
                 Success stories
