@@ -1,36 +1,140 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cognive Academy
 
-## Getting Started
+Cognive Academy is a Next.js learning platform for online courses, live classes, student dashboards, and payment-enabled enrollment flows. The app combines a modern course catalog, authentication, course discovery, student account management, and Prisma-backed persistence.
 
-First, run the development server:
+## Tech stack
+
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS
+- Prisma ORM
+- PostgreSQL
+- NextAuth credentials authentication
+- Razorpay checkout integration
+
+## Features
+
+- Course landing page with featured programs, filters, and search
+- Live and recorded course sections
+- Student login and signup flow
+- Dashboard for enrolled courses and recent transactions
+- Prisma data model for users, courses, modules, lectures, orders, and enrollments
+- Razorpay order creation and payment callback handling
+
+## Project structure
+
+```bash
+.
+├── prisma/
+│   ├── schema.prisma
+│   ├── seed.ts
+│   └── migrations/
+├── public/
+├── scripts/
+├── src/
+│   ├── app/
+│   ├── auth.ts
+│   ├── components/
+│   ├── config/
+│   ├── data/
+│   ├── lib/
+│   └── types/
+├── .env
+├── .gitignore
+├── components.json
+├── next.config.ts
+├── package.json
+├── postcss.config.mjs
+├── prisma.config.ts
+├── tsconfig.json
+└── README.md
+```
+
+## Prerequisites
+
+- Node.js 18+
+- npm
+- PostgreSQL database
+- Razorpay account credentials (for payments)
+
+## Local setup
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Create your environment file:
+
+```bash
+cp .env.example .env
+```
+
+If you do not have a .env.example file yet, create a `.env` file with the values below.
+
+3. Configure environment variables:
+
+```env
+DATABASE_URL="postgresql://username:password@localhost:5432/cognive_academy?schema=public"
+NEXTAUTH_SECRET="your-secret-key"
+NEXTAUTH_URL="http://localhost:3000"
+RAZORPAY_KEY_ID="your_razorpay_key_id"
+RAZORPAY_KEY_SECRET="your_razorpay_key_secret"
+RAZORPAY_WEBHOOK_SECRET="your_webhook_secret"
+```
+
+4. Generate Prisma client and apply schema:
+
+```bash
+npx prisma generate
+npx prisma db push
+```
+
+Optional: seed the database if seeded data is needed:
+
+```bash
+npx prisma db seed
+```
+
+5. Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000 to view the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Available scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev         # start the Next.js dev server
+npm run build       # generate Prisma client and build the app
+npm run start       # start the production server
+npm run lint        # run ESLint
+npm run generate:favicons  # generate app favicons
+```
 
-## Learn More
+## Database notes
 
-To learn more about Next.js, take a look at the following resources:
+The Prisma schema defines the core application entities:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `User`
+- `Course`
+- `Module`
+- `Lecture`
+- `Order`
+- `Enrollment`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+These are configured in [prisma/schema.prisma](prisma/schema.prisma).
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This project is ready to deploy to a Node-compatible host such as Vercel or a custom VPS. For production deployments, make sure all environment variables are set in your hosting provider and that your PostgreSQL database is reachable from the deployment environment.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Notes
+
+- [.gitignore](.gitignore) ignores generated Next.js build artifacts and local environment files.
+- [.next](.next) is generated automatically and can be safely removed during cleanup or troubleshooting.
+- If you change the Prisma schema, run `npx prisma generate` and apply migrations or push the schema to your database.
