@@ -63,7 +63,7 @@ export default function RecordedCoursesCarousel({ courses }: { courses: Course[]
           <article
             key={course.id}
             role="listitem"
-            className="group flex-shrink-0 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-[0_18px_38px_rgba(79,70,229,0.08)] snap-center"
+            className="group flex-shrink-0 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_18px_40px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50 snap-center"
             style={{ flex: "0 0 calc((100% - 2rem) / 3)" }}
           >
             <div className="mb-4 h-40 w-full overflow-hidden rounded-xl bg-slate-100">

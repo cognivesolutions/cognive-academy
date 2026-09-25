@@ -5,28 +5,28 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 
 const coursesMenu = [
-  { label: "Data Analytics", href: "#courses" },
-  { label: "Power BI", href: "#courses" },
-  { label: "SQL", href: "#courses" },
-  { label: "Python", href: "#courses" },
-];
-
-const servicesMenu = [
-  { label: "1:1 Mentorship", href: "#pricing" },
-  { label: "Mock Interviews", href: "#pricing" },
-  { label: "Corporate Training", href: "#pricing" },
+  { label: "Data Analytics", href: "/courses/sql-for-analytics" },
+  { label: "Python", href: "/courses/python-for-data-tasks" },
+  { label: "SQL", href: "/courses/sql-for-analytics" },
+  { label: "Power BI", href: "/courses/power-bi-dashboarding" },
 ];
 
 const resourcesMenu = [
-  { label: "Interview Experiences", href: "#resources" },
-  { label: "Tech Blog", href: "#resources" },
-  { label: "Resume Analyzer", href: "#resources" },
+  { label: "Resume Analyzer", href: "/resume-analyzer" },
+  { label: "Tech Blog", href: "/tech-blog" },
+  { label: "Interview Experiences", href: "/interview-experiences" },
+];
+
+const servicesMenu = [
+  { label: "1:1 Mentorship", href: "/mentorship" },
+  { label: "Mock Interviews", href: "/mock-interviews" },
+  { label: "Corporate Training", href: "/corporate-training" },
 ];
 
 const navItems = [
   { label: "Courses", type: "dropdown", items: coursesMenu, href: "#courses" },
   { label: "Resources", type: "dropdown", items: resourcesMenu, href: "#resources" },
-  { label: "Services", type: "dropdown", items: servicesMenu, href: "#pricing" },
+  { label: "Services", type: "dropdown", items: servicesMenu, href: "#services" },
   { label: "Success Stories", href: "#success-stories" },
   { label: "About Us", href: "#about-us" },
   { label: "Contact Us", href: "#contact-us" },

@@ -1,8 +1,8 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { FAQS } from "@/data/faqs";
 import { TESTIMONIALS } from "@/data/testimonials";
 import { SITE } from "@/config/site";
 import { GlobalCourseSearch } from "@/components/global-course-search";
@@ -11,6 +11,7 @@ import { UserMenu } from "@/components/user-menu";
 import HeroShowcase from "@/components/hero-showcase";
 import AnimatedTyping from "@/components/animated-typing";
 import MobileMenu from "@/components/mobile-menu";
+import { BackToTopButton } from "@/components/back-to-top";
 
 
 export default async function HomePage({
@@ -94,6 +95,8 @@ export default async function HomePage({
 
   return (
     <main id="main" className="min-h-screen bg-white text-slate-900">
+      <BackToTopButton />
+
       <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-20 items-center justify-between gap-3">
@@ -164,11 +167,17 @@ export default async function HomePage({
             </div>
 
             <div className="mt-8 flex flex-wrap gap-4">
-              <Link href="#courses" className="rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(99,102,241,0.25)] transition hover:opacity-95">
-                {SITE.ctas.exploreCourses}
+              <Link href="#courses" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(99,102,241,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:opacity-95 hover:shadow-[0_18px_34px_rgba(99,102,241,0.32)]">
+                Explore programs
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                  <path fillRule="evenodd" d="M5.22 14.78a.75.75 0 0 1 0-1.06L10.94 8H6.5a.75.75 0 0 1 0-1.5h7.25a.75.75 0 0 1 .75.75v7.25a.75.75 0 0 1-1.5 0V9.06l-5.72 5.72a.75.75 0 0 1-1.06 0Z" clipRule="evenodd" />
+                </svg>
               </Link>
-              <Link href="/signup" className="rounded-xl border border-indigo-200 bg-white px-6 py-3.5 text-sm font-semibold text-indigo-700 shadow-sm transition hover:bg-indigo-50">
-                {SITE.ctas.requestCallback}
+              <Link href="/signup" className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-white px-6 py-3.5 text-sm font-semibold text-indigo-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-indigo-50 hover:shadow-md">
+                Book a free call
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                  <path fillRule="evenodd" d="M5.22 14.78a.75.75 0 0 1 0-1.06L10.94 8H6.5a.75.75 0 0 1 0-1.5h7.25a.75.75 0 0 1 .75.75v7.25a.75.75 0 0 1-1.5 0V9.06l-5.72 5.72a.75.75 0 0 1-1.06 0Z" clipRule="evenodd" />
+                </svg>
               </Link>
             </div>
           </div>
@@ -195,7 +204,8 @@ export default async function HomePage({
         </div>
       </section>
       
-      {/* Live Classroom Courses section */}
+      <div id="courses">
+        {/* Live Classroom Courses section */}
       <section id="live-courses" className="scroll-mt-28 mx-auto max-w-6xl px-6 py-12">
           <div className="mb-8 flex items-center justify-between">
           <div>
@@ -203,8 +213,11 @@ export default async function HomePage({
             <h2 className="mt-2 text-3xl font-bold">Join Live Classroom Courses</h2>
           </div>
           <div>
-            <Link href="/courses?type=live" className="inline-flex items-center rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:opacity-95">
-              {SITE.ctas.viewAllLive}
+            <Link href="/courses?type=live" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_20px_rgba(99,102,241,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:opacity-95 hover:shadow-[0_16px_28px_rgba(99,102,241,0.28)]">
+              Browse all live programs
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                <path fillRule="evenodd" d="M5.22 14.78a.75.75 0 0 1 0-1.06L10.94 8H6.5a.75.75 0 0 1 0-1.5h7.25a.75.75 0 0 1 .75.75v7.25a.75.75 0 0 1-1.5 0V9.06l-5.72 5.72a.75.75 0 0 1-1.06 0Z" clipRule="evenodd" />
+              </svg>
             </Link>
           </div>
         </div>
@@ -227,8 +240,11 @@ export default async function HomePage({
             <h2 className="mt-2 text-3xl font-bold">Recorded & Self-Paced Courses</h2>
           </div>
           <div>
-            <Link href="/courses?type=recorded" className="inline-flex items-center rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:opacity-95">
-              {SITE.ctas.viewAllRecorded}
+            <Link href="/courses?type=recorded" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_20px_rgba(99,102,241,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:opacity-95 hover:shadow-[0_16px_28px_rgba(99,102,241,0.28)]">
+              Browse all recorded courses
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                <path fillRule="evenodd" d="M5.22 14.78a.75.75 0 0 1 0-1.06L10.94 8H6.5a.75.75 0 0 1 0-1.5h7.25a.75.75 0 0 1 .75.75v7.25a.75.75 0 0 1-1.5 0V9.06l-5.72 5.72a.75.75 0 0 1-1.06 0Z" clipRule="evenodd" />
+              </svg>
             </Link>
           </div>
         </div>
@@ -243,9 +259,86 @@ export default async function HomePage({
           })()}
         </div>
       </section>
+      </div>
+
+      {/* How it works section */}
+      <section className="bg-slate-900 py-16 text-white">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="mb-10 max-w-2xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-300">How it works</p>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight text-white">A simple path from learning to career momentum.</h2>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="rounded-3xl border border-slate-700 bg-slate-800/80 p-6 shadow-[0_18px_40px_rgba(15,23,42,0.25)] transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-400 hover:shadow-[0_20px_50px_rgba(99,102,241,0.18)]">
+              <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-sm font-black text-white">01</div>
+              <h3 className="text-xl font-bold text-white">Choose your track</h3>
+              <p className="mt-3 text-sm leading-6 text-slate-300">Start with a guided course path in data analytics, Python, SQL, or Power BI that fits your goals.</p>
+            </div>
+
+            <div className="rounded-3xl border border-slate-700 bg-slate-800/80 p-6 shadow-[0_18px_40px_rgba(15,23,42,0.25)] transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-400 hover:shadow-[0_20px_50px_rgba(99,102,241,0.18)]">
+              <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-indigo-500 text-sm font-black text-white">02</div>
+              <h3 className="text-xl font-bold text-white">Learn with support</h3>
+              <p className="mt-3 text-sm leading-6 text-slate-300">Follow structured lessons, get practical feedback, and stay on track with the right mentor guidance.</p>
+            </div>
+
+            <div className="rounded-3xl border border-slate-700 bg-slate-800/80 p-6 shadow-[0_18px_40px_rgba(15,23,42,0.25)] transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-400 hover:shadow-[0_20px_50px_rgba(99,102,241,0.18)]">
+              <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-sm font-black text-white">03</div>
+              <h3 className="text-xl font-bold text-white">Practice & grow</h3>
+              <p className="mt-3 text-sm leading-6 text-slate-300">Build confidence with mock interviews, portfolio support, and career-focused resources that translate into outcomes.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* services section */}
+      <section id="services" className="scroll-mt-28 bg-slate-50 py-16">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="mb-10 max-w-2xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">Services</p>
+            <h2 className="mt-3 text-3xl font-bold text-slate-900">Support designed around your growth.</h2>
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            <Link href="/mentorship" className="group block rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_18px_40px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50">
+              <h3 className="text-xl font-bold text-slate-900">1:1 Mentorship</h3>
+              <p className="mt-3 text-sm leading-6 text-slate-600">Personal guidance for your career path, learning plan, and technical bottlenecks.</p>
+            </Link>
+            <Link href="/mock-interviews" className="group block rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_18px_40px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50">
+              <h3 className="text-xl font-bold text-slate-900">Mock Interviews</h3>
+              <p className="mt-3 text-sm leading-6 text-slate-600">Practice the exact interview flow for data, analytics, and product-focused roles.</p>
+            </Link>
+            <Link href="/corporate-training" className="group block rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_18px_40px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50">
+              <h3 className="text-xl font-bold text-slate-900">Corporate Training</h3>
+              <p className="mt-3 text-sm leading-6 text-slate-600">Upskill teams with practical learning paths built for business and technical growth.</p>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* resources section */}
+      <section id="resources" className="scroll-mt-28 mx-auto max-w-6xl px-6 py-16">
+        <div className="mb-10 max-w-2xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">Resources</p>
+          <h2 className="mt-3 text-3xl font-bold text-slate-900">Career-ready learning resources.</h2>
+        </div>
+        <div className="grid gap-6 md:grid-cols-3">
+          <Link href="/interview-experiences" className="group block rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_18px_40px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50">
+            <h3 className="text-xl font-bold text-slate-900">Interview Experiences</h3>
+            <p className="mt-3 text-sm leading-6 text-slate-600">Real stories, questions, and breakdowns from successful learner interview journeys.</p>
+          </Link>
+          <Link href="/tech-blog" className="group block rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_18px_40px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50">
+            <h3 className="text-xl font-bold text-slate-900">Tech Blog</h3>
+            <p className="mt-3 text-sm leading-6 text-slate-600">Insights on data careers, tools, learning strategy, and practical industry trends.</p>
+          </Link>
+          <Link href="/resume-analyzer" className="group block rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_18px_40px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50">
+            <h3 className="text-xl font-bold text-slate-900">Resume Analyzer</h3>
+            <p className="mt-3 text-sm leading-6 text-slate-600">Check your resume for clarity, relevance, and stronger role-specific positioning.</p>
+          </Link>
+        </div>
+      </section>
 
       {/* testimonials section */}
-      <section id="testimonials" className="scroll-mt-28 mx-auto max-w-6xl px-6 py-12">
+      <section id="success-stories" className="scroll-mt-28 mx-auto max-w-6xl px-6 py-12">
         <h2 className="text-3xl font-bold">What learners say</h2>
           <div className="mt-8">
           {/* client carousel auto-scrolling right-to-left */}
@@ -256,21 +349,8 @@ export default async function HomePage({
         </div>
       </section>
 
-      {/* FAQs section */}
-      <section id="faqs" className="scroll-mt-28 mx-auto max-w-4xl px-6 pb-20">
-        <h2 className="text-3xl font-bold">Frequently asked questions</h2>
-        <p className="mt-2 text-sm text-slate-600">Answers to common questions about courses, access, payments, and getting help.</p>
-        <div className="mt-6">
-          {/* Client-side accordion */}
-          {(() => {
-            const FAQAccordion = require("@/components/faq-accordion").default;
-            return <FAQAccordion items={FAQS} />;
-          })()}
-        </div>
-      </section>
-
       {/* Why choose us section */}
-      <section className="bg-slate-900 py-20 text-white">
+      <section id="about-us" className="bg-slate-900 py-20 text-white">
         <div className="mx-auto max-w-6xl px-6">
           <div className="mb-10 max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-300">Why learners choose us</p>
@@ -278,50 +358,50 @@ export default async function HomePage({
           </div>
           <div className="rounded-2xl bg-slate-800/80 p-4 md:p-6">
             <div className="grid gap-6 md:grid-cols-3">
-            <article className="group flex flex-col h-full rounded-3xl border border-slate-700 bg-slate-800 p-6 hover:shadow-2xl hover:border-indigo-400 transition-shadow" aria-label="Expert instructors and curriculum">
-              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white" aria-hidden>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 7a4 4 0 014-4h10a4 4 0 014 4v10a4 4 0 01-4 4H7a4 4 0 01-4-4V7z" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-extrabold text-white">Industry-led curriculum</h3>
-              <p className="mt-3 text-slate-300">Courses designed and taught by practitioners — focused on projects you can show employers.</p>
-              <div className="mt-auto">
-                <a href="/programs" className="inline-flex items-center text-sm font-semibold text-indigo-300 hover:text-white">Browse programs →</a>
-              </div>
-            </article>
+              <article className="group flex h-full flex-col rounded-3xl border border-slate-700 bg-slate-800 p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-400 hover:bg-slate-800/90 hover:shadow-[0_18px_40px_rgba(99,102,241,0.18)]" aria-label="Expert instructors and curriculum">
+                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white" aria-hidden>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 7a4 4 0 014-4h10a4 4 0 014 4v10a4 4 0 01-4 4H7a4 4 0 01-4-4V7z" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-extrabold text-white">Industry-led curriculum</h3>
+                <p className="mt-3 text-slate-300">Courses designed and taught by practitioners — focused on projects you can show employers.</p>
+                <div className="mt-auto">
+                  <Link href="/courses" className="inline-flex items-center text-sm font-semibold text-indigo-300 hover:text-white">Browse programs →</Link>
+                </div>
+              </article>
 
-            <article className="group flex flex-col h-full rounded-3xl border border-slate-700 bg-slate-800 p-6 hover:shadow-2xl hover:border-indigo-400 transition-shadow" aria-label="Mentoring and portfolio support">
-              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white" aria-hidden>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a4 4 0 00-4-4h-1" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 20H4v-2a4 4 0 014-4h1" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 12a4 4 0 100-8 4 4 0 000 8z" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-extrabold text-white">Mentors & practical feedback</h3>
-              <p className="mt-3 text-slate-300">Weekly mentor office hours, portfolio reviews, and actionable feedback on your projects.</p>
-              <div className="mt-auto">
-                <a href="/mentors" className="inline-flex items-center text-sm font-semibold text-indigo-300 hover:text-white">Meet the mentors →</a>
-              </div>
-            </article>
+              <article className="group flex h-full flex-col rounded-3xl border border-slate-700 bg-slate-800 p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-400 hover:bg-slate-800/90 hover:shadow-[0_18px_40px_rgba(99,102,241,0.18)]" aria-label="Mentoring and portfolio support">
+                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white" aria-hidden>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a4 4 0 00-4-4h-1" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 20H4v-2a4 4 0 014-4h1" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 12a4 4 0 100-8 4 4 0 000 8z" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-extrabold text-white">Mentors & practical feedback</h3>
+                <p className="mt-3 text-slate-300">Weekly mentor office hours, portfolio reviews, and actionable feedback on your projects.</p>
+                <div className="mt-auto">
+                  <Link href="/mentorship" className="inline-flex items-center text-sm font-semibold text-indigo-300 hover:text-white">Meet the mentors →</Link>
+                </div>
+              </article>
 
-            <article className="group flex flex-col h-full rounded-3xl border border-slate-700 bg-slate-800 p-6 hover:shadow-2xl hover:border-indigo-400 transition-shadow" aria-label="Fast skill progress and outcomes">
-              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white" aria-hidden>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v6h6" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21v-6h-6" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M14 10l-4 4" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-extrabold text-white">Fast, measurable progress</h3>
-              <p className="mt-3 text-slate-300">Structured lessons, hands-on work, and clear milestones to keep you progressing quickly.</p>
-              <div className="mt-auto">
-                <a href="/success-stories" className="inline-flex items-center text-sm font-semibold text-indigo-300 hover:text-white">See outcomes →</a>
-              </div>
-            </article>
-          </div>
+              <article className="group flex h-full flex-col rounded-3xl border border-slate-700 bg-slate-800 p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-400 hover:bg-slate-800/90 hover:shadow-[0_18px_40px_rgba(99,102,241,0.18)]" aria-label="Fast skill progress and outcomes">
+                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white" aria-hidden>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v6h6" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21v-6h-6" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14 10l-4 4" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-extrabold text-white">Fast, measurable progress</h3>
+                <p className="mt-3 text-slate-300">Structured lessons, hands-on work, and clear milestones to keep you progressing quickly.</p>
+                <div className="mt-auto">
+                  <Link href="#success-stories" className="inline-flex items-center text-sm font-semibold text-indigo-300 hover:text-white">See outcomes →</Link>
+                </div>
+              </article>
+            </div>
           </div>
         </div>
       </section>
@@ -338,11 +418,11 @@ export default async function HomePage({
               </div>
 
               <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
-                <Link href="/signup" className="inline-flex items-center justify-center rounded-full px-6 py-3.5 text-sm font-semibold text-white shadow-lg bg-gradient-to-r from-cyan-400 via-indigo-500 to-violet-600 hover:scale-[1.02] transition-transform">
-                  Create account
+                <Link href="/signup" className="inline-flex items-center justify-center rounded-full px-6 py-3.5 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(99,102,241,0.32)] bg-gradient-to-r from-cyan-400 via-indigo-500 to-violet-600 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_34px_rgba(99,102,241,0.34)]">
+                  Start learning now
                 </Link>
-                <Link href="/courses/analytics-bootcamp" className="inline-flex items-center justify-center rounded-full border border-white/30 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white hover:bg-white/20">
-                  View course
+                <Link href="/courses" className="inline-flex items-center justify-center rounded-full border border-white/30 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/20">
+                  Explore courses
                 </Link>
               </div>
             </div>
@@ -351,9 +431,9 @@ export default async function HomePage({
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-950 text-slate-300">
+      <footer id="contact-us" className="bg-slate-950 text-slate-300">
         <div className="mx-auto max-w-6xl px-6 py-16">
-          <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.4fr_0.8fr_0.8fr_1fr]">
+          <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.4fr_0.8fr_0.8fr_0.8fr_1fr]">
             <div>
               <Link href="/" className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 via-violet-600 to-sky-500 text-sm font-black text-white shadow-lg shadow-indigo-900/40 ring-4 ring-indigo-500/20">
@@ -361,40 +441,90 @@ export default async function HomePage({
                 </div>
                 <div className="leading-none">
                     <div className="text-base font-bold tracking-tight text-white">{SITE.name}</div>
-                    <div className="mt-1 text-[10px] font-medium uppercase tracking-[0.24em] text-slate-400">Learning studio</div>
                   </div>
               </Link>
               <p className="mt-5 max-w-sm text-sm leading-7 text-slate-400">
                 Career-focused learning for analysts, builders, and business professionals who want practical skills that translate into real work.
               </p>
+              <div className="mt-6 flex items-center gap-3.5">
+                <a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-slate-900/70 transition-transform duration-200 hover:-translate-y-0.5 hover:border-violet-400/60 hover:bg-slate-900">
+                  <Image src={require("@/../assets/images/icons/youtube.png")} alt="YouTube" width={36} height={36} className="h-full w-full rounded-full object-cover" />
+                </a>
+
+                <a href="https://www.linkedin.com/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-slate-900/70 transition-transform duration-200 hover:-translate-y-0.5 hover:border-violet-400/60 hover:bg-slate-900">
+                  <Image src={require("@/../assets/images/icons/linkedin.png")} alt="LinkedIn" width={36} height={36} className="h-full w-full rounded-full object-cover" />
+                </a>
+
+                <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-slate-900/70 transition-transform duration-200 hover:-translate-y-0.5 hover:border-violet-400/60 hover:bg-slate-900">
+                  <Image src={require("@/../assets/images/icons/instagram.png")} alt="Instagram" width={36} height={36} className="h-full w-full rounded-full object-cover scale-[1.25]" />
+                </a>
+
+                <a href="https://t.me/" target="_blank" rel="noopener noreferrer" aria-label="Telegram" className="inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-slate-900/70 transition-transform duration-200 hover:-translate-y-0.5 hover:border-violet-400/60 hover:bg-slate-900">
+                  <Image src={require("@/../assets/images/icons/telegram.png")} alt="Telegram" width={36} height={36} className="h-full w-full rounded-full object-cover" />
+                </a>
+
+                <a href="https://discord.com/" target="_blank" rel="noopener noreferrer" aria-label="Discord" className="inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-slate-900/70 transition-transform duration-200 hover:-translate-y-0.5 hover:border-violet-400/60 hover:bg-slate-900">
+                  <Image src={require("@/../assets/images/icons/discord.png")} alt="Discord" width={36} height={36} className="h-full w-full rounded-full object-cover scale-[1.28]" />
+                </a>
+
+                <a href="https://x.com/" target="_blank" rel="noopener noreferrer" aria-label="X" className="inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-slate-900/70 transition-transform duration-200 hover:-translate-y-0.5 hover:border-violet-400/60 hover:bg-slate-900">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-full w-full" viewBox="0 0 24 24" aria-hidden>
+                    <rect width="24" height="24" rx="12" fill="#000000" />
+                    <path d="M17.2 4h2.4l-5.3 6.1L20 20h-4.8l-3.8-5.6L7.2 20H4.8l5.7-6.5L4 4h4.9l3.4 5.1L17.2 4Zm-.9 14.2h1.3L8.1 5.7H6.7l9.6 12.5Z" fill="#fff" />
+                  </svg>
+                </a>
+              </div>
             </div>
 
-            <nav aria-label="Platform links">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Platform</h3>
+            <nav aria-label="Courses links">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Courses</h3>
               <ul className="mt-5 space-y-3 text-sm text-slate-300">
-                <li><Link href="#courses" className="hover:text-white">Courses</Link></li>
-                <li><Link href="/dashboard" className="hover:text-white">Dashboard</Link></li>
-                <li><Link href="/login" className="hover:text-white">Login</Link></li>
-                <li><Link href="/signup" className="hover:text-white">Join</Link></li>
+                <li><Link href="/courses/sql-for-analytics" className="hover:text-white">Data Analytics</Link></li>
+                <li><Link href="/courses/python-for-data-tasks" className="hover:text-white">Python</Link></li>
+                <li><Link href="/courses/sql-for-analytics" className="hover:text-white">SQL</Link></li>
+                <li><Link href="/courses/power-bi-dashboarding" className="hover:text-white">Power BI</Link></li>
               </ul>
             </nav>
 
             <div>
-              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Programs</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Services</h3>
               <ul className="mt-5 space-y-3 text-sm text-slate-300">
-                {SITE.programs.map((p) => (
-                  <li key={p}><Link href="#" className="hover:text-white">{p}</Link></li>
-                ))}
+                <li><Link href="/mentorship" className="hover:text-white">1:1 Mentorship</Link></li>
+                <li><Link href="/mock-interviews" className="hover:text-white">Mock Interviews</Link></li>
+                <li><Link href="/corporate-training" className="hover:text-white">Corporate Training</Link></li>
               </ul>
             </div>
 
-            <nav aria-label="Company links">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Company</h3>
+            <nav aria-label="Resources links">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Resources</h3>
               <ul className="mt-5 space-y-3 text-sm text-slate-300">
-                <li><Link href="#testimonials" className="hover:text-white">Testimonials</Link></li>
-                <li><Link href="#faqs" className="hover:text-white">FAQs</Link></li>
-                <li><Link href="/support" className="hover:text-white">Support</Link></li>
-                <li><Link href="/about" className="hover:text-white">About</Link></li>
+                <li><Link href="/interview-experiences" className="hover:text-white">Interview Experiences</Link></li>
+                <li><Link href="/tech-blog" className="hover:text-white">Tech Blog</Link></li>
+                <li><Link href="/resume-analyzer" className="hover:text-white">Resume Analyzer</Link></li>
+              </ul>
+            </nav>
+
+            <nav aria-label="Contact us links">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Contact Us</h3>
+              <ul className="mt-5 space-y-3 text-sm text-slate-300">
+                <li className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-slate-400" aria-hidden>
+                    <path d="M6.6 10.8a15.5 15.5 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.24c1.1.36 2.3.55 3.5.55a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C11.3 21 3 12.7 3 2a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.2.19 2.4.55 3.5a1 1 0 0 1-.24 1l-2.2 2.2Z"/>
+                  </svg>
+                  <a href="tel:+917839649747" className="hover:text-white">+91-78396 49747</a>
+                </li>
+                <li className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-slate-400" aria-hidden>
+                    <path d="M3 6.75A2.75 2.75 0 0 1 5.75 4h12.5A2.75 2.75 0 0 1 21 6.75v10.5A2.75 2.75 0 0 1 18.25 20H5.75A2.75 2.75 0 0 1 3 17.25V6.75Zm2.45-.5 6.3 5.08a1 1 0 0 0 1.25 0l6.3-5.08H5.45Z"/>
+                  </svg>
+                  <a href="mailto:cogniveacademy@gmail.com" className="hover:text-white">cogniveacademy@gmail.com</a>
+                </li>
+                <li className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-slate-400" aria-hidden>
+                    <path d="M12 2.75a7.25 7.25 0 0 1 7.25 7.25c0 4.48-5.13 10.77-6.17 11.93a1 1 0 0 1-1.58 0C9.88 20.77 4.75 14.48 4.75 10A7.25 7.25 0 0 1 12 2.75Zm0 4.25a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/>
+                  </svg>
+                  <a href="https://maps.google.com/?q=New+Delhi+India" target="_blank" rel="noopener noreferrer" className="hover:text-white">New Delhi, India</a>
+                </li>
               </ul>
             </nav>
           </div>
@@ -402,38 +532,12 @@ export default async function HomePage({
             <div className="mt-10 border-t border-slate-800 pt-6 text-sm text-slate-400 sm:flex sm:items-center sm:justify-between">
             <p className="mb-3 sm:mb-0">© {SITE.footerYear} {SITE.name}. All rights reserved.</p>
 
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-3">
-                <a href="https://twitter.com/" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="text-slate-300 hover:text-white">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                    <path d="M23 3a10.9 10.9 0 01-3.14 1.53A4.48 4.48 0 0012 7.5v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z" />
-                  </svg>
-                </a>
-
-                <a href="https://www.linkedin.com/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="text-slate-300 hover:text-white">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.761 0 5-2.239 5-5v-14c0-2.761-2.239-5-5-5zm-11 19h-3v-9h3v9zm-1.5-10.3c-.966 0-1.75-.784-1.75-1.75s.784-1.75 1.75-1.75 1.75.784 1.75 1.75-.784 1.75-1.75 1.75zm13.5 10.3h-3v-4.5c0-1.07-.93-1.5-1.5-1.5-.577 0-1.5.43-1.5 1.5v4.5h-3v-9h3v1.2c.464-.7 1.5-1.2 2.5-1.2 1.96 0 4 1.17 4 4.8v4z" />
-                  </svg>
-                </a>
-
-                <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-slate-300 hover:text-white">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                    <path d="M7 2h10a5 5 0 015 5v10a5 5 0 01-5 5H7a5 5 0 01-5-5V7a5 5 0 015-5zm5 6.4A4.6 4.6 0 1016.6 13 4.6 4.6 0 0012 8.4zm6.5-3.6a1.1 1.1 0 11-1.1-1.1 1.1 1.1 0 011.1 1.1z" />
-                  </svg>
-                </a>
-
-                <a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="text-slate-300 hover:text-white">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                    <path d="M23.5 6.2s-.2-1.6-.8-2.3c-.8-.9-1.7-.9-2.1-1C16.8 2.5 12 2.5 12 2.5h-.1s-4.8 0-8.6.4c-.4 0-1.3 0-2.1 1C.7 4.6.5 6.2.5 6.2S.2 8 .2 9.8v2.4c0 1.8.3 3.6.3 3.6s.2 1.6.8 2.3c.8.9 1.8.9 2.3 1 1.7.2 7.5.4 7.5.4s4.8 0 8.6-.4c.4 0 1.3 0 2.1-1 .6-.7.8-2.3.8-2.3s.3-1.8.3-3.6V9.8c0-1.8-.3-3.6-.3-3.6zM9.8 15.6V8.4l6.2 3.6-6.2 3.6z" />
-                  </svg>
-                </a>
-              </div>
-
-              <div className="flex items-center gap-5">
-                <Link href="/privacy" className="hover:text-white">Privacy</Link>
-                <Link href="/terms" className="hover:text-white">Terms</Link>
-                <Link href="/support" className="hover:text-white">Support</Link>
-              </div>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              <Link href="/terms" className="transition-colors hover:text-white">Terms &amp; Conditions</Link>
+              <Link href="/privacy" className="transition-colors hover:text-white">Privacy Policy</Link>
+              <Link href="/refund" className="transition-colors hover:text-white">Refund Policy</Link>
+              <Link href="/faq" className="transition-colors hover:text-white">FAQ&apos;s</Link>
+              <Link href="/support" className="transition-colors hover:text-white">Support</Link>
             </div>
           </div>
         </div>
