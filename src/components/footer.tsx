@@ -76,6 +76,7 @@ export default function Footer() {
             <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Resources</h3>
             <ul className="mt-5 space-y-3 text-sm text-slate-300">
               <li><Link href="/interview-experiences" className="hover:text-white">Interview Experiences</Link></li>
+              <li><Link href="/success-stories" className="hover:text-white">Success Stories</Link></li>
               <li><Link href="/tech-blog" className="hover:text-white">Tech Blog</Link></li>
               <li><Link href="/resume-analyzer" className="hover:text-white">Resume Analyzer</Link></li>
             </ul>

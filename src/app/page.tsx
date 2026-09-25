@@ -300,6 +300,10 @@ export default async function HomePage({
             <h3 className="text-xl font-bold text-slate-900">Interview Experiences</h3>
             <p className="mt-3 text-sm leading-6 text-slate-600">Real stories, questions, and breakdowns from successful learner interview journeys.</p>
           </Link>
+          <Link href="/success-stories" className="group block rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_18px_40px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50">
+            <h3 className="text-xl font-bold text-slate-900">Success Stories</h3>
+            <p className="mt-3 text-sm leading-6 text-slate-600">Career transformations, momentum, and outcomes from learners who stayed consistent.</p>
+          </Link>
           <Link href="/tech-blog" className="group block rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_18px_40px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50">
             <h3 className="text-xl font-bold text-slate-900">Tech Blog</h3>
             <p className="mt-3 text-sm leading-6 text-slate-600">Insights on data careers, tools, learning strategy, and practical industry trends.</p>

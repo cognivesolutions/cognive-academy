@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { SiteNav } from "./site-nav";
+import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
 import MobileMenu from "./mobile-menu";
 
@@ -22,6 +23,7 @@ export default async function Header() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            <ThemeToggle />
             {isLoggedIn ? (
               <UserMenu />
             ) : (

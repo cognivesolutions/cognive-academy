@@ -15,6 +15,7 @@ const resourcesMenu = [
   { label: "Resume Analyzer", href: "/resume-analyzer" },
   { label: "Tech Blog", href: "/tech-blog" },
   { label: "Interview Experiences", href: "/interview-experiences" },
+  { label: "Success Stories", href: "/success-stories" },
 ];
 
 const servicesMenu = [
@@ -31,7 +32,7 @@ const navItems: NavItem[] = [
   { label: "Courses", type: "dropdown", items: coursesMenu, href: "#courses" },
   { label: "Resources", type: "dropdown", items: resourcesMenu, href: "#resources" },
   { label: "Services", type: "dropdown", items: servicesMenu, href: "#services" },
-  { label: "Success Stories", type: "link", href: "#success-stories" },
+  { label: "Success Stories", type: "link", href: "/success-stories" },
   { label: "About Us", type: "link", href: "/about-us" },
   { label: "Contact Us", type: "link", href: "/contact-us" },
 ];

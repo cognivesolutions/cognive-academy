@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export default function ResumeAnalyzerPage() {
+export default function NotFound() {
   return (
     <main className="flex min-h-[calc(100vh-180px)] items-center justify-center bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_30%),linear-gradient(135deg,_#f8fbff_0%,_#f5f3ff_50%,_#eef7ff_100%)] px-6 py-16">
       <div className="w-full max-w-xl rounded-[32px] border border-slate-200 bg-white/80 p-8 text-center shadow-[0_30px_70px_rgba(15,23,42,0.08)] backdrop-blur-sm md:p-10">
@@ -13,11 +13,11 @@ export default function ResumeAnalyzerPage() {
         </p>
 
         <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
-          Resume Analyzer is being built.
+          This page is under construction.
         </h1>
 
         <p className="mt-4 text-base leading-7 text-slate-600 md:text-lg">
-          This resource is currently in progress. We&apos;ll launch it soon with a smarter, more practical experience for learners.
+          We&apos;re polishing this experience and it will be live soon. In the meantime, head back to explore our current programs and learning paths.
         </p>
 
         <div className="mt-8 flex flex-wrap justify-center gap-3">
