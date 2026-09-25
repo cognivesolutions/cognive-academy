@@ -7,7 +7,7 @@ export const metadata = {
   description: "Get in touch with us",
 };
 
-export default async function ContactPage() {
+export default async function ContactUsPage() {
   const courses = await prisma.course.findMany({
     where: { isPublished: true },
     select: { id: true, title: true },

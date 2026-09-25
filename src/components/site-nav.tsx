@@ -33,7 +33,7 @@ const navItems: NavItem[] = [
   { label: "Services", type: "dropdown", items: servicesMenu, href: "#services" },
   { label: "Success Stories", type: "link", href: "#success-stories" },
   { label: "About Us", type: "link", href: "#about-us" },
-  { label: "Contact Us", type: "link", href: "/contact" },
+  { label: "Contact Us", type: "link", href: "/contact-us" },
 ];
 
 export function SiteNav() {
