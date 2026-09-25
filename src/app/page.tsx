@@ -11,6 +11,7 @@ import TestimonialsCarousel from "@/app/home/components/testimonials-carousel";
 import AnimatedTyping from "@/components/animated-typing";
 import { BackToTopButton } from "@/components/back-to-top";
 
+export const revalidate = 300;
 
 export default async function HomePage({
   searchParams,

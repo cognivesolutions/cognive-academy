@@ -2,6 +2,8 @@ import ContactForm from "./components/contact-form";
 import ContactCards from "./components/contact-cards";
 import { prisma } from "@/lib/prisma";
 
+export const revalidate = 300;
+
 export const metadata = {
   title: "Contact Us",
   description: "Get in touch with us",

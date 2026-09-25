@@ -46,7 +46,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 
           <main
             id="main"
-            className="relative isolate flex-1 opacity-0 animate-[pageFadeIn_0.7s_cubic-bezier(0.16,1,0.3,1)_forwards] will-change-[opacity,transform,filter]"
+            className="relative isolate flex-1"
           >
             {children}
           </main>

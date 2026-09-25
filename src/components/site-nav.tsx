@@ -32,7 +32,7 @@ const navItems: NavItem[] = [
   { label: "Resources", type: "dropdown", items: resourcesMenu, href: "#resources" },
   { label: "Services", type: "dropdown", items: servicesMenu, href: "#services" },
   { label: "Success Stories", type: "link", href: "#success-stories" },
-  { label: "About Us", type: "link", href: "#about-us" },
+  { label: "About Us", type: "link", href: "/about-us" },
   { label: "Contact Us", type: "link", href: "/contact-us" },
 ];
 
