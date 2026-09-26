@@ -63,26 +63,26 @@ export default function LiveCoursesCarousel({ courses }: { courses: Course[] }) 
           <article
             key={course.id}
             role="listitem"
-            className="group flex-shrink-0 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_18px_40px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50 snap-center"
+            className="group flex-shrink-0 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_18px_40px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50 snap-center dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-[0_20px_40px_rgba(15,23,42,0.26)] dark:hover:border-indigo-500/40 dark:hover:from-slate-900 dark:hover:to-indigo-950/80"
             style={{ flex: "0 0 calc((100% - 2rem) / 3)" }}
           >
-            <div className="mb-4 h-40 w-full overflow-hidden rounded-xl bg-slate-100">
+            <div className="mb-4 h-40 w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
               {course.coverImage ? (
                 <img src={course.coverImage} alt={course.title} className="h-full w-full object-cover" />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-slate-400">No image</div>
+                <div className="flex h-full w-full items-center justify-center text-slate-400 dark:text-slate-500">No image</div>
               )}
             </div>
 
             <div className="flex-1">
               <div className="mb-2 text-sm font-semibold text-indigo-600">Live</div>
-              <h3 className="text-xl font-bold text-slate-900">{course.title}</h3>
-              <p className="mt-3 text-sm text-slate-600 line-clamp-2">{course.shortDescription ?? course.description}</p>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">{course.title}</h3>
+              <p className="mt-3 text-sm text-slate-600 line-clamp-2 dark:text-slate-300">{course.shortDescription ?? course.description}</p>
             </div>
 
             <div className="mt-6 flex items-center justify-between">
-              <div className="text-lg font-bold text-slate-900">₹{Number(course.price).toLocaleString("en-IN")}</div>
-              <Link href={`/courses/${course.slug}`} className="inline-flex items-center rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+              <div className="text-lg font-bold text-slate-900 dark:text-white">₹{Number(course.price).toLocaleString("en-IN")}</div>
+              <Link href={`/courses/${course.slug}`} className="inline-flex items-center rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 dark:bg-indigo-600 dark:hover:bg-indigo-500">
                 View details
               </Link>
             </div>
@@ -99,7 +99,7 @@ export default function LiveCoursesCarousel({ courses }: { courses: Course[] }) 
                 onClick={() => scrollToPage(i)}
                 aria-label={`Go to page ${i + 1}`}
                 aria-current={i === currentPage}
-                className={`h-2 w-2 rounded-full transition-all ${i === currentPage ? "bg-slate-900 w-3" : "bg-slate-300"} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500`}
+                className={`h-2 w-2 rounded-full transition-all ${i === currentPage ? "bg-slate-900 w-3 dark:bg-white" : "bg-slate-300 dark:bg-slate-600"} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500`}
               />
             ))}
           </div>
@@ -114,11 +114,11 @@ export default function LiveCoursesCarousel({ courses }: { courses: Course[] }) 
                 aria-label="Previous"
                 aria-disabled={prevDisabled}
                 disabled={prevDisabled}
-                className={`inline-flex w-10 h-10 rounded-full bg-white/95 items-center justify-center shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
-                  prevDisabled ? "opacity-40 cursor-not-allowed pointer-events-none" : "hover:bg-white"
+                className={`inline-flex w-10 h-10 rounded-full bg-white/95 items-center justify-center shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-slate-800/90 dark:shadow-[0_8px_24px_rgba(15,23,42,0.45)] ${
+                  prevDisabled ? "opacity-40 cursor-not-allowed pointer-events-none" : "hover:bg-white dark:hover:bg-slate-700"
                 }`}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-slate-700">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-slate-700 dark:text-slate-200">
                   <path fillRule="evenodd" d="M12.293 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 1.414L8.414 10l3.879 3.879a1 1 0 010 1.414z" clipRule="evenodd" />
                 </svg>
               </button>
@@ -133,11 +133,11 @@ export default function LiveCoursesCarousel({ courses }: { courses: Course[] }) 
                 aria-label="Next"
                 aria-disabled={nextDisabled}
                 disabled={nextDisabled}
-                className={`inline-flex w-10 h-10 rounded-full bg-white/95 items-center justify-center shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
-                  nextDisabled ? "opacity-40 cursor-not-allowed pointer-events-none" : "hover:bg-white"
+                className={`inline-flex w-10 h-10 rounded-full bg-white/95 items-center justify-center shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-slate-800/90 dark:shadow-[0_8px_24px_rgba(15,23,42,0.45)] ${
+                  nextDisabled ? "opacity-40 cursor-not-allowed pointer-events-none" : "hover:bg-white dark:hover:bg-slate-700"
                 }`}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-slate-700">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-slate-700 dark:text-slate-200">
                   <path fillRule="evenodd" d="M7.707 4.293a1 1 0 010 1.414L3.414 10l4.293 4.293a1 1 0 01-1.414 1.414l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 0z" clipRule="evenodd" transform="rotate(180 10 10)" />
                 </svg>
               </button>

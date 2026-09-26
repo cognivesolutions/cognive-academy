@@ -26,7 +26,7 @@ export default function HeroShowcase() {
     <div className="relative mx-auto flex w-full max-w-[640px] items-center justify-center py-8">
       <div className="relative h-[360px] w-[640px]">
         <div className="absolute left-0 top-1/2 -translate-y-1/2 flex w-full items-center justify-center md:translate-x-[-60px]">
-          <div className="h-[220px] w-[220px] rounded-full bg-gradient-to-b from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-xl ring-8 ring-white/10">
+          <div className="h-[220px] w-[220px] rounded-full bg-gradient-to-b from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-xl ring-8 ring-white/10 dark:shadow-[0_0_30px_rgba(99,102,241,0.35)] dark:ring-slate-700/50">
             <div className="text-2xl font-extrabold leading-none text-center">Skills & Tracks</div>
           </div>
         </div>
@@ -41,7 +41,7 @@ export default function HeroShowcase() {
 
                 return (
                   <div key={b.text} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" style={{ transform }}>
-                    <div className={`flex items-center gap-2 ${badgeRadius} border border-white/30 bg-white ${badgePadding} font-semibold text-slate-700 shadow-md transform transition-all duration-200 hover:-translate-y-1 hover:scale-105 motion-reduce:animate-none animate-[spin_20s_linear_infinite_reverse]`}>
+                    <div className={`flex items-center gap-2 ${badgeRadius} border border-white/30 bg-white/90 ${badgePadding} font-semibold text-slate-700 shadow-md transform transition-all duration-200 hover:-translate-y-1 hover:scale-105 motion-reduce:animate-none animate-[spin_20s_linear_infinite_reverse] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-200`}>
                       <span className={`inline-block h-2.5 w-2.5 rounded-full ${b.color}`} />
                       <span className="leading-tight whitespace-nowrap">{b.text}</span>
                     </div>

@@ -39,7 +39,6 @@ const navItems: NavItem[] = [
 export function SiteNav() {
   const pathname = usePathname();
   const [openMenu, setOpenMenu] = useState<string | null>(null);
-  const [activeLabel, setActiveLabel] = useState<string | null>(null);
   const closeTimeoutRef = useRef<number | null>(null);
   const navRef = useRef<HTMLDivElement | null>(null);
   const menuFirstRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
@@ -72,7 +71,7 @@ export function SiteNav() {
     return null;
   }, [pathname]);
 
-  const resolvedActiveLabel = routeActiveLabel ?? activeLabel;
+  const resolvedActiveLabel = routeActiveLabel;
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
@@ -113,7 +112,6 @@ export function SiteNav() {
                     closeTimeoutRef.current = null;
                   }
                   setOpenMenu(item.label);
-                  setActiveLabel(item.label);
                 }}
                 onMouseLeave={() => {
                   closeTimeoutRef.current = window.setTimeout(() => {
@@ -128,13 +126,11 @@ export function SiteNav() {
                   aria-expanded={isOpen}
                   onClick={() => {
                     setOpenMenu(isOpen ? null : item.label);
-                    if (!isOpen) setActiveLabel(item.label);
                   }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
                       setOpenMenu(isOpen ? null : item.label);
-                      if (!isOpen) setActiveLabel(item.label);
                     } else if (e.key === "ArrowDown") {
                       e.preventDefault();
                       setOpenMenu(item.label);
@@ -142,22 +138,22 @@ export function SiteNav() {
                       setOpenMenu(null);
                     }
                   }}
-                  className={`group flex flex-col items-center justify-center rounded-full px-3 py-2 transition ${isOpen || resolvedActiveLabel === item.label ? "text-indigo-700 dark:text-indigo-300" : "hover:text-indigo-700 dark:hover:text-indigo-300"} focus-visible:text-indigo-700 dark:focus-visible:text-indigo-300`}
+                  className={`group flex flex-col items-center justify-center rounded-full px-3 py-2 transition ${isOpen || resolvedActiveLabel === item.label ? "text-indigo-700 dark:text-indigo-300" : "hover:text-slate-800 dark:hover:text-slate-200"} focus-visible:text-indigo-700 dark:focus-visible:text-indigo-300`}
                 >
                   <div className="inline-flex items-center gap-1.5 leading-none translate-y-0.5">
-                    <span className={`tracking-normal group-hover:font-bold group-active:font-bold group-focus-visible:font-bold group-active:text-indigo-700 group-focus-visible:text-indigo-700 active:font-bold active:text-indigo-700 ${isOpen || resolvedActiveLabel === item.label ? "font-bold text-indigo-700 dark:text-indigo-300" : "dark:text-slate-200"}`}>{item.label}</span>
-                    <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400">
+                    <span className={`tracking-normal transition-all duration-200 ${isOpen || resolvedActiveLabel === item.label ? "font-bold text-indigo-700 dark:text-indigo-300" : "font-medium text-slate-700 hover:font-medium dark:text-slate-200"}`}>{item.label}</span>
+                    <svg viewBox="0 0 20 20" fill="currentColor" className={`h-3.5 w-3.5 transition-colors duration-200 ${isOpen || resolvedActiveLabel === item.label ? "text-indigo-600 dark:text-indigo-300" : "text-slate-500 dark:text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"}`}>
                       <path d="M5.25 7.5 10 12.25 14.75 7.5H5.25Z" />
                     </svg>
                   </div>
-                  <span className={`mt-1 block h-[2px] w-full bg-indigo-600 transform ${isOpen || resolvedActiveLabel === item.label ? "scale-x-100" : "scale-x-0"} origin-left transition-transform duration-200 group-hover:scale-x-100`} />
+                  <span className={`mt-1 block h-[2px] w-full bg-indigo-600 transform origin-left transition-all duration-200 ${isOpen || resolvedActiveLabel === item.label ? "scale-x-100" : "scale-x-0 group-hover:scale-x-30"}`} />
                 </button>
 
                 {isOpen ? (
                   <div
                     role="menu"
                     aria-label={item.label}
-                    className="absolute left-0 top-full z-50 mt-3 w-56 rounded-2xl border border-slate-200/80 bg-white/95 p-2 shadow-[0_20px_50px_rgba(15,23,42,0.14)] backdrop-blur-xl pointer-events-auto dark:border-slate-700/80 dark:bg-slate-900/95 dark:shadow-[0_18px_38px_rgba(2,6,23,0.5)]"
+                    className="absolute left-0 top-full z-50 mt-3 w-56 rounded-2xl border border-white/60 bg-white/75 p-2 shadow-[0_18px_42px_rgba(15,23,42,0.12),0_0_0_1px_rgba(255,255,255,0.32)] backdrop-blur-xl pointer-events-auto dark:border-slate-700/70 dark:bg-slate-900/75 dark:shadow-[0_18px_40px_rgba(2,6,23,0.58),0_0_0_1px_rgba(148,163,184,0.08)]"
                     onMouseEnter={() => {
                       if (closeTimeoutRef.current) {
                         window.clearTimeout(closeTimeoutRef.current);
@@ -185,10 +181,9 @@ export function SiteNav() {
                         ref={(el) => {
                           if (idx === 0) menuFirstRefs.current[item.label] = el;
                         }}
-                        className="block w-full rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus:ring-0 dark:text-slate-200 dark:hover:bg-slate-800/80 dark:hover:text-indigo-300"
+                        className="block w-full rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-white/70 hover:text-indigo-700 focus:outline-none focus:ring-0 dark:text-slate-200 dark:hover:bg-slate-800/75 dark:hover:text-indigo-300"
                         onClick={() => {
                           setOpenMenu(null);
-                          setActiveLabel(item.label);
                         }}
                       >
                         {subItem.label}
@@ -205,7 +200,6 @@ export function SiteNav() {
               key={item.label}
               href={item.href}
               className={`group inline-flex flex-col items-center justify-center rounded-full px-3 py-2 transition ${resolvedActiveLabel === item.label ? "text-indigo-700 dark:text-indigo-300" : "hover:text-indigo-700 dark:hover:text-indigo-300"} focus-visible:text-indigo-700 dark:focus-visible:text-indigo-300`}
-              onClick={() => setActiveLabel(item.label)}
             >
               <span className={`leading-none tracking-normal translate-y-0.5 group-hover:font-bold group-active:font-bold group-focus-visible:font-bold group-active:text-indigo-700 group-focus-visible:text-indigo-700 active:font-bold active:text-indigo-700 ${resolvedActiveLabel === item.label ? "font-bold text-indigo-700 dark:text-indigo-300" : "dark:text-slate-200"}`}>{item.label}</span>
               <span className={`mt-1 block h-[2px] w-full bg-indigo-600 transform ${resolvedActiveLabel === item.label ? "scale-x-100" : "scale-x-0"} origin-left transition-transform duration-200 group-hover:scale-x-100`} />

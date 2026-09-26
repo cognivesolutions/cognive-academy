@@ -212,7 +212,7 @@ export default function ContactForm({ courses = [], isDark: forcedIsDark }: { co
           <button
             type="button"
             onClick={handleClear}
-            className={`inline-flex h-[48px] w-[120px] items-center justify-center rounded-xl border px-4 text-sm font-semibold shadow-[0_8px_18px_-12px_rgba(15,23,42,0.35)] transition-all duration-200 hover:-translate-y-0.5 focus:outline-none ${resolvedIsDark ? "border-slate-700 bg-slate-800 text-slate-100 hover:border-slate-600 hover:bg-slate-700 focus:ring-4 focus:ring-slate-700/40" : "border-slate-200 bg-slate-100 text-slate-700 hover:border-slate-300 hover:bg-slate-200 focus:ring-4 focus:ring-slate-200"}`}
+            className={`inline-flex h-[48px] w-[120px] items-center justify-center rounded-xl border px-4 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-[0.98] ${resolvedIsDark ? "border-slate-700 bg-slate-800 text-slate-100 shadow-[0_0_0_1px_rgba(148,163,184,0.08),0_0_24px_rgba(99,102,241,0.18),0_12px_26px_-16px_rgba(15,23,42,0.9)] hover:border-slate-600 hover:bg-slate-700 hover:shadow-[0_0_0_1px_rgba(148,163,184,0.12),0_0_28px_rgba(99,102,241,0.22),0_14px_28px_-16px_rgba(15,23,42,0.92)]" : "border-slate-200 bg-slate-100 text-slate-700 shadow-[0_8px_18px_-12px_rgba(15,23,42,0.35)] hover:border-slate-300 hover:bg-slate-200"}`}
           >
             Clear
           </button>
@@ -220,7 +220,7 @@ export default function ContactForm({ courses = [], isDark: forcedIsDark }: { co
           <button
             ref={submitButtonRef}
             type="submit"
-            className="group inline-flex h-[48px] w-[120px] items-center justify-center rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-pink-500 px-4 text-sm font-semibold text-white shadow-[0_18px_28px_-14px_rgba(79,70,229,1)] transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_20px_36px_-14px_rgba(79,70,229,1)] active:translate-y-0 active:scale-[0.98] active:shadow-[0_10px_18px_-14px_rgba(79,70,229,1)] focus:outline-none focus:ring-4 focus:ring-indigo-200"
+            className={`group inline-flex h-[48px] w-[120px] items-center justify-center rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-pink-500 px-4 text-sm font-semibold text-white transition-all duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] focus:outline-none focus-visible:outline-none focus-visible:ring-0 ${resolvedIsDark ? "shadow-[0_0_0_1px_rgba(129,140,248,0.2),0_0_30px_rgba(99,102,241,0.28),0_14px_26px_-18px_rgba(15,23,42,0.92)] hover:shadow-[0_0_0_1px_rgba(129,140,248,0.28),0_0_36px_rgba(99,102,241,0.32),0_18px_32px_-18px_rgba(15,23,42,0.94)]" : "shadow-[0_18px_28px_-14px_rgba(79,70,229,1)] hover:shadow-[0_20px_36px_-14px_rgba(79,70,229,1)]"}`}
           >
             <span className="transition-transform duration-200 ease-out group-active:scale-[0.97]">Submit</span>
           </button>

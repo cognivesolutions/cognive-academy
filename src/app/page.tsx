@@ -108,21 +108,21 @@ export default async function HomePage({
   });
 
   return (
-    <main id="main" className="min-h-screen bg-white text-slate-900">
+    <main id="main" className="min-h-screen bg-white text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
       <BackToTopButton />
 
       {/* Hero section with animated skill badges and hero text */}
-      <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(147,197,253,0.35),_transparent_36%),linear-gradient(135deg,_#dfeffc_0%,_#f2ebff_100%)] min-h-[calc(100vh-5rem)]">
+      <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(147,197,253,0.35),_transparent_36%),linear-gradient(135deg,_#dfeffc_0%,_#f2ebff_100%)] min-h-[calc(100vh-5rem)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.24),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(14,165,233,0.18),_transparent_35%),linear-gradient(135deg,_#020817_0%,_#0f172a_40%,_#111827_100%)]">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-6 pb-16 pt-12 lg:grid-cols-[1.1fr_0.9fr] lg:pb-20 lg:pt-16">
           <div className="max-w-2xl h-full flex flex-col justify-center gap-6">
-            <span className="inline-flex whitespace-nowrap rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-indigo-700">
+            <span className="inline-flex whitespace-nowrap rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200">
               {SITE.heroBadgeText}
             </span>
 
-              <h1 className="mt-6 mb-6 text-5xl whitespace-nowrap font-black leading-[1.02] tracking-[-0.03em] text-slate-900 sm:text-6xl max-w-[36ch] whitespace-normal">
+              <h1 className="mt-6 mb-6 text-5xl whitespace-nowrap font-black leading-[1.02] tracking-[-0.03em] text-slate-900 sm:text-6xl max-w-[36ch] whitespace-normal dark:text-white">
               Build Real Skills and
               <span className="block">Launch Your Career</span>
-              <span className="mt-2 block text-slate-800">With <AnimatedTyping text={SITE.animatedTyping} className={"bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500"} cursorClassName={"text-indigo-600"} /></span>
+              <span className="mt-2 block text-slate-800 dark:text-slate-200">With <AnimatedTyping text={SITE.animatedTyping} className={"bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500"} cursorClassName={"text-indigo-600"} /></span>
             </h1>
 
             <div className="mt-8 flex items-center gap-4">
@@ -132,26 +132,26 @@ export default async function HomePage({
                     key={letter}
                     className={`flex h-11 w-11 items-center justify-center rounded-full border-2 border-white text-xs font-bold text-white ${
                       ["bg-cyan-500", "bg-violet-500", "bg-emerald-500", "bg-amber-500"][index]
-                    }`}
+                    } dark:border-slate-900`}
                   >
                     {letter}
                   </div>
                 ))}
               </div>
-              <div className="text-slate-700">
-                <div className="text-lg font-bold text-slate-900">Join our learner community</div>
-                <div className="text-sm text-slate-600">Students building practical skills and landing stronger roles</div>
+              <div className="text-slate-700 dark:text-slate-300">
+                <div className="text-lg font-bold text-slate-900 dark:text-white">Join our learner community</div>
+                <div className="text-sm text-slate-600 dark:text-slate-400">Students building practical skills and landing stronger roles</div>
               </div>
             </div>
 
             <div className="mt-8 flex flex-wrap gap-4">
-              <Link href="#courses" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(99,102,241,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:opacity-95 hover:shadow-[0_18px_34px_rgba(99,102,241,0.32)]">
+              <Link href="#courses" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(99,102,241,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:opacity-95 hover:shadow-[0_18px_34px_rgba(99,102,241,0.32)] dark:shadow-[0_14px_30px_rgba(99,102,241,0.4)]">
                 Explore programs
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
                   <path fillRule="evenodd" d="M5.22 14.78a.75.75 0 0 1 0-1.06L10.94 8H6.5a.75.75 0 0 1 0-1.5h7.25a.75.75 0 0 1 .75.75v7.25a.75.75 0 0 1-1.5 0V9.06l-5.72 5.72a.75.75 0 0 1-1.06 0Z" clipRule="evenodd" />
                 </svg>
               </Link>
-              <Link href="/signup" className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-white px-6 py-3.5 text-sm font-semibold text-indigo-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-indigo-50 hover:shadow-md">
+              <Link href="/signup" className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-white px-6 py-3.5 text-sm font-semibold text-indigo-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-indigo-50 hover:shadow-md dark:border-indigo-500/30 dark:bg-slate-900 dark:text-indigo-200 dark:hover:bg-slate-800">
                 Book a free call
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
                   <path fillRule="evenodd" d="M5.22 14.78a.75.75 0 0 1 0-1.06L10.94 8H6.5a.75.75 0 0 1 0-1.5h7.25a.75.75 0 0 1 .75.75v7.25a.75.75 0 0 1-1.5 0V9.06l-5.72 5.72a.75.75 0 0 1-1.06 0Z" clipRule="evenodd" />
@@ -166,16 +166,16 @@ export default async function HomePage({
         </div>
 
         <div className="mx-auto max-w-6xl px-6 pb-14">
-          <div className="grid gap-4 rounded-[28px] border border-slate-200 bg-white/80 p-4 shadow-[0_18px_40px_rgba(15,23,42,0.05)] backdrop-blur-sm md:grid-cols-4">
+          <div className="grid gap-4 rounded-[28px] border border-slate-200 bg-white/80 p-4 shadow-[0_18px_40px_rgba(15,23,42,0.05)] backdrop-blur-sm md:grid-cols-4 dark:border-slate-700 dark:bg-slate-900/60 dark:shadow-[0_18px_40px_rgba(15,23,42,0.4)]">
             {SITE.learnerStats.map((item) => (
               <div
                 key={item.value}
-                className="group rounded-2xl border border-slate-200 bg-slate-50/70 p-4 text-center md:text-left transform transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-indigo-200 hover:bg-gradient-to-r hover:from-indigo-600 hover:to-violet-600"
+                className="group rounded-2xl border border-slate-200 bg-slate-50/70 p-4 text-center md:text-left transform transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-indigo-200 hover:bg-gradient-to-r hover:from-indigo-600 hover:to-violet-600 dark:border-slate-700 dark:bg-slate-800/80 dark:hover:border-indigo-500/40 dark:hover:from-indigo-600 dark:hover:to-violet-600"
               >
-                <div className="text-3xl font-black tracking-tight text-slate-900 group-hover:text-white">
+                <div className="text-3xl font-black tracking-tight text-slate-900 group-hover:text-white dark:text-white">
                   {item.value}
                 </div>
-                <div className="mt-2 text-sm text-slate-600 group-hover:text-indigo-100">{item.label}</div>
+                <div className="mt-2 text-sm text-slate-600 group-hover:text-indigo-100 dark:text-slate-300">{item.label}</div>
               </div>
             ))}
           </div>
@@ -187,11 +187,11 @@ export default async function HomePage({
       <section id="live-courses" className="scroll-mt-28 mx-auto max-w-6xl px-6 py-12">
           <div className="mb-8 flex items-center justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">Live Classroom</p>
-            <h2 className="mt-2 text-3xl font-bold">Join Live Classroom Courses</h2>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Live Classroom</p>
+            <h2 className="mt-2 text-3xl font-bold dark:text-white">Join Live Classroom Courses</h2>
           </div>
           <div>
-            <Link href="/courses?type=live" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_20px_rgba(99,102,241,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:opacity-95 hover:shadow-[0_16px_28px_rgba(99,102,241,0.28)]">
+            <Link href="/courses?type=live" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_20px_rgba(99,102,241,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:opacity-95 hover:shadow-[0_16px_28px_rgba(99,102,241,0.28)] dark:shadow-[0_14px_28px_rgba(99,102,241,0.42)]">
               Browse all live programs
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
                 <path fillRule="evenodd" d="M5.22 14.78a.75.75 0 0 1 0-1.06L10.94 8H6.5a.75.75 0 0 1 0-1.5h7.25a.75.75 0 0 1 .75.75v7.25a.75.75 0 0 1-1.5 0V9.06l-5.72 5.72a.75.75 0 0 1-1.06 0Z" clipRule="evenodd" />
@@ -212,11 +212,11 @@ export default async function HomePage({
       <section id="recorded-courses" className="scroll-mt-28 mx-auto max-w-6xl px-6 py-12">
           <div className="mb-8 flex items-center justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">Recorded</p>
-            <h2 className="mt-2 text-3xl font-bold">Recorded & Self-Paced Courses</h2>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Recorded</p>
+            <h2 className="mt-2 text-3xl font-bold dark:text-white">Recorded & Self-Paced Courses</h2>
           </div>
           <div>
-            <Link href="/courses?type=recorded" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_20px_rgba(99,102,241,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:opacity-95 hover:shadow-[0_16px_28px_rgba(99,102,241,0.28)]">
+            <Link href="/courses?type=recorded" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_20px_rgba(99,102,241,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:opacity-95 hover:shadow-[0_16px_28px_rgba(99,102,241,0.28)] dark:shadow-[0_14px_28px_rgba(99,102,241,0.42)]">
               Browse all recorded courses
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
                 <path fillRule="evenodd" d="M5.22 14.78a.75.75 0 0 1 0-1.06L10.94 8H6.5a.75.75 0 0 1 0-1.5h7.25a.75.75 0 0 1 .75.75v7.25a.75.75 0 0 1-1.5 0V9.06l-5.72 5.72a.75.75 0 0 1-1.06 0Z" clipRule="evenodd" />
@@ -266,51 +266,47 @@ export default async function HomePage({
       </section>
 
       {/* services section */}
-      <section id="services" className="scroll-mt-28 bg-slate-50 py-16">
+      <section id="services" className="scroll-mt-28 bg-slate-50 py-16 dark:bg-slate-950/80 dark:text-slate-100">
         <div className="mx-auto max-w-6xl px-6">
           <div className="mb-10 max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">Services</p>
-            <h2 className="mt-3 text-3xl font-bold text-slate-900">Support designed around your growth.</h2>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Services</p>
+            <h2 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">Support designed around your growth.</h2>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
-            <Link href="/mentorship" className="group block rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_18px_40px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50">
-              <h3 className="text-xl font-bold text-slate-900">1:1 Mentorship</h3>
-              <p className="mt-3 text-sm leading-6 text-slate-600">Personal guidance for your career path, learning plan, and technical bottlenecks.</p>
+            <Link href="/mentorship" className="group block rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-[0_14px_36px_rgba(15,23,42,0.04)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_20px_42px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50 dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-[0_18px_40px_rgba(2,6,23,0.45)] dark:hover:border-indigo-500/40 dark:hover:bg-gradient-to-br dark:hover:from-slate-900 dark:hover:to-indigo-950/60">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">1:1 Mentorship</h3>
+              <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">Personal guidance for your career path, learning plan, and technical bottlenecks.</p>
             </Link>
-            <Link href="/mock-interviews" className="group block rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_18px_40px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50">
-              <h3 className="text-xl font-bold text-slate-900">Mock Interviews</h3>
-              <p className="mt-3 text-sm leading-6 text-slate-600">Practice the exact interview flow for data, analytics, and product-focused roles.</p>
+            <Link href="/mock-interviews" className="group block rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-[0_14px_36px_rgba(15,23,42,0.04)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_20px_42px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50 dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-[0_18px_40px_rgba(2,6,23,0.45)] dark:hover:border-indigo-500/40 dark:hover:bg-gradient-to-br dark:hover:from-slate-900 dark:hover:to-indigo-950/60">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">Mock Interviews</h3>
+              <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">Practice the exact interview flow for data, analytics, and product-focused roles.</p>
             </Link>
-            <Link href="/corporate-training" className="group block rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_18px_40px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50">
-              <h3 className="text-xl font-bold text-slate-900">Corporate Training</h3>
-              <p className="mt-3 text-sm leading-6 text-slate-600">Upskill teams with practical learning paths built for business and technical growth.</p>
+            <Link href="/corporate-training" className="group block rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-[0_14px_36px_rgba(15,23,42,0.04)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_20px_42px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50 dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-[0_18px_40px_rgba(2,6,23,0.45)] dark:hover:border-indigo-500/40 dark:hover:bg-gradient-to-br dark:hover:from-slate-900 dark:hover:to-indigo-950/60">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">Corporate Training</h3>
+              <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">Upskill teams with practical learning paths built for business and technical growth.</p>
             </Link>
           </div>
         </div>
       </section>
 
       {/* resources section */}
-      <section id="resources" className="scroll-mt-28 mx-auto max-w-6xl px-6 py-16">
+      <section id="resources" className="scroll-mt-28 mx-auto max-w-6xl px-6 py-16 dark:text-slate-100">
         <div className="mb-10 max-w-2xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">Resources</p>
-          <h2 className="mt-3 text-3xl font-bold text-slate-900">Career-ready learning resources.</h2>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Resources</p>
+          <h2 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">Career-ready learning resources.</h2>
         </div>
         <div className="grid gap-6 md:grid-cols-3">
-          <Link href="/interview-experiences" className="group block rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_18px_40px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50">
-            <h3 className="text-xl font-bold text-slate-900">Interview Experiences</h3>
-            <p className="mt-3 text-sm leading-6 text-slate-600">Real stories, questions, and breakdowns from successful learner interview journeys.</p>
+          <Link href="/resume-analyzer" className="group block rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-[0_14px_36px_rgba(15,23,42,0.04)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_20px_42px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50 dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-[0_18px_40px_rgba(2,6,23,0.45)] dark:hover:border-indigo-500/40 dark:hover:bg-gradient-to-br dark:hover:from-slate-900 dark:hover:to-indigo-950/60">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white">Resume Analyzer</h3>
+            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">Check your resume for clarity, relevance, and stronger role-specific positioning.</p>
           </Link>
-          <Link href="/success-stories" className="group block rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_18px_40px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50">
-            <h3 className="text-xl font-bold text-slate-900">Success Stories</h3>
-            <p className="mt-3 text-sm leading-6 text-slate-600">Career transformations, momentum, and outcomes from learners who stayed consistent.</p>
+          <Link href="/tech-blog" className="group block rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-[0_14px_36px_rgba(15,23,42,0.04)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_20px_42px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50 dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-[0_18px_40px_rgba(2,6,23,0.45)] dark:hover:border-indigo-500/40 dark:hover:bg-gradient-to-br dark:hover:from-slate-900 dark:hover:to-indigo-950/60">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white">Tech Blog</h3>
+            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">Insights on data careers, tools, learning strategy, and practical industry trends.</p>
           </Link>
-          <Link href="/tech-blog" className="group block rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_18px_40px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50">
-            <h3 className="text-xl font-bold text-slate-900">Tech Blog</h3>
-            <p className="mt-3 text-sm leading-6 text-slate-600">Insights on data careers, tools, learning strategy, and practical industry trends.</p>
-          </Link>
-          <Link href="/resume-analyzer" className="group block rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_18px_40px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50">
-            <h3 className="text-xl font-bold text-slate-900">Resume Analyzer</h3>
-            <p className="mt-3 text-sm leading-6 text-slate-600">Check your resume for clarity, relevance, and stronger role-specific positioning.</p>
+          <Link href="/interview-experiences" className="group block rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-[0_14px_36px_rgba(15,23,42,0.04)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_20px_42px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50 dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-[0_18px_40px_rgba(2,6,23,0.45)] dark:hover:border-indigo-500/40 dark:hover:bg-gradient-to-br dark:hover:from-slate-900 dark:hover:to-indigo-950/60">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white">Interview Experiences</h3>
+            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">Real stories, questions, and breakdowns from successful learner interview journeys.</p>
           </Link>
         </div>
       </section>
@@ -382,9 +378,9 @@ export default async function HomePage({
       </section>
 
       {/* CTA section */}
-      <section className="border-t border-slate-200 bg-white">
+      <section className="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-12 text-center lg:flex-row lg:items-center lg:justify-between lg:text-left">
-          <div className="w-full rounded-2xl bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 p-6 shadow-2xl" role="region" aria-label="Get started call to action">
+          <div className="w-full rounded-2xl bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 p-6 shadow-[0_24px_60px_rgba(79,70,229,0.35)] dark:shadow-[0_24px_70px_rgba(99,102,241,0.35)]" role="region" aria-label="Get started call to action">
             <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
               <div className="text-center sm:text-left">
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-100">Ready to start?</p>
