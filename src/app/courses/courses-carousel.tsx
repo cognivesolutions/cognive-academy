@@ -1,9 +1,22 @@
-"use client"
+"use client";
 
-import React, { useRef, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-type Course = any;
+type Course = {
+  id: string;
+  slug: string;
+  title: string;
+  shortDescription?: string | null;
+  description?: string | null;
+  category?: string | null;
+  level?: string | null;
+  price: number | string;
+  featured?: boolean | null;
+  imageUrl?: string | null;
+  instructorName?: string | null;
+  durationHours?: number | null;
+};
 
 const VISIBLE = 3;
 
@@ -34,7 +47,7 @@ const formatCategory = (value?: string | null) => {
     .join(" ");
 };
 
-export default function LiveCoursesCarousel({ courses }: { courses: Course[] }) {
+export function CoursesCarousel({ courses }: { courses: Course[] }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const rafRef = useRef<number | null>(null);
   const [pageCount, setPageCount] = useState(Math.max(0, Math.ceil(courses.length / VISIBLE)));
@@ -100,11 +113,13 @@ export default function LiveCoursesCarousel({ courses }: { courses: Course[] }) 
     el.scrollTo({ left: nextScrollLeft, behavior: "smooth" });
   };
 
-  const scrollNext = () => scrollToPage(currentPage + 1);
   const scrollPrev = () => scrollToPage(currentPage - 1);
+  const scrollNext = () => scrollToPage(currentPage + 1);
 
   const prevDisabled = pageCount <= 1 || currentPage <= 0;
   const nextDisabled = pageCount <= 1 || currentPage >= pageCount - 1;
+
+  if (courses.length === 0) return null;
 
   return (
     <div className="relative">
@@ -121,8 +136,8 @@ export default function LiveCoursesCarousel({ courses }: { courses: Course[] }) 
             style={{ flex: "0 0 calc((100% - 2rem) / 3)" }}
           >
             <div className="mb-4 overflow-hidden rounded-[20px] bg-slate-100 ring-1 ring-slate-200 transition-all duration-300 group-hover:ring-indigo-200/60 dark:bg-slate-800 dark:ring-slate-700 dark:group-hover:ring-indigo-500/40">
-              {(course.coverImage || course.imageUrl) ? (
-                <img src={course.coverImage || course.imageUrl} alt={course.title} className="h-48 w-full object-cover transition-all duration-500 group-hover:scale-[1.04] group-hover:brightness-[1.02]" />
+              {course.imageUrl ? (
+                <img src={course.imageUrl} alt={course.title} className="h-48 w-full object-cover transition-all duration-500 group-hover:scale-[1.04] group-hover:brightness-[1.02]" />
               ) : (
                 <div className="flex h-48 w-full items-center justify-center bg-gradient-to-br from-indigo-100 via-violet-100 to-sky-100 text-sm font-semibold text-indigo-700 transition-all duration-300 group-hover:scale-[1.02] dark:from-indigo-500/20 dark:via-violet-500/15 dark:to-sky-500/15 dark:text-indigo-200">
                   {formatCategory(course.category)}
@@ -135,10 +150,13 @@ export default function LiveCoursesCarousel({ courses }: { courses: Course[] }) 
                 <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-200">
                   {formatCategory(course.category)}
                 </span>
-                <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-                  Live
+                <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] ${course.isLive ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"}`}>
+                  {course.isLive ? "Live" : "Recorded"}
                 </span>
               </div>
+              {course.featured ? (
+                <span className="text-xs font-medium text-amber-600 dark:text-amber-300">Featured</span>
+              ) : null}
             </div>
 
             <h2 className="mt-4 text-2xl font-black tracking-tight text-slate-900 dark:text-white">{course.title}</h2>
@@ -147,19 +165,19 @@ export default function LiveCoursesCarousel({ courses }: { courses: Course[] }) 
             </p>
 
             <div className="mt-5 flex flex-wrap gap-2 text-xs text-slate-600 dark:text-slate-300">
-              <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1.5 dark:border-slate-700 dark:bg-slate-800">{course.level || "Beginner"}</span>
+              <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1.5 dark:border-slate-700 dark:bg-slate-800">{course.level}</span>
               <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1.5 dark:border-slate-700 dark:bg-slate-800">{course.durationHours ?? 0} hrs</span>
-              <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1.5 dark:border-slate-700 dark:bg-slate-800">{course.instructorName || "Expert-led"}</span>
+              <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1.5 dark:border-slate-700 dark:bg-slate-800">{course.instructorName}</span>
             </div>
 
             <div className="mt-auto pt-6">
               <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Price</div>
-                  <div className="mt-1 text-2xl font-black text-slate-900 dark:text-white">
-                    ₹{Number(course.price).toLocaleString("en-IN")}
-                  </div>
+              <div>
+                <div className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Price</div>
+                <div className="mt-1 text-2xl font-black text-slate-900 dark:text-white">
+                  ₹{Number(course.price).toLocaleString("en-IN")}
                 </div>
+              </div>
 
                 <Link
                   href={`/courses/${course.slug}`}
@@ -173,53 +191,52 @@ export default function LiveCoursesCarousel({ courses }: { courses: Course[] }) 
         ))}
       </div>
 
-      <div className="mt-4 relative">
-        {pageCount > 1 ? (
-          <div className="flex items-center justify-center">
-            <div className="flex gap-2">
-              {Array.from({ length: pageCount }).map((_, i) => (
+      {pageCount > 1 ? (
+        <div className="relative mt-3">
+          <div className="flex items-center justify-center pt-1">
+            <div className="flex items-center gap-2">
+              {Array.from({ length: pageCount }).map((_, index) => (
                 <button
-                  key={i}
-                  onClick={() => scrollToPage(i)}
-                  aria-label={`Go to page ${i + 1}`}
-                  aria-current={i === currentPage}
-                  className={`h-2.5 rounded-full transition-all ${i === currentPage ? "w-5 bg-slate-900 dark:bg-white" : "w-2.5 bg-slate-300 dark:bg-slate-600"} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500`}
+                  key={index}
+                  type="button"
+                  onClick={() => scrollToPage(index)}
+                  aria-label={`Go to page ${index + 1}`}
+                  aria-current={index === currentPage ? "page" : undefined}
+                  className={`rounded-full transition-all duration-200 ${index === currentPage ? "h-2.5 w-5 bg-slate-900 dark:bg-white" : "h-2.5 w-2.5 bg-slate-300 hover:bg-slate-400 dark:bg-slate-600 dark:hover:bg-slate-500"}`}
                 />
               ))}
             </div>
           </div>
-        ) : null}
 
-        <div className="absolute right-2 md:right-4 top-1/2 z-30 flex -translate-y-1/2 items-center gap-3">
-          <button
-            onClick={() => !prevDisabled && scrollPrev()}
-            aria-label="Previous"
-            aria-disabled={prevDisabled}
-            disabled={prevDisabled}
-            className={`inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/95 shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-slate-800/90 dark:shadow-[0_8px_24px_rgba(15,23,42,0.45)] ${
-              prevDisabled ? "pointer-events-none cursor-not-allowed opacity-40" : "hover:bg-white dark:hover:bg-slate-700"
-            }`}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-slate-700 dark:text-slate-200">
-              <path d="m15 18-6-6 6-6" />
-            </svg>
-          </button>
+          <div className="absolute right-2 top-1/2 z-20 flex -translate-y-1/2 items-center gap-3 md:right-4">
+            <button
+              type="button"
+              onClick={() => !prevDisabled && scrollPrev()}
+              aria-label="Previous"
+              aria-disabled={prevDisabled}
+              disabled={prevDisabled}
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/95 shadow-[0_8px_20px_rgba(15,23,42,0.08)] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-slate-800/90 dark:shadow-[0_8px_24px_rgba(15,23,42,0.45)] ${prevDisabled ? "pointer-events-none cursor-not-allowed opacity-40" : "hover:bg-white dark:hover:bg-slate-700"}`}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-slate-700 dark:text-slate-200">
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+            </button>
 
-          <button
-            onClick={() => !nextDisabled && scrollNext()}
-            aria-label="Next"
-            aria-disabled={nextDisabled}
-            disabled={nextDisabled}
-            className={`inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/95 shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-slate-800/90 dark:shadow-[0_8px_24px_rgba(15,23,42,0.45)] ${
-              nextDisabled ? "pointer-events-none cursor-not-allowed opacity-40" : "hover:bg-white dark:hover:bg-slate-700"
-            }`}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-slate-700 dark:text-slate-200">
-              <path d="m9 18 6-6-6-6" />
-            </svg>
-          </button>
+            <button
+              type="button"
+              onClick={() => !nextDisabled && scrollNext()}
+              aria-label="Next"
+              aria-disabled={nextDisabled}
+              disabled={nextDisabled}
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/95 shadow-[0_8px_20px_rgba(15,23,42,0.08)] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-slate-800/90 dark:shadow-[0_8px_24px_rgba(15,23,42,0.45)] ${nextDisabled ? "pointer-events-none cursor-not-allowed opacity-40" : "hover:bg-white dark:hover:bg-slate-700"}`}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-slate-700 dark:text-slate-200">
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </button>
+          </div>
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }

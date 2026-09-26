@@ -1,13 +1,16 @@
+"use client";
+
 import Link from "next/link";
-import { auth } from "@/auth";
+import { useSession } from "next-auth/react";
 import { SiteNav } from "./site-nav";
 import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
 import MobileMenu from "./mobile-menu";
 
-export default async function Header() {
-  const session = await auth();
+export default function Header() {
+  const { data: session } = useSession();
   const isLoggedIn = Boolean(session?.user?.id);
+  const isAdmin = session?.user?.role === "ADMIN";
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/85">
@@ -24,6 +27,14 @@ export default async function Header() {
 
           <div className="flex items-center gap-3 self-center translate-y-1 sm:gap-5">
             <ThemeToggle />
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="hidden rounded-full border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-indigo-700 transition hover:border-indigo-300 hover:bg-indigo-100 md:inline-flex dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200"
+              >
+                Admin
+              </Link>
+            )}
             {isLoggedIn ? (
               <UserMenu />
             ) : (

@@ -7,21 +7,65 @@ type Course = any;
 
 const VISIBLE = 3;
 
+const formatCategory = (value?: string | null) => {
+  const raw = value?.trim();
+  if (!raw) return "General";
+
+  const normalized = raw.replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
+  const key = normalized.toLowerCase();
+
+  const overrides: Record<string, string> = {
+    "powr bi": "Power BI",
+    "power bi": "Power BI",
+    python: "Python",
+    sql: "SQL",
+    excel: "Excel",
+    react: "React",
+    django: "Django",
+    git: "Git",
+    mysql: "MySQL",
+  };
+
+  if (overrides[key]) return overrides[key];
+
+  return normalized
+    .split(" ")
+    .map((part) => (part ? part.charAt(0).toUpperCase() + part.slice(1).toLowerCase() : ""))
+    .join(" ");
+};
+
 export default function RecordedCoursesCarousel({ courses }: { courses: Course[] }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const rafRef = useRef<number | null>(null);
-  const [pageCount, setPageCount] = useState(Math.max(1, Math.ceil(courses.length / VISIBLE)));
+  const [pageCount, setPageCount] = useState(Math.max(0, Math.ceil(courses.length / VISIBLE)));
   const [currentPage, setCurrentPage] = useState(0);
 
   useEffect(() => {
-    setPageCount(Math.max(1, Math.ceil(courses.length / VISIBLE)));
+    const nextPageCount = Math.max(0, Math.ceil(courses.length / VISIBLE));
+    setPageCount(nextPageCount);
+    setCurrentPage((previous) => Math.min(previous, Math.max(0, nextPageCount - 1)));
   }, [courses.length]);
 
   const updateCurrentPage = useCallback(() => {
     const el = containerRef.current;
-    if (!el) return;
-    const page = Math.round(el.scrollLeft / el.clientWidth);
-    setCurrentPage(Math.max(0, Math.min(page, pageCount - 1)));
+    if (!el) {
+      setCurrentPage(0);
+      return;
+    }
+
+    if (pageCount <= 1) {
+      setCurrentPage(0);
+      return;
+    }
+
+    const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
+    if (maxScroll <= 0) {
+      setCurrentPage(0);
+      return;
+    }
+
+    const nextPage = Math.round((el.scrollLeft / maxScroll) * (pageCount - 1));
+    setCurrentPage(Math.max(0, Math.min(nextPage, pageCount - 1)));
   }, [pageCount]);
 
   useEffect(() => {
@@ -48,105 +92,132 @@ export default function RecordedCoursesCarousel({ courses }: { courses: Course[]
 
   const scrollToPage = (page: number) => {
     const el = containerRef.current;
-    if (!el) return;
+    if (!el || pageCount <= 1) return;
+
+    const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
     const target = Math.max(0, Math.min(page, pageCount - 1));
-    el.scrollTo({ left: target * el.clientWidth, behavior: "smooth" });
+    const nextScrollLeft = maxScroll > 0 ? (maxScroll / (pageCount - 1)) * target : 0;
+    el.scrollTo({ left: nextScrollLeft, behavior: "smooth" });
   };
 
   const scrollNext = () => scrollToPage(currentPage + 1);
   const scrollPrev = () => scrollToPage(currentPage - 1);
 
+  const prevDisabled = pageCount <= 1 || currentPage <= 0;
+  const nextDisabled = pageCount <= 1 || currentPage >= pageCount - 1;
+
   return (
     <div className="relative">
       <div
         ref={containerRef}
-        className="-mx-3 flex gap-6 overflow-x-auto px-3 pb-10 scroll-smooth snap-x snap-mandatory touch-pan-x hide-scrollbar"
+        className="-mx-3 flex gap-6 overflow-x-auto px-3 pb-10 pr-8 scroll-smooth snap-x snap-mandatory touch-pan-x hide-scrollbar"
         role="list"
       >
         {courses.map((course) => (
           <article
             key={course.id}
             role="listitem"
-            className="group flex-shrink-0 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_18px_40px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50 snap-center dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-[0_20px_40px_rgba(15,23,42,0.26)] dark:hover:border-indigo-500/40 dark:hover:from-slate-900 dark:hover:to-indigo-950/80"
-            style={{ flex: "0 0 calc((100% - 3rem) / 3)" }}
+            className="group flex flex-shrink-0 snap-center flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.05)] transition-all duration-300 hover:-translate-y-2 hover:border-indigo-200/80 hover:shadow-[0_28px_60px_rgba(99,102,241,0.15),0_18px_40px_rgba(15,23,42,0.08)] hover:ring-2 hover:ring-indigo-200/60 dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-[0_20px_42px_rgba(15,23,42,0.3)] dark:hover:border-indigo-500/40 dark:hover:shadow-[0_26px_52px_rgba(99,102,241,0.18),0_18px_36px_rgba(15,23,42,0.22)] dark:hover:ring-indigo-500/35"
+            style={{ flex: "0 0 calc((100% - 2rem) / 3)" }}
           >
-            <div className="mb-4 h-40 w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
-              {course.coverImage ? (
-                <img src={course.coverImage} alt={course.title} className="h-full w-full object-cover" />
+            <div className="mb-4 overflow-hidden rounded-[20px] bg-slate-100 ring-1 ring-slate-200 transition-all duration-300 group-hover:ring-indigo-200/60 dark:bg-slate-800 dark:ring-slate-700 dark:group-hover:ring-indigo-500/40">
+              {(course.coverImage || course.imageUrl) ? (
+                <img src={course.coverImage || course.imageUrl} alt={course.title} className="h-48 w-full object-cover transition-all duration-500 group-hover:scale-[1.04] group-hover:brightness-[1.02]" />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-slate-400 dark:text-slate-500">No image</div>
+                <div className="flex h-48 w-full items-center justify-center bg-gradient-to-br from-indigo-100 via-violet-100 to-sky-100 text-sm font-semibold text-indigo-700 transition-all duration-300 group-hover:scale-[1.02] dark:from-indigo-500/20 dark:via-violet-500/15 dark:to-sky-500/15 dark:text-indigo-200">
+                  {formatCategory(course.category)}
+                </div>
               )}
             </div>
 
-            <div className="flex-1">
-              <div className="mb-2 text-sm font-semibold text-indigo-600">Recorded</div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white">{course.title}</h3>
-              <p className="mt-3 text-sm text-slate-600 line-clamp-2 dark:text-slate-300">{course.shortDescription ?? course.description}</p>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-200">
+                  {formatCategory(course.category)}
+                </span>
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  Recorded
+                </span>
+              </div>
             </div>
 
-            <div className="mt-6 flex items-center justify-between">
-              <div className="text-lg font-bold text-slate-900 dark:text-white">₹{Number(course.price).toLocaleString("en-IN")}</div>
-              <Link href={`/courses/${course.slug}`} className="inline-flex items-center rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 dark:bg-indigo-600 dark:hover:bg-indigo-500">
-                View details
-              </Link>
+            <h2 className="mt-4 text-2xl font-black tracking-tight text-slate-900 dark:text-white">{course.title}</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+              {course.shortDescription ?? course.description}
+            </p>
+
+            <div className="mt-5 flex flex-wrap gap-2 text-xs text-slate-600 dark:text-slate-300">
+              <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1.5 dark:border-slate-700 dark:bg-slate-800">{course.level || "Beginner"}</span>
+              <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1.5 dark:border-slate-700 dark:bg-slate-800">{course.durationHours ?? 0} hrs</span>
+              <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1.5 dark:border-slate-700 dark:bg-slate-800">{course.instructorName || "Expert-led"}</span>
+            </div>
+
+            <div className="mt-auto pt-6">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Price</div>
+                  <div className="mt-1 text-2xl font-black text-slate-900 dark:text-white">
+                    ₹{Number(course.price).toLocaleString("en-IN")}
+                  </div>
+                </div>
+
+                <Link
+                  href={`/courses/${course.slug}`}
+                  className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(99,102,241,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_34px_rgba(99,102,241,0.32)] hover:ring-2 hover:ring-indigo-200/60"
+                >
+                  View course
+                </Link>
+              </div>
             </div>
           </article>
         ))}
       </div>
 
       <div className="mt-4 relative">
-        <div className="flex items-center justify-center">
-          <div className="flex gap-2">
-            {Array.from({ length: pageCount }).map((_, i) => (
-              <button
-                key={i}
-                onClick={() => scrollToPage(i)}
-                aria-label={`Go to page ${i + 1}`}
-                aria-current={i === currentPage}
-                className={`h-2 w-2 rounded-full transition-all ${i === currentPage ? "bg-slate-900 w-3 dark:bg-white" : "bg-slate-300 dark:bg-slate-600"} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500`}
-              />
-            ))}
+        {pageCount > 1 ? (
+          <div className="flex items-center justify-center">
+            <div className="flex gap-2">
+              {Array.from({ length: pageCount }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => scrollToPage(i)}
+                  aria-label={`Go to page ${i + 1}`}
+                  aria-current={i === currentPage}
+                  className={`h-2.5 rounded-full transition-all ${i === currentPage ? "w-5 bg-slate-900 dark:bg-white" : "w-2.5 bg-slate-300 dark:bg-slate-600"} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500`}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        ) : null}
 
-        <div className="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2 z-30 flex items-center gap-3">
-          {(() => {
-            const prevDisabled = currentPage <= 0;
-            return (
-              <button
-                onClick={() => !prevDisabled && scrollPrev()}
-                aria-label="Previous"
-                aria-disabled={prevDisabled}
-                disabled={prevDisabled}
-                className={`inline-flex w-10 h-10 rounded-full bg-white/95 items-center justify-center shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-slate-800/90 dark:shadow-[0_8px_24px_rgba(15,23,42,0.45)] ${
-                  prevDisabled ? "opacity-40 cursor-not-allowed pointer-events-none" : "hover:bg-white dark:hover:bg-slate-700"
-                }`}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-slate-700 dark:text-slate-200">
-                  <path fillRule="evenodd" d="M12.293 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 1.414L8.414 10l3.879 3.879a1 1 0 010 1.414z" clipRule="evenodd" />
-                </svg>
-              </button>
-            );
-          })()}
+        <div className="absolute right-2 md:right-4 top-1/2 z-30 flex -translate-y-1/2 items-center gap-3">
+          <button
+            onClick={() => !prevDisabled && scrollPrev()}
+            aria-label="Previous"
+            aria-disabled={prevDisabled}
+            disabled={prevDisabled}
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/95 shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-slate-800/90 dark:shadow-[0_8px_24px_rgba(15,23,42,0.45)] ${
+              prevDisabled ? "pointer-events-none cursor-not-allowed opacity-40" : "hover:bg-white dark:hover:bg-slate-700"
+            }`}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-slate-700 dark:text-slate-200">
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+          </button>
 
-          {(() => {
-            const nextDisabled = currentPage >= pageCount - 1;
-            return (
-              <button
-                onClick={() => !nextDisabled && scrollNext()}
-                aria-label="Next"
-                aria-disabled={nextDisabled}
-                disabled={nextDisabled}
-                className={`inline-flex w-10 h-10 rounded-full bg-white/95 items-center justify-center shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-slate-800/90 dark:shadow-[0_8px_24px_rgba(15,23,42,0.45)] ${
-                  nextDisabled ? "opacity-40 cursor-not-allowed pointer-events-none" : "hover:bg-white dark:hover:bg-slate-700"
-                }`}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-slate-700 dark:text-slate-200">
-                  <path fillRule="evenodd" d="M7.707 4.293a1 1 0 010 1.414L3.414 10l4.293 4.293a1 1 0 01-1.414 1.414l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 0z" clipRule="evenodd" transform="rotate(180 10 10)" />
-                </svg>
-              </button>
-            );
-          })()}
+          <button
+            onClick={() => !nextDisabled && scrollNext()}
+            aria-label="Next"
+            aria-disabled={nextDisabled}
+            disabled={nextDisabled}
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/95 shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-slate-800/90 dark:shadow-[0_8px_24px_rgba(15,23,42,0.45)] ${
+              nextDisabled ? "pointer-events-none cursor-not-allowed opacity-40" : "hover:bg-white dark:hover:bg-slate-700"
+            }`}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-slate-700 dark:text-slate-200">
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          </button>
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function NotFound() {
   return (
     <main className="flex min-h-[calc(100vh-180px)] items-center justify-center bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_30%),linear-gradient(135deg,_#f8fbff_0%,_#f5f3ff_50%,_#eef7ff_100%)] px-6 py-16 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.22),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(14,165,233,0.16),_transparent_26%),linear-gradient(135deg,_#020817_0%,_#0f172a_35%,_#111827_100%)]">
-      <div className="w-full max-w-xl rounded-[32px] border border-slate-200 bg-white/80 p-8 text-center shadow-[0_30px_70px_rgba(15,23,42,0.08)] backdrop-blur-sm transition-all duration-300 md:p-10 dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-[0_30px_70px_rgba(2,6,23,0.52)]">
+      <div className="w-full max-w-6xl rounded-[32px] border border-slate-200 bg-white/80 p-8 text-center shadow-[0_30px_70px_rgba(15,23,42,0.08)] backdrop-blur-sm transition-all duration-300 md:p-10 dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-[0_30px_70px_rgba(2,6,23,0.52)]">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 text-2xl font-black text-white shadow-[0_16px_30px_rgba(79,70,229,0.24)]">
           !
         </div>

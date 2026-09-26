@@ -8,12 +8,31 @@ async function main() {
 
   const student = await prisma.user.upsert({
     where: { email: "student@cognive.academy" },
-    update: {},
-    create: {
-      email: "student@cognive.academy",
-      name: "Aanya Sharma",
+    update: {
+      name: "Vishwajeet Singh",
       passwordHash,
       role: "STUDENT",
+    },
+    create: {
+      email: "student@cognive.academy",
+      name: "Vishwajeet Singh",
+      passwordHash,
+      role: "STUDENT",
+    },
+  });
+
+  const admin = await prisma.user.upsert({
+    where: { email: "admin@cognive.academy" },
+    update: {
+      name: "Admin",
+      passwordHash,
+      role: "ADMIN",
+    },
+    create: {
+      email: "admin@cognive.academy",
+      name: "Admin",
+      passwordHash,
+      role: "ADMIN",
     },
   });
 

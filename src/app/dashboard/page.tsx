@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { LogoutButton } from "@/components/logout-button";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -30,42 +29,20 @@ export default async function DashboardPage() {
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
-      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/85 backdrop-blur-xl transition-colors duration-300 dark:border-slate-800 dark:bg-slate-950/80">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 via-violet-600 to-sky-500 text-sm font-black text-white shadow-lg shadow-indigo-200 ring-4 ring-indigo-50 dark:shadow-indigo-900/40 dark:ring-indigo-500/20">
-              C
-            </div>
-            <div>
-              <div className="text-base font-bold tracking-tight text-slate-900 dark:text-white">Cognive Academy</div>
-              <div className="text-[10px] font-medium uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Student portal</div>
-            </div>
-          </div>
-
-          <div className="hidden items-center gap-8 text-sm font-medium text-slate-600 md:flex dark:text-slate-300">
-            <a href="#overview" className="transition hover:text-slate-900 dark:hover:text-white">Overview</a>
-            <a href="#courses" className="transition hover:text-slate-900 dark:hover:text-white">My courses</a>
-            <a href="#transactions" className="transition hover:text-slate-900 dark:hover:text-white">Transactions</a>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button className="rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(15,23,42,0.18)] transition hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white">
-              Edit profile
-            </button>
-            <LogoutButton />
-          </div>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-7xl px-6 py-10">
+      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         <section className="mb-8 rounded-[28px] border border-slate-200 bg-gradient-to-r from-slate-900 via-indigo-900 to-violet-900 p-7 text-white shadow-[0_24px_60px_rgba(79,70,229,0.28)] dark:border-slate-700">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.26em] text-indigo-200">Student dashboard</p>
               <h1 className="mt-3 text-3xl font-black tracking-tight text-white md:text-4xl">Welcome back, {userName}</h1>
             </div>
-            <div className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-indigo-100">
-              Next live session: <span className="font-semibold text-white">7:30 PM IST</span>
+            <div className="flex items-center gap-3">
+              <Link href="/profile" className="rounded-full border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15">
+                Profile
+              </Link>
+              <div className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-indigo-100">
+                Next live session: <span className="font-semibold text-white">7:30 PM IST</span>
+              </div>
             </div>
           </div>
         </section>

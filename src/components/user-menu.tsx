@@ -4,6 +4,50 @@ import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 
+const menuItems = [
+  {
+    label: "Dashboard",
+    href: "/dashboard",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+        <path d="M3 12.75V6.5A2.5 2.5 0 0 1 5.5 4h13A2.5 2.5 0 0 1 21 6.5v6.25" />
+        <path d="M9 20h6" />
+        <path d="M12 4v9" />
+      </svg>
+    ),
+  },
+  {
+    label: "My courses",
+    href: "/dashboard#courses",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+        <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H20v13.5A2.5 2.5 0 0 0 17.5 20H6.5A2.5 2.5 0 0 1 4 17.5v-11Z" />
+        <path d="M8 8h8M8 12h8" />
+      </svg>
+    ),
+  },
+  {
+    label: "Transactions",
+    href: "/dashboard#transactions",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+        <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-9Z" />
+        <path d="M8 9h8M8 13h5" />
+      </svg>
+    ),
+  },
+  {
+    label: "Profile",
+    href: "/profile",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+        <circle cx="12" cy="8" r="3.25" />
+        <path d="M5 18.75c1.8-2.4 4.1-3.6 7-3.6s5.2 1.2 7 3.6" />
+      </svg>
+    ),
+  },
+];
+
 export function UserMenu() {
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
@@ -57,34 +101,43 @@ export function UserMenu() {
       </button>
 
       {open ? (
-        <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_20px_40px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[0_20px_40px_rgba(2,6,23,0.65)]">
-          <div className="mb-2 rounded-xl bg-slate-50 px-3 py-2 dark:bg-slate-800/90">
+        <div className="absolute right-0 top-full z-50 mt-2 w-72 rounded-2xl border border-slate-200 bg-white/95 p-2 shadow-[0_20px_45px_rgba(15,23,42,0.12)] backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-[0_22px_50px_rgba(2,6,23,0.75)]">
+          <div className="mb-2 rounded-xl bg-gradient-to-r from-slate-50 to-indigo-50 px-3 py-2.5 dark:from-slate-800/90 dark:to-indigo-950/30">
             <div className="text-[10px] uppercase tracking-[0.22em] text-slate-400 dark:text-slate-400">Signed in</div>
             <div className="mt-1 font-semibold text-slate-900 dark:text-slate-50">{displayName}</div>
             <div className="text-xs text-slate-500 dark:text-slate-300">{session?.user?.email || "student@cognive.academy"}</div>
           </div>
 
           <div className="space-y-1">
-            <Link
-              href="/dashboard"
-              onClick={() => setOpen(false)}
-              className="flex w-full items-center rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/profile"
-              onClick={() => setOpen(false)}
-              className="flex w-full items-center rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
-            >
-              Profile
-            </Link>
+            {menuItems.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className="group flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-sm font-medium text-slate-700 transition-all duration-200 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white"
+              >
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-600 transition group-hover:bg-indigo-100 group-hover:text-indigo-700 dark:bg-slate-800 dark:text-slate-300 dark:group-hover:bg-indigo-500/15 dark:group-hover:text-indigo-300">
+                  {item.icon}
+                </span>
+                <span>{item.label}</span>
+              </Link>
+            ))}
+
+            <div className="my-1 h-px bg-slate-200 dark:bg-slate-700" />
+
             <button
               type="button"
               onClick={() => signOut({ callbackUrl: "/login" })}
-              className="flex w-full items-center rounded-xl px-3 py-2 text-left text-sm font-medium text-red-600 transition hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
+              className="group flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left text-sm font-medium text-red-600 transition-all duration-200 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
             >
-              Logout
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-50 text-red-600 transition group-hover:bg-red-100 dark:bg-red-950/30 dark:text-red-300 dark:group-hover:bg-red-900/50">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+                  <path d="M9 21H5.5A2.5 2.5 0 0 1 3 18.5v-13A2.5 2.5 0 0 1 5.5 3H9" />
+                  <path d="M16 17 21 12l-5-5" />
+                  <path d="M21 12H9" />
+                </svg>
+              </span>
+              <span>Logout</span>
             </button>
           </div>
         </div>

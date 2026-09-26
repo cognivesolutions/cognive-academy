@@ -18,10 +18,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        role: { label: "Role", type: "text" },
       },
       async authorize(credentials) {
         const email = credentials.email as string | undefined;
         const password = credentials.password as string | undefined;
+        const requestedRole = (credentials.role as string | undefined)?.toUpperCase();
 
         if (!email || !password) {
           return null;
@@ -38,6 +40,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const valid = await bcrypt.compare(password, user.passwordHash);
 
         if (!valid) {
+          return null;
+        }
+
+        if (requestedRole === "ADMIN" && user.role?.toUpperCase?.() !== "ADMIN") {
           return null;
         }
 

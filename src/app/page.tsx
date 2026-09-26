@@ -11,6 +11,7 @@ import TestimonialsCarousel from "@/app/home/components/testimonials-carousel";
 import AnimatedTyping from "@/components/animated-typing";
 import { AnimatedStatCard } from "@/components/animated-stat-card";
 import { BackToTopButton } from "@/components/back-to-top";
+import { HomeUserGreeting } from "@/components/home-user-greeting";
 
 export const revalidate = 300;
 
@@ -24,10 +25,9 @@ export default async function HomePage({
   const activeQuery = typeof resolvedSearchParams.q === "string" ? resolvedSearchParams.q.trim().toLowerCase() : "";
   const activeCategory = typeof resolvedSearchParams.category === "string" ? resolvedSearchParams.category : "All";
 
-  const desiredCourseOrder = SITE.desiredCourseOrder;
-
   const courses = await prisma.course.findMany({
     where: { isPublished: true },
+    orderBy: { createdAt: "desc" },
     select: {
       id: true,
       slug: true,
@@ -43,21 +43,17 @@ export default async function HomePage({
       instructorName: true,
       instructorTitle: true,
       previewLectureUrl: true,
+      durationHours: true,
       isPublished: true,
       isLive: true,
       language: true,
+      createdAt: true,
     },
   });
 
-  const orderedCourses = [...courses].sort((a, b) => {
-    const indexA = desiredCourseOrder.indexOf(a.slug);
-    const indexB = desiredCourseOrder.indexOf(b.slug);
-    const safeIndexA = indexA === -1 ? Number.MAX_SAFE_INTEGER : indexA;
-    const safeIndexB = indexB === -1 ? Number.MAX_SAFE_INTEGER : indexB;
-    return safeIndexA - safeIndexB;
-  });
-
-  const displayedCourses = orderedCourses;
+  const displayedCourses = [...courses].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
   const featured = displayedCourses[0];
   const heroSequence = displayedCourses.slice(0, 5);
 
@@ -110,6 +106,14 @@ export default async function HomePage({
     return matchesQuery && matchesCategory;
   });
 
+  const getCuratedSectionCourses = (isLiveOnly: boolean) => {
+    const sectionCourses = filteredCourses.filter((course) => Boolean(course.isLive) === isLiveOnly);
+    return sectionCourses.length ? sectionCourses.slice(0, 6) : filteredCourses.slice(0, 6);
+  };
+
+  const curatedLiveCourses = getCuratedSectionCourses(true);
+  const curatedRecordedCourses = getCuratedSectionCourses(false);
+
   return (
     <main id="main" className="min-h-screen bg-white text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
       <BackToTopButton />
@@ -121,6 +125,8 @@ export default async function HomePage({
             <span className="inline-flex whitespace-nowrap rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200">
               {SITE.heroBadgeText}
             </span>
+
+            <HomeUserGreeting />
 
               <h1 className="mt-6 mb-6 text-5xl whitespace-nowrap font-black leading-[1.02] tracking-[-0.03em] text-slate-900 sm:text-6xl max-w-[36ch] whitespace-normal dark:text-white">
               Build Real Skills and
@@ -195,11 +201,7 @@ export default async function HomePage({
           <h2 className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">Join Live Classroom Courses</h2>
         </div>
         <div>
-          {(() => {
-            const liveCourses = filteredCourses.filter((c) => (c as any).isLive);
-            const toShow = liveCourses.length ? liveCourses : filteredCourses.slice(0, 6);
-            return <LiveSection courses={toShow} />;
-          })()}
+          <LiveSection courses={curatedLiveCourses} />
         </div>
       </section>
 
@@ -211,11 +213,7 @@ export default async function HomePage({
         </div>
 
         <div>
-          {(() => {
-            const recorded = filteredCourses.filter((c) => !(c as any).isLive);
-            const toShow = recorded.length ? recorded.slice(0, 6) : filteredCourses.slice(0, 6);
-            return <RecordedSection courses={toShow} />;
-          })()}
+          <RecordedSection courses={curatedRecordedCourses} />
         </div>
       </section>
       </div>

@@ -8,7 +8,7 @@ export default function TechBlogPage() {
   return (
     <main className="flex min-h-[calc(100vh-180px)] items-center justify-center bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_30%),linear-gradient(135deg,_#f8fbff_0%,_#f5f3ff_50%,_#eef7ff_100%)] px-6 py-16 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top_left,_rgba(79,70,229,0.22),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(14,165,233,0.18),_transparent_26%),linear-gradient(135deg,_#020817_0%,_#0f172a_40%,_#111827_100%)]">
       <ScrollToTopOnMount />
-      <div className="w-full max-w-xl">
+      <div className="w-full max-w-6xl">
         <button
           type="button"
           onClick={() => window.history.back()}
