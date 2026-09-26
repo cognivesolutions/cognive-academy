@@ -13,7 +13,7 @@ export const FAQS = [
   },
   {
     q: "Which languages are supported?",
-    a: "Most live programs run in English and selected cohorts run in Hindi. Recorded courses include English captions and downloadable transcripts where available. Language availability is shown on each course card.",
+    a: "Most live courses run in English and selected cohorts run in Hindi. Recorded courses include English captions and downloadable transcripts where available. Language availability is shown on each course card.",
   },
   {
     q: "How do payments, upgrades, and refunds work?",
@@ -21,7 +21,7 @@ export const FAQS = [
   },
   {
     q: "Will I receive a certificate?",
-    a: "Yes. Most programs issue a certificate of completion after you finish the required projects and assessments. Certificate details are listed on the program page.",
+    a: "Yes. Most courses issue a certificate of completion after you finish the required projects and assessments. Certificate details are listed on the program page.",
   },
   {
     q: "How much time should I expect to commit per week?",
@@ -29,7 +29,7 @@ export const FAQS = [
   },
   {
     q: "What technical setup do I need?",
-    a: "A modern browser (latest Chrome/Edge/Firefox), a stable internet connection for live sessions, and a development environment for hands-on projects (Node.js and npm/Yarn for many programs). Specific tool requirements are listed on each course page.",
+    a: "A modern browser (latest Chrome/Edge/Firefox), a stable internet connection for live sessions, and a development environment for hands-on projects (Node.js and npm/Yarn for many courses). Specific tool requirements are listed on each course page.",
   },
   {
     q: "Can I switch between Live and Recorded tracks?",

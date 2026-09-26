@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import ScrollToTopOnMount from "@/components/scroll-to-top-on-mount";
+
 import AboutHeroVisual from "./components/about-hero-visual";
 import AboutHighlights from "./components/about-highlights";
 import AboutValues from "./components/about-values";
@@ -44,6 +46,7 @@ export default function AboutUsPage() {
 
   return (
     <main className={rootClasses}>
+      <ScrollToTopOnMount />
       <section className={`relative overflow-hidden ${heroBackground} py-12 md:py-16 lg:min-h-[calc(100vh-88px)] lg:py-16`}>
         <div className="mx-auto flex min-h-[calc(100vh-140px)] max-w-6xl items-center px-6">
           <div className="grid w-full items-center gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12">
@@ -59,10 +62,10 @@ export default function AboutUsPage() {
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
                 <Link
-                  href="/courses"
+                  href="/courses#course-results"
                   className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_16px_30px_rgba(79,70,229,0.26)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_20px_34px_rgba(79,70,229,0.32)]"
                 >
-                  Explore programs
+                  Explore courses
                 </Link>
                 <Link
                   href="/contact-us#contact-hero"
@@ -158,7 +161,7 @@ export default function AboutUsPage() {
             </div>
             <div className="flex flex-wrap justify-center gap-3 sm:justify-end">
               <Link
-                href="/courses"
+                href="/courses#course-results"
                 className="inline-flex items-center justify-center rounded-full bg-white/10 px-6 py-3.5 text-sm font-semibold text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.22)] backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/15 hover:shadow-[0_12px_28px_rgba(15,23,42,0.18)]"
               >
                 Explore courses

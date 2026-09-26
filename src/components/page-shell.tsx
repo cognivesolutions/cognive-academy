@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import ScrollToTopOnMount from "@/components/scroll-to-top-on-mount";
+
 type PageShellProps = {
   eyebrow?: string;
   title: string;
@@ -20,6 +22,7 @@ export default function PageShell({
 }: PageShellProps) {
   return (
     <main className={`min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.12),_transparent_30%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_30%,_#f8fafc_100%)] text-slate-900 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(14,165,233,0.12),_transparent_30%),linear-gradient(180deg,_#020817_0%,_#0f172a_32%,_#111827_100%)] dark:text-slate-50 ${className}`}>
+      <ScrollToTopOnMount />
       <div className="mx-auto max-w-5xl px-6 py-20">
         <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="max-w-3xl">

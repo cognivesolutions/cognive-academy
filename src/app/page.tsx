@@ -146,13 +146,13 @@ export default async function HomePage({
             </div>
 
             <div className="mt-8 flex flex-wrap gap-4">
-              <Link href="#courses" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(99,102,241,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:opacity-95 hover:shadow-[0_18px_34px_rgba(99,102,241,0.32)] dark:shadow-[0_14px_30px_rgba(99,102,241,0.4)]">
-                Explore programs
+              <Link href="/courses#course-results" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(99,102,241,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:opacity-95 hover:shadow-[0_18px_34px_rgba(99,102,241,0.32)] dark:shadow-[0_14px_30px_rgba(99,102,241,0.4)]">
+                Explore courses
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
                   <path fillRule="evenodd" d="M5.22 14.78a.75.75 0 0 1 0-1.06L10.94 8H6.5a.75.75 0 0 1 0-1.5h7.25a.75.75 0 0 1 .75.75v7.25a.75.75 0 0 1-1.5 0V9.06l-5.72 5.72a.75.75 0 0 1-1.06 0Z" clipRule="evenodd" />
                 </svg>
               </Link>
-              <Link href="/signup" className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-white px-6 py-3.5 text-sm font-semibold text-indigo-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-indigo-50 hover:shadow-md dark:border-indigo-500/30 dark:bg-slate-900 dark:text-indigo-200 dark:hover:bg-slate-800">
+              <Link href="/contact-us#contact-form" className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-white px-6 py-3.5 text-sm font-semibold text-indigo-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-indigo-50 hover:shadow-md dark:border-indigo-500/30 dark:bg-slate-900 dark:text-indigo-200 dark:hover:bg-slate-800">
                 Book a free call
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
                   <path fillRule="evenodd" d="M5.22 14.78a.75.75 0 0 1 0-1.06L10.94 8H6.5a.75.75 0 0 1 0-1.5h7.25a.75.75 0 0 1 .75.75v7.25a.75.75 0 0 1-1.5 0V9.06l-5.72 5.72a.75.75 0 0 1-1.06 0Z" clipRule="evenodd" />
@@ -188,19 +188,9 @@ export default async function HomePage({
       <div id="courses">
         {/* Live Classroom Courses section */}
       <section id="live-courses" className="scroll-mt-28 mx-auto max-w-6xl px-6 py-12">
-          <div className="mb-8 flex items-center justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Live Classroom</p>
-            <h2 className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">Join Live Classroom Courses</h2>
-          </div>
-          <div>
-            <Link href="/courses?type=live" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_20px_rgba(99,102,241,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:opacity-95 hover:shadow-[0_16px_28px_rgba(99,102,241,0.28)] dark:shadow-[0_14px_28px_rgba(99,102,241,0.42)]">
-              Browse all live programs
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
-                <path fillRule="evenodd" d="M5.22 14.78a.75.75 0 0 1 0-1.06L10.94 8H6.5a.75.75 0 0 1 0-1.5h7.25a.75.75 0 0 1 .75.75v7.25a.75.75 0 0 1-1.5 0V9.06l-5.72 5.72a.75.75 0 0 1-1.06 0Z" clipRule="evenodd" />
-              </svg>
-            </Link>
-          </div>
+        <div className="mb-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Live Classroom</p>
+          <h2 className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">Join Live Classroom Courses</h2>
         </div>
         <div>
           {(() => {
@@ -213,19 +203,9 @@ export default async function HomePage({
 
       {/* Recorded / Self-Paced Courses Section */}
       <section id="recorded-courses" className="scroll-mt-28 mx-auto max-w-6xl px-6 py-12">
-          <div className="mb-8 flex items-center justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Recorded</p>
-            <h2 className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">Recorded & Self-Paced Courses</h2>
-          </div>
-          <div>
-            <Link href="/courses?type=recorded" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_20px_rgba(99,102,241,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:opacity-95 hover:shadow-[0_16px_28px_rgba(99,102,241,0.28)] dark:shadow-[0_14px_28px_rgba(99,102,241,0.42)]">
-              Browse all recorded courses
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
-                <path fillRule="evenodd" d="M5.22 14.78a.75.75 0 0 1 0-1.06L10.94 8H6.5a.75.75 0 0 1 0-1.5h7.25a.75.75 0 0 1 .75.75v7.25a.75.75 0 0 1-1.5 0V9.06l-5.72 5.72a.75.75 0 0 1-1.06 0Z" clipRule="evenodd" />
-              </svg>
-            </Link>
-          </div>
+        <div className="mb-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Recorded</p>
+          <h2 className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">Recorded & Self-Paced Courses</h2>
         </div>
 
         <div>
@@ -345,7 +325,7 @@ export default async function HomePage({
                 <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">Industry-led curriculum</h3>
                 <p className="mt-3 text-slate-600 dark:text-slate-300">Courses designed and taught by practitioners — focused on projects you can show employers.</p>
                 <div className="mt-auto">
-                  <Link href="/courses" className="inline-flex items-center text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-300 dark:hover:text-white">Browse programs →</Link>
+                  <Link href="/courses#course-results" className="inline-flex items-center text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-300 dark:hover:text-white">Explore courses →</Link>
                 </div>
               </article>
 
@@ -375,7 +355,7 @@ export default async function HomePage({
                 <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">Fast, measurable progress</h3>
                 <p className="mt-3 text-slate-600 dark:text-slate-300">Structured lessons, hands-on work, and clear milestones to keep you progressing quickly.</p>
                 <div className="mt-auto">
-                  <Link href="#success-stories" className="inline-flex items-center text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-300 dark:hover:text-white">See outcomes →</Link>
+                  <Link href="/success-stories" className="inline-flex items-center text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-300 dark:hover:text-white">See outcomes →</Link>
                 </div>
               </article>
             </div>
@@ -398,7 +378,7 @@ export default async function HomePage({
                 <Link href="/signup" className="inline-flex items-center justify-center rounded-full bg-white/10 px-6 py-3.5 text-sm font-semibold text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.22)] backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/15 hover:shadow-[0_12px_28px_rgba(15,23,42,0.18)]">
                   Start learning now
                 </Link>
-                <Link href="/courses" className="inline-flex items-center justify-center rounded-full border border-white/35 bg-transparent px-6 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/10 hover:shadow-[0_12px_28px_rgba(15,23,42,0.18)]">
+                <Link href="/courses#course-results" className="inline-flex items-center justify-center rounded-full border border-white/35 bg-transparent px-6 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/10 hover:shadow-[0_12px_28px_rgba(15,23,42,0.18)]">
                   Explore courses
                 </Link>
               </div>

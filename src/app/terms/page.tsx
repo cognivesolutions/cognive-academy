@@ -11,7 +11,7 @@ export default function TermsPage() {
           </li>
           <li>
             Users are responsible for the accuracy of the information they provide while registering, enrolling, or
-            interacting with our learning platform, programs, and support services.
+            interacting with our learning platform, courses, and support services.
           </li>
           <li>
             Courses, content, and learning resources are for educational use only. They do not constitute

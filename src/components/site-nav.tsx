@@ -28,9 +28,9 @@ type NavItem =
   | { label: string; type: "link"; href: string };
 
 const navItems: NavItem[] = [
-  { label: "Courses", type: "dropdown", items: coursesMenu, href: "#courses" },
-  { label: "Resources", type: "dropdown", items: resourcesMenu, href: "#resources" },
-  { label: "Services", type: "dropdown", items: servicesMenu, href: "#services" },
+  { label: "Courses", type: "dropdown", items: coursesMenu, href: "/courses" },
+  { label: "Resources", type: "dropdown", items: resourcesMenu, href: "/resources" },
+  { label: "Services", type: "dropdown", items: servicesMenu, href: "/services" },
   { label: "Success Stories", type: "link", href: "/success-stories" },
   { label: "About Us", type: "link", href: "/about-us" },
   { label: "Contact Us", type: "link", href: "/contact-us" },
@@ -120,34 +120,45 @@ export function SiteNav() {
                   }, 250);
                 }}
               >
-                <button
-                  type="button"
-                  aria-haspopup="menu"
-                  aria-expanded={isOpen}
-                  onClick={() => {
-                    setOpenMenu(isOpen ? null : item.label);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
+                <div className="flex items-center justify-center gap-1 rounded-full px-3 py-2 transition focus-within:text-indigo-700 dark:focus-within:text-indigo-300">
+                  <Link
+                    href={item.href}
+                    className={`flex flex-col items-center justify-center leading-none transition ${isOpen || resolvedActiveLabel === item.label ? "text-indigo-700 dark:text-indigo-300" : "text-slate-700 hover:text-slate-800 dark:text-slate-200 dark:hover:text-slate-100"}`}
+                  >
+                    <span className="inline-flex translate-y-0.5 items-center gap-1.5">
+                      <span className={`tracking-normal transition-all duration-200 ${isOpen || resolvedActiveLabel === item.label ? "font-bold text-indigo-700 dark:text-indigo-300" : "font-medium text-slate-700 hover:font-medium dark:text-slate-200"}`}>
+                        {item.label}
+                      </span>
+                    </span>
+                    <span className={`mt-1 block h-[2px] w-full bg-indigo-600 transform origin-left transition-all duration-200 ${isOpen || resolvedActiveLabel === item.label ? "scale-x-100" : "scale-x-0 group-hover:scale-x-30"}`} />
+                  </Link>
+
+                  <button
+                    type="button"
+                    aria-haspopup="menu"
+                    aria-expanded={isOpen}
+                    aria-label={`Open ${item.label} menu`}
+                    onClick={() => {
                       setOpenMenu(isOpen ? null : item.label);
-                    } else if (e.key === "ArrowDown") {
-                      e.preventDefault();
-                      setOpenMenu(item.label);
-                    } else if (e.key === "Escape") {
-                      setOpenMenu(null);
-                    }
-                  }}
-                  className={`group flex flex-col items-center justify-center rounded-full px-3 py-2 transition ${isOpen || resolvedActiveLabel === item.label ? "text-indigo-700 dark:text-indigo-300" : "hover:text-slate-800 dark:hover:text-slate-200"} focus-visible:text-indigo-700 dark:focus-visible:text-indigo-300`}
-                >
-                  <div className="inline-flex items-center gap-1.5 leading-none translate-y-0.5">
-                    <span className={`tracking-normal transition-all duration-200 ${isOpen || resolvedActiveLabel === item.label ? "font-bold text-indigo-700 dark:text-indigo-300" : "font-medium text-slate-700 hover:font-medium dark:text-slate-200"}`}>{item.label}</span>
-                    <svg viewBox="0 0 20 20" fill="currentColor" className={`h-3.5 w-3.5 transition-colors duration-200 ${isOpen || resolvedActiveLabel === item.label ? "text-indigo-600 dark:text-indigo-300" : "text-slate-500 dark:text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"}`}>
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setOpenMenu(isOpen ? null : item.label);
+                      } else if (e.key === "ArrowDown") {
+                        e.preventDefault();
+                        setOpenMenu(item.label);
+                      } else if (e.key === "Escape") {
+                        setOpenMenu(null);
+                      }
+                    }}
+                    className="inline-flex items-center justify-center rounded-full p-1 text-slate-500 transition hover:text-slate-700 focus-visible:text-indigo-700 dark:text-slate-400 dark:hover:text-slate-200 dark:focus-visible:text-indigo-300"
+                  >
+                    <svg viewBox="0 0 20 20" fill="currentColor" className={`h-3.5 w-3.5 transition-colors duration-200 ${isOpen || resolvedActiveLabel === item.label ? "text-indigo-600 dark:text-indigo-300" : "text-slate-500 dark:text-slate-400"}`}>
                       <path d="M5.25 7.5 10 12.25 14.75 7.5H5.25Z" />
                     </svg>
-                  </div>
-                  <span className={`mt-1 block h-[2px] w-full bg-indigo-600 transform origin-left transition-all duration-200 ${isOpen || resolvedActiveLabel === item.label ? "scale-x-100" : "scale-x-0 group-hover:scale-x-30"}`} />
-                </button>
+                  </button>
+                </div>
 
                 {isOpen ? (
                   <div

@@ -15,7 +15,7 @@ Cognive Academy is a Next.js learning platform for online courses, live classes,
 
 ## Features
 
-- Course landing page with featured programs, filters, and search
+- Course landing page with featured courses, filters, and search
 - Live and recorded course sections
 - Student login and signup flow
 - Dashboard for enrolled courses and recent transactions

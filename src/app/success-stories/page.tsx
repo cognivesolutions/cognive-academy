@@ -230,8 +230,8 @@ export default function SuccessStoriesPage() {
                 These stories reflect the kind of progress learners make when strategy, mentorship, and practical projects come together.
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
-                <Link href="/courses" className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_16px_30px_rgba(79,70,229,0.26)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_20px_34px_rgba(79,70,229,0.32)]">
-                  Explore programs
+                <Link href="/courses#course-results" className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_16px_30px_rgba(79,70,229,0.26)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_20px_34px_rgba(79,70,229,0.32)]">
+                  Explore courses
                 </Link>
                 <Link href="/contact-us#contact-hero" className={`inline-flex items-center justify-center rounded-full border px-6 py-3.5 text-sm font-semibold shadow-[0_10px_20px_rgba(15,23,42,0.04)] transition-all duration-200 hover:-translate-y-0.5 ${isDark ? "border-slate-700 bg-slate-900 text-slate-100 hover:border-indigo-500/40 hover:bg-indigo-500/10" : "border-slate-200 bg-white text-slate-700 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700"}`}>
                   Talk to us
@@ -472,7 +472,7 @@ export default function SuccessStoriesPage() {
               </div>
               <div className="flex flex-wrap justify-center gap-3 sm:justify-end">
                 <Link
-                  href="/courses"
+                  href="/courses#course-results"
                   className="inline-flex items-center justify-center rounded-full bg-white/10 px-6 py-3.5 text-sm font-semibold text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.22)] backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/15 hover:shadow-[0_12px_28px_rgba(15,23,42,0.18)]"
                 >
                   Explore courses

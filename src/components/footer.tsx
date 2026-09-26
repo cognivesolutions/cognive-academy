@@ -10,7 +10,7 @@ import discordIcon from "@/../assets/images/icons/discord.png";
 export default function Footer() {
   return (
     <footer className="mt-auto border-t border-slate-800 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.16),_transparent_30%),linear-gradient(135deg,_#020817_0%,_#0f172a_45%,_#111827_100%)] text-slate-300 shadow-[inset_0_1px_0_rgba(148,163,184,0.08)]">
-      <div className="mx-auto max-w-6xl px-6 py-16">
+      <div className="mx-auto max-w-6xl px-6 py-5 md:py-7">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.4fr_0.8fr_0.8fr_0.8fr_1fr]">
           <div>
             <Link href="/" className="flex items-center gap-3">
@@ -56,29 +56,28 @@ export default function Footer() {
           <nav aria-label="Courses links">
             <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Courses</h3>
             <ul className="mt-5 space-y-3 text-sm text-slate-300">
-              <li><Link href="/courses/sql-for-analytics" className="hover:text-white">Data Analytics</Link></li>
-              <li><Link href="/courses/python-for-data-tasks" className="hover:text-white">Python</Link></li>
-              <li><Link href="/courses/sql-for-analytics" className="hover:text-white">SQL</Link></li>
-              <li><Link href="/courses/power-bi-dashboarding" className="hover:text-white">Power BI</Link></li>
+              <li><Link href="/courses/sql-for-analytics" className="transition-colors hover:text-indigo-300 hover:font-semibold">Data Analytics</Link></li>
+              <li><Link href="/courses/python-for-data-tasks" className="transition-colors hover:text-indigo-300 hover:font-semibold">Python</Link></li>
+              <li><Link href="/courses/sql-for-analytics" className="transition-colors hover:text-indigo-300 hover:font-semibold">SQL</Link></li>
+              <li><Link href="/courses/power-bi-dashboarding" className="transition-colors hover:text-indigo-300 hover:font-semibold">Power BI</Link></li>
             </ul>
           </nav>
 
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Services</h3>
             <ul className="mt-5 space-y-3 text-sm text-slate-300">
-              <li><Link href="/mentorship" className="hover:text-white">1:1 Mentorship</Link></li>
-              <li><Link href="/mock-interviews" className="hover:text-white">Mock Interviews</Link></li>
-              <li><Link href="/corporate-training" className="hover:text-white">Corporate Training</Link></li>
+              <li><Link href="/mentorship" className="transition-colors hover:text-indigo-300 hover:font-semibold">1:1 Mentorship</Link></li>
+              <li><Link href="/mock-interviews" className="transition-colors hover:text-indigo-300 hover:font-semibold">Mock Interviews</Link></li>
+              <li><Link href="/corporate-training" className="transition-colors hover:text-indigo-300 hover:font-semibold">Corporate Training</Link></li>
             </ul>
           </div>
 
           <nav aria-label="Resources links">
             <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Resources</h3>
             <ul className="mt-5 space-y-3 text-sm text-slate-300">
-              <li><Link href="/interview-experiences" className="hover:text-white">Interview Experiences</Link></li>
-              <li><Link href="/success-stories" className="hover:text-white">Success Stories</Link></li>
-              <li><Link href="/tech-blog" className="hover:text-white">Tech Blog</Link></li>
-              <li><Link href="/resume-analyzer" className="hover:text-white">Resume Analyzer</Link></li>
+              <li><Link href="/interview-experiences" className="transition-colors hover:text-indigo-300 hover:font-semibold">Interview Experiences</Link></li>
+              <li><Link href="/tech-blog" className="transition-colors hover:text-indigo-300 hover:font-semibold">Tech Blog</Link></li>
+              <li><Link href="/resume-analyzer" className="transition-colors hover:text-indigo-300 hover:font-semibold">Resume Analyzer</Link></li>
             </ul>
           </nav>
 
@@ -89,33 +88,33 @@ export default function Footer() {
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-slate-400" aria-hidden>
                   <path d="M6.6 10.8a15.5 15.5 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.24c1.1.36 2.3.55 3.5.55a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C11.3 21 3 12.7 3 2a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.2.19 2.4.55 3.5a1 1 0 0 1-.24 1l-2.2 2.2Z"/>
                 </svg>
-                <a href="tel:+917839649747" className="hover:text-white">+91-78396 49747</a>
+                <a href="tel:+917839649747" className="transition-colors hover:text-indigo-300 hover:font-semibold">+91-78396 49747</a>
               </li>
               <li className="flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-slate-400" aria-hidden>
                   <path d="M3 6.75A2.75 2.75 0 0 1 5.75 4h12.5A2.75 2.75 0 0 1 21 6.75v10.5A2.75 2.75 0 0 1 18.25 20H5.75A2.75 2.75 0 0 1 3 17.25V6.75Zm2.45-.5 6.3 5.08a1 1 0 0 0 1.25 0l6.3-5.08H5.45Z"/>
                 </svg>
-                <a href="mailto:cogniveacademy@gmail.com" className="hover:text-white">cogniveacademy@gmail.com</a>
+                <a href="mailto:cogniveacademy@gmail.com" className="transition-colors hover:text-indigo-300 hover:font-semibold">cogniveacademy@gmail.com</a>
               </li>
               <li className="flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-slate-400" aria-hidden>
                   <path d="M12 2.75a7.25 7.25 0 0 1 7.25 7.25c0 4.48-5.13 10.77-6.17 11.93a1 1 0 0 1-1.58 0C9.88 20.77 4.75 14.48 4.75 10A7.25 7.25 0 0 1 12 2.75Zm0 4.25a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/>
                 </svg>
-                <a href="https://maps.google.com/?q=New+Delhi+India" target="_blank" rel="noopener noreferrer" className="hover:text-white">New Delhi, India</a>
+                <a href="https://maps.google.com/?q=New+Delhi+India" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-indigo-300 hover:font-semibold">New Delhi, India</a>
               </li>
             </ul>
           </nav>
         </div>
 
-        <div className="mt-10 border-t border-slate-800 pt-6 text-sm text-slate-400 sm:flex sm:items-center sm:justify-between">
-          <p className="mb-3 sm:mb-0">© {SITE.footerYear} {SITE.name}. All rights reserved.</p>
+        <div className="mt-4 border-t border-slate-800 pt-2 text-sm text-slate-400 sm:flex sm:items-center sm:justify-between">
+          <p className="mb-0">© {SITE.footerYear} {SITE.name}. All rights reserved.</p>
 
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-            <Link href="/terms" className="transition-colors hover:text-white">Terms &amp; Conditions</Link>
-            <Link href="/privacy" className="transition-colors hover:text-white">Privacy Policy</Link>
-            <Link href="/refund" className="transition-colors hover:text-white">Refund Policy</Link>
-            <Link href="/faq" className="transition-colors hover:text-white">FAQ&apos;s</Link>
-            <Link href="/support" className="transition-colors hover:text-white">Support</Link>
+          <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-2 sm:mt-0">
+            <Link href="/terms" className="transition-colors hover:text-indigo-300 hover:font-semibold">Terms &amp; Conditions</Link>
+            <Link href="/privacy" className="transition-colors hover:text-indigo-300 hover:font-semibold">Privacy Policy</Link>
+            <Link href="/refund" className="transition-colors hover:text-indigo-300 hover:font-semibold">Refund Policy</Link>
+            <Link href="/faq" className="transition-colors hover:text-indigo-300 hover:font-semibold">FAQ&apos;s</Link>
+            <Link href="/support" className="transition-colors hover:text-indigo-300 hover:font-semibold">Support</Link>
           </div>
         </div>
       </div>

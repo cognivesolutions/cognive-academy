@@ -16,7 +16,7 @@ export const SITE = {
     { value: "4.9/5", label: "Average course rating" },
     { value: "25+", label: "Active Learners" },
   ],
-  programs: ["Analytics Bootcamp", "SQL for Analysts", "Power BI Mastery"],
+  courses: ["Analytics Bootcamp", "SQL for Analysts", "Power BI Mastery"],
   desiredCourseOrder: [
     "python-for-data-tasks",
     "sql-for-analytics",
