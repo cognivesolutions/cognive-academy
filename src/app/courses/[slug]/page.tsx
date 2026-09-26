@@ -32,26 +32,26 @@ export default async function CourseDetailPage({
   const price = Number(course.price);
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
+    <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-50">
       <div className="mx-auto max-w-6xl px-6 py-12">
         <div className="grid gap-8 lg:grid-cols-[1.4fr_0.6fr]">
           <section>
-            <span className="inline-flex rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-indigo-700">
+            <span className="inline-flex rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-200">
               {course.category} course
             </span>
-            <h1 className="mt-4 text-4xl font-black tracking-[-0.05em] text-slate-900 sm:text-5xl">{course.title}</h1>
-            <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-600">{course.description}</p>
+            <h1 className="mt-4 text-4xl font-black tracking-[-0.05em] text-slate-900 dark:text-white sm:text-5xl">{course.title}</h1>
+            <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">{course.description}</p>
 
-            <div className="mt-6 flex flex-wrap gap-4 text-sm text-slate-600">
-              <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5">{course.level}</span>
-              <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5">{course.durationHours ?? 0} hours</span>
-              <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5">{course.modules.length} modules</span>
+            <div className="mt-6 flex flex-wrap gap-4 text-sm text-slate-600 dark:text-slate-300">
+              <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5 dark:border-slate-700 dark:bg-slate-900">{course.level}</span>
+              <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5 dark:border-slate-700 dark:bg-slate-900">{course.durationHours ?? 0} hours</span>
+              <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5 dark:border-slate-700 dark:bg-slate-900">{course.modules.length} modules</span>
             </div>
 
-            <div className="mt-8 rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
+            <div className="mt-8 rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_22px_54px_rgba(99,102,241,0.12)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[0_20px_56px_rgba(2,6,23,0.45)]">
               <div className="mb-4 flex items-center justify-between gap-4">
-                <h2 className="text-xl font-black text-slate-900">Preview lecture</h2>
-                <span className="text-sm text-slate-500">Starter lesson</span>
+                <h2 className="text-xl font-black text-slate-900 dark:text-white">Preview lecture</h2>
+                <span className="text-sm text-slate-500 dark:text-slate-400">Starter lesson</span>
               </div>
               <div className="flex aspect-video items-center justify-center rounded-[22px] bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-700 text-lg font-semibold text-white">
                 {course.previewLectureUrl ? "Watch the intro walkthrough" : "Preview is unavailable yet"}
@@ -59,17 +59,17 @@ export default async function CourseDetailPage({
             </div>
 
             <div className="mt-10">
-              <h2 className="text-2xl font-black tracking-tight text-slate-900">Syllabus breakdown</h2>
+              <h2 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Syllabus breakdown</h2>
               <div className="mt-6 space-y-5">
                 {course.modules.map((module, index) => (
-                  <div key={module.id} className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+                  <div key={module.id} className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_20px_44px_rgba(79,70,229,0.08)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[0_18px_32px_rgba(2,6,23,0.35)]">
                     <div className="flex items-center justify-between gap-4">
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-indigo-600">Module {index + 1}</span>
-                      <span className="text-sm text-slate-500">{module.lectures.length} lessons</span>
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-indigo-600 dark:text-indigo-300">Module {index + 1}</span>
+                      <span className="text-sm text-slate-500 dark:text-slate-400">{module.lectures.length} lessons</span>
                     </div>
-                    <h3 className="mt-3 text-xl font-bold text-slate-900">{module.title}</h3>
-                    {module.description ? <p className="mt-2 text-slate-600">{module.description}</p> : null}
-                    <ul className="mt-3 space-y-2 text-slate-600">
+                    <h3 className="mt-3 text-xl font-bold text-slate-900 dark:text-white">{module.title}</h3>
+                    {module.description ? <p className="mt-2 text-slate-600 dark:text-slate-300">{module.description}</p> : null}
+                    <ul className="mt-3 space-y-2 text-slate-600 dark:text-slate-300">
                       {module.lectures.map((lecture) => (
                         <li key={lecture.id} className="flex gap-2">
                           <span className="mt-1 h-2 w-2 rounded-full bg-indigo-600" />
@@ -84,13 +84,13 @@ export default async function CourseDetailPage({
           </section>
 
           <aside className="lg:pt-8">
-            <div className="sticky top-8 rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
-              <div className="text-sm text-slate-500">Course price</div>
+            <div className="sticky top-8 rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_58px_rgba(79,70,229,0.12)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[0_20px_52px_rgba(2,6,23,0.45)]">
+              <div className="text-sm text-slate-500 dark:text-slate-400">Course price</div>
               <div className="mt-3 flex items-baseline gap-3">
-                <span className="text-4xl font-black tracking-tight text-slate-900">₹{price.toLocaleString("en-IN")}</span>
+                <span className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">₹{price.toLocaleString("en-IN")}</span>
                 <span className="text-lg text-slate-400 line-through">₹{(price * 1.35).toLocaleString("en-IN")}</span>
               </div>
-              <p className="mt-3 text-sm text-slate-600">Includes lifetime access, recorded sessions, and downloadable resources.</p>
+              <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">Includes lifetime access, recorded sessions, and downloadable resources.</p>
 
               <CheckoutButton
                 course={{
@@ -104,14 +104,14 @@ export default async function CourseDetailPage({
                 isAuthenticated={Boolean(session?.user?.id)}
               />
 
-              <a href={course.previewLectureUrl ?? "#"} className="mt-3 inline-flex w-full items-center justify-center rounded-full border border-slate-300 bg-white px-5 py-3 font-semibold text-slate-800 hover:bg-slate-50">
+              <a href={course.previewLectureUrl ?? "#"} className="mt-3 inline-flex w-full items-center justify-center rounded-full border border-slate-300 bg-white px-5 py-3 font-semibold text-slate-800 transition-all duration-200 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">
                 Preview course
               </a>
 
-              <div className="mt-6 space-y-3 border-t border-slate-200 pt-5 text-sm text-slate-600">
-                <div className="flex justify-between"><span>Access</span><span className="font-semibold text-slate-900">Lifetime</span></div>
-                <div className="flex justify-between"><span>Format</span><span className="font-semibold text-slate-900">{course.level} track</span></div>
-                <div className="flex justify-between"><span>Support</span><span className="font-semibold text-slate-900">Mentor Q&A</span></div>
+              <div className="mt-6 space-y-3 border-t border-slate-200 pt-5 text-sm text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                <div className="flex justify-between"><span>Access</span><span className="font-semibold text-slate-900 dark:text-white">Lifetime</span></div>
+                <div className="flex justify-between"><span>Format</span><span className="font-semibold text-slate-900 dark:text-white">{course.level} track</span></div>
+                <div className="flex justify-between"><span>Support</span><span className="font-semibold text-slate-900 dark:text-white">Mentor Q&A</span></div>
               </div>
             </div>
           </aside>

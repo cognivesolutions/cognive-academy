@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 
 const coursesMenu = [
@@ -15,7 +15,6 @@ const resourcesMenu = [
   { label: "Resume Analyzer", href: "/resume-analyzer" },
   { label: "Tech Blog", href: "/tech-blog" },
   { label: "Interview Experiences", href: "/interview-experiences" },
-  { label: "Success Stories", href: "/success-stories" },
 ];
 
 const servicesMenu = [
@@ -45,6 +44,36 @@ export function SiteNav() {
   const navRef = useRef<HTMLDivElement | null>(null);
   const menuFirstRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
 
+  const routeActiveLabel = useMemo(() => {
+    if (!pathname) return null;
+
+    const normalizedPath = pathname.split("#")[0];
+    const childRouteParent = navItems.find(
+      (item) =>
+        item.type === "dropdown" &&
+        item.items.some(
+          (subItem) => normalizedPath === subItem.href || normalizedPath.startsWith(`${subItem.href}/`),
+        ),
+    );
+
+    if (childRouteParent) return childRouteParent.label;
+
+    const exactMatch = navItems.find((n) => n.href === normalizedPath || n.href === `#${normalizedPath.replace(/^\/+/, "")}`);
+    if (exactMatch) return exactMatch.label;
+
+    if (typeof window !== "undefined") {
+      const hash = window.location.hash;
+      if (hash) {
+        const match = navItems.find((n) => n.href === hash);
+        if (match) return match.label;
+      }
+    }
+
+    return null;
+  }, [pathname]);
+
+  const resolvedActiveLabel = routeActiveLabel ?? activeLabel;
+
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
       if (navRef.current && !navRef.current.contains(event.target as Node)) {
@@ -55,34 +84,6 @@ export function SiteNav() {
     document.addEventListener("mousedown", handlePointerDown);
     return () => document.removeEventListener("mousedown", handlePointerDown);
   }, []);
-
-  // Derive active nav item from pathname when available (more reliable than hash/click state)
-  useEffect(() => {
-    if (!pathname) return;
-
-    // If the nav item hrefs are hashes, map pathname to sections if possible.
-    // Prefer exact matches first, then try to match anchors by pathname+hash.
-    const exactMatch = navItems.find((n) => n.href === pathname || n.href === `#${pathname.replace(/\/#?/, "")}`);
-    if (exactMatch) {
-      setActiveLabel(exactMatch.label);
-      return;
-    }
-
-    // If current path includes a section anchor (e.g. /#courses), extract hash
-    if (typeof window !== "undefined") {
-      const hash = window.location.hash;
-      if (hash) {
-        const match = navItems.find((n) => n.href === hash);
-        if (match) {
-          setActiveLabel(match.label);
-          return;
-        }
-      }
-    }
-
-    // Fallback: clear active label when no match
-    setActiveLabel(null);
-  }, [pathname]);
 
   // When a menu opens, focus its first item for keyboard users
   useEffect(() => {
@@ -117,7 +118,6 @@ export function SiteNav() {
                 onMouseLeave={() => {
                   closeTimeoutRef.current = window.setTimeout(() => {
                     setOpenMenu(null);
-                    setActiveLabel(null);
                     closeTimeoutRef.current = null;
                   }, 250);
                 }}
@@ -142,15 +142,15 @@ export function SiteNav() {
                       setOpenMenu(null);
                     }
                   }}
-                  className={`group flex flex-col items-center justify-center rounded-full px-3 py-2 transition ${isOpen || activeLabel === item.label ? "text-indigo-700 dark:text-indigo-300" : "hover:text-indigo-700 dark:hover:text-indigo-300"} focus-visible:text-indigo-700 dark:focus-visible:text-indigo-300`}
+                  className={`group flex flex-col items-center justify-center rounded-full px-3 py-2 transition ${isOpen || resolvedActiveLabel === item.label ? "text-indigo-700 dark:text-indigo-300" : "hover:text-indigo-700 dark:hover:text-indigo-300"} focus-visible:text-indigo-700 dark:focus-visible:text-indigo-300`}
                 >
                   <div className="inline-flex items-center gap-1.5 leading-none translate-y-0.5">
-                    <span className={`tracking-normal group-hover:font-bold group-active:font-bold group-focus-visible:font-bold group-active:text-indigo-700 group-focus-visible:text-indigo-700 active:font-bold active:text-indigo-700 ${isOpen || activeLabel === item.label ? "font-bold text-indigo-700 dark:text-indigo-300" : "dark:text-slate-200"}`}>{item.label}</span>
+                    <span className={`tracking-normal group-hover:font-bold group-active:font-bold group-focus-visible:font-bold group-active:text-indigo-700 group-focus-visible:text-indigo-700 active:font-bold active:text-indigo-700 ${isOpen || resolvedActiveLabel === item.label ? "font-bold text-indigo-700 dark:text-indigo-300" : "dark:text-slate-200"}`}>{item.label}</span>
                     <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400">
                       <path d="M5.25 7.5 10 12.25 14.75 7.5H5.25Z" />
                     </svg>
                   </div>
-                  <span className={`mt-1 block h-[2px] w-full bg-indigo-600 transform ${isOpen || activeLabel === item.label ? "scale-x-100" : "scale-x-0"} origin-left transition-transform duration-200 group-hover:scale-x-100`} />
+                  <span className={`mt-1 block h-[2px] w-full bg-indigo-600 transform ${isOpen || resolvedActiveLabel === item.label ? "scale-x-100" : "scale-x-0"} origin-left transition-transform duration-200 group-hover:scale-x-100`} />
                 </button>
 
                 {isOpen ? (
@@ -168,7 +168,6 @@ export function SiteNav() {
                     onMouseLeave={() => {
                       closeTimeoutRef.current = window.setTimeout(() => {
                         setOpenMenu(null);
-                        setActiveLabel(null);
                         closeTimeoutRef.current = null;
                       }, 250);
                     }}
@@ -205,11 +204,11 @@ export function SiteNav() {
             <Link
               key={item.label}
               href={item.href}
-              className={`group inline-flex flex-col items-center justify-center rounded-full px-3 py-2 transition ${activeLabel === item.label ? "text-indigo-700 dark:text-indigo-300" : "hover:text-indigo-700 dark:hover:text-indigo-300"} focus-visible:text-indigo-700 dark:focus-visible:text-indigo-300`}
+              className={`group inline-flex flex-col items-center justify-center rounded-full px-3 py-2 transition ${resolvedActiveLabel === item.label ? "text-indigo-700 dark:text-indigo-300" : "hover:text-indigo-700 dark:hover:text-indigo-300"} focus-visible:text-indigo-700 dark:focus-visible:text-indigo-300`}
               onClick={() => setActiveLabel(item.label)}
             >
-              <span className={`leading-none tracking-normal translate-y-0.5 group-hover:font-bold group-active:font-bold group-focus-visible:font-bold group-active:text-indigo-700 group-focus-visible:text-indigo-700 active:font-bold active:text-indigo-700 ${activeLabel === item.label ? "font-bold dark:text-indigo-300" : "dark:text-slate-200"}`}>{item.label}</span>
-              <span className={`mt-1 block h-[2px] w-full bg-indigo-600 transform ${activeLabel === item.label ? "scale-x-100" : "scale-x-0"} origin-left transition-transform duration-200 group-hover:scale-x-100`} />
+              <span className={`leading-none tracking-normal translate-y-0.5 group-hover:font-bold group-active:font-bold group-focus-visible:font-bold group-active:text-indigo-700 group-focus-visible:text-indigo-700 active:font-bold active:text-indigo-700 ${resolvedActiveLabel === item.label ? "font-bold text-indigo-700 dark:text-indigo-300" : "dark:text-slate-200"}`}>{item.label}</span>
+              <span className={`mt-1 block h-[2px] w-full bg-indigo-600 transform ${resolvedActiveLabel === item.label ? "scale-x-100" : "scale-x-0"} origin-left transition-transform duration-200 group-hover:scale-x-100`} />
             </Link>
           );
         })}
