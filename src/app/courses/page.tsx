@@ -66,6 +66,8 @@ export default async function CoursesPage({
       instructorName: true,
       previewLectureUrl: true,
       durationHours: true,
+      isLive: true,
+      language: true,
     },
   });
 
@@ -144,6 +146,9 @@ export default async function CoursesPage({
   const safePage = Math.min(Math.max(1, activePage), totalPages);
   const startIndex = (safePage - 1) * pageSize;
   const visibleCourses = coursesByLanguage.slice(startIndex, startIndex + pageSize);
+  const activeTypeLabel = activeType === "all" ? "All courses" : activeType === "live" ? "Live" : "Recorded";
+  const activeLangLabel = activeLang === "en" ? "English" : "Hindi";
+  const filterStatusText = `Showing ${coursesByLanguage.length} ${coursesByLanguage.length === 1 ? "course" : "courses"} • ${activeTypeLabel} • ${activeLangLabel}`;
 
   const stats = [
     { label: "Career-ready courses", value: 10, suffix: "+" },
@@ -306,6 +311,13 @@ export default async function CoursesPage({
               })}
             </div>
           </div>
+        </div>
+
+        <div className="mb-4 flex items-center justify-start">
+          <span className="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-white/80 px-3 py-1.5 text-xs font-semibold tracking-[0.14em] text-slate-700 uppercase shadow-sm dark:border-indigo-500/30 dark:bg-slate-900/70 dark:text-slate-200">
+            <span className="h-2 w-2 rounded-full bg-indigo-500" />
+            {filterStatusText}
+          </span>
         </div>
 
         {rawQuery ? (

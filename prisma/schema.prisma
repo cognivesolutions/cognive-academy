@@ -38,6 +38,8 @@ model Course {
   currency         String         @default("INR")
   featured         Boolean        @default(false)
   isPublished      Boolean        @default(true)
+  isLive           Boolean        @default(false)
+  language         String         @default("en")
   imageUrl         String?
   instructorName   String
   instructorTitle  String?

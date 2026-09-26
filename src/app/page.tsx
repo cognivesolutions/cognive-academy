@@ -44,6 +44,8 @@ export default async function HomePage({
       instructorTitle: true,
       previewLectureUrl: true,
       isPublished: true,
+      isLive: true,
+      language: true,
     },
   });
 
