@@ -18,7 +18,7 @@ const menuItems = [
   },
   {
     label: "My courses",
-    href: "/dashboard#courses",
+    href: "/my-courses",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
         <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H20v13.5A2.5 2.5 0 0 0 17.5 20H6.5A2.5 2.5 0 0 1 4 17.5v-11Z" />
@@ -28,7 +28,7 @@ const menuItems = [
   },
   {
     label: "Transactions",
-    href: "/dashboard#transactions",
+    href: "/transactions",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
         <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-9Z" />

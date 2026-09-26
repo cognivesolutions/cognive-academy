@@ -20,6 +20,10 @@ export default async function ProfilePage() {
       phone: true,
       bio: true,
       role: true,
+      emailNotifications: true,
+      courseReminders: true,
+      marketingEmails: true,
+      securityAlerts: true,
     },
   });
 

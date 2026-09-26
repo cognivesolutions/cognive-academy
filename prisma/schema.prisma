@@ -8,16 +8,20 @@ generator client {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  name         String?
-  email        String    @unique
-  passwordHash String?
-  role         String    @default("STUDENT")
-  avatarUrl    String?
-  bio          String?
-  phone        String?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id                 String    @id @default(cuid())
+  name               String?
+  email              String    @unique
+  passwordHash       String?
+  role               String    @default("STUDENT")
+  avatarUrl          String?
+  bio                String?
+  phone              String?
+  emailNotifications Boolean   @default(true)
+  courseReminders    Boolean   @default(true)
+  marketingEmails    Boolean   @default(false)
+  securityAlerts     Boolean   @default(true)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   orders      Order[]
   enrollments Enrollment[]
