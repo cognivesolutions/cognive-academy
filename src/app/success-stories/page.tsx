@@ -241,8 +241,8 @@ export default function SuccessStoriesPage() {
               <div className={`absolute -left-8 top-10 h-28 w-28 rounded-full blur-2xl ${isDark ? "bg-violet-500/30" : "bg-violet-200/70"}`} aria-hidden="true" />
               <div className={`absolute -right-8 bottom-8 h-32 w-32 rounded-full blur-2xl ${isDark ? "bg-cyan-500/30" : "bg-cyan-200/70"}`} aria-hidden="true" />
 
-              <div className={`relative rounded-[32px] border p-4 pb-5 shadow-[0_30px_70px_rgba(15,23,42,0.12)] backdrop-blur-sm ${isDark ? "border-slate-800 bg-slate-900/80" : "border-slate-200 bg-white/80"}`}>
-                <div className="rounded-[28px] bg-slate-900 p-5 text-white shadow-[0_28px_60px_rgba(15,23,42,0.24)]">
+              <div className={`group relative rounded-[32px] border p-4 pb-5 shadow-[0_30px_70px_rgba(15,23,42,0.12)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_32px_70px_rgba(79,70,229,0.18)] ${isDark ? "border-slate-800 bg-slate-900/80" : "border-slate-200 bg-white/80"}`}>
+                <div className="rounded-[28px] bg-slate-900 p-5 text-white shadow-[0_28px_60px_rgba(15,23,42,0.24)] transition-transform duration-300 group-hover:scale-[1.01]">
                   <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.18em] text-indigo-100/80">
                     <span>Outcome tracker</span>
                     <span className="rounded-full border border-white/20 bg-white/5 px-2 py-1">
@@ -252,7 +252,7 @@ export default function SuccessStoriesPage() {
 
                   <div className="mt-5 space-y-3">
                     {stats.map((item) => (
-                      <div key={item.label} className="rounded-2xl bg-white/6 p-3 ring-1 ring-white/10">
+                      <div key={item.label} className="rounded-2xl bg-white/6 p-3 ring-1 ring-white/10 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/10 hover:ring-indigo-300/30">
                         <div className="flex items-center justify-between gap-3 text-sm text-slate-200">
                           <span>{item.label}</span>
                           <span className="text-lg font-black text-white"><AnimatedCounter value={item.value} suffix={item.suffix} /></span>
@@ -262,7 +262,7 @@ export default function SuccessStoriesPage() {
                   </div>
                 </div>
 
-                <div className={`relative z-10 mt-4 rounded-[24px] border p-4 shadow-[0_18px_40px_rgba(15,23,42,0.08)] ${isDark ? "border-slate-700 bg-slate-900/80" : "border-slate-200 bg-white"}`}>
+                <div className={`relative z-10 mt-4 rounded-[24px] border p-4 shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-[0_20px_42px_rgba(79,70,229,0.12)] ${isDark ? "border-slate-700 bg-slate-900/80" : "border-slate-200 bg-white"}`}>
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <div className={`text-[11px] uppercase tracking-[0.2em] ${isDark ? "text-slate-400" : "text-slate-400"}`}>Career win</div>
@@ -399,7 +399,10 @@ export default function SuccessStoriesPage() {
                   { label: "Prep focus", value: featuredInterviewStory.interview.prep },
                   { label: "Final outcome", value: featuredInterviewStory.interview.outcome },
                 ].map((item) => (
-                  <div key={item.label} className={`rounded-2xl border p-4 ${isDark ? "border-slate-700 bg-slate-800/80" : "border-slate-200 bg-slate-50"}`}>
+                  <div
+                    key={item.label}
+                    className={`group rounded-2xl border p-4 transition-all duration-300 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-[0_18px_34px_rgba(99,102,241,0.12)] ${isDark ? "border-slate-700 bg-slate-800/80 hover:bg-slate-800" : "border-slate-200 bg-slate-50 hover:bg-white"}`}
+                  >
                     <div className={`text-[10px] font-semibold uppercase tracking-[0.18em] ${isDark ? "text-slate-400" : "text-slate-500"}`}>{item.label}</div>
                     <div className={`mt-2 text-sm font-bold leading-6 ${isDark ? "text-slate-100" : "text-slate-800"}`}>{item.value}</div>
                   </div>
@@ -430,8 +433,11 @@ export default function SuccessStoriesPage() {
 
           <div className="grid gap-6 md:grid-cols-3">
             {journeySteps.map((step, index) => (
-              <div key={step.title} className={`rounded-[28px] border p-6 shadow-sm ${isDark ? "border-slate-700 bg-slate-900" : "border-slate-200 bg-white"}`}>
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-lg font-black text-white shadow-[0_12px_24px_rgba(99,102,241,0.2)]">
+              <div
+                key={step.title}
+                className={`group rounded-[28px] border p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_20px_40px_rgba(99,102,241,0.12)] ${isDark ? "border-slate-700 bg-slate-900 hover:bg-slate-900/90" : "border-slate-200 bg-white hover:bg-indigo-50/30"}`}
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-lg font-black text-white shadow-[0_12px_24px_rgba(99,102,241,0.2)] transition-transform duration-300 group-hover:scale-105">
                   0{index + 1}
                 </div>
                 <h3 className={`mt-5 text-2xl font-bold ${isDark ? "text-white" : "text-slate-900"}`}>{step.title}</h3>
@@ -454,7 +460,7 @@ export default function SuccessStoriesPage() {
 
       <section className={`border-t ${isDark ? "border-slate-800 bg-slate-950" : "border-slate-200 bg-white"}`}>
         <div className="mx-auto max-w-6xl px-6 py-16">
-          <div className="rounded-[32px] bg-gradient-to-r from-[#4b35d7] via-[#6f46d8] to-[#39a9ea] p-8 shadow-[0_24px_60px_rgba(89,66,214,0.28)] md:p-10">
+          <div className="rounded-[32px] bg-gradient-to-r from-[#4b35d7] via-[#6f46d8] to-[#39a9ea] p-8 shadow-[0_24px_60px_rgba(89,66,214,0.28)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_70px_rgba(89,66,214,0.34)] md:p-10">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-2xl">
                 <p className="text-sm font-semibold uppercase tracking-[0.22em] text-indigo-100">Ready for your next move?</p>

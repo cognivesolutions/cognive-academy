@@ -32,7 +32,7 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggleTheme}
-      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-[linear-gradient(135deg,rgba(255,255,255,0.8),rgba(255,255,255,0.12),rgba(99,102,241,0.18))] text-[1.15rem] text-slate-700 shadow-[0_10px_25px_rgba(99,102,241,0.12)] backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-200/80 hover:shadow-[0_14px_28px_rgba(99,102,241,0.18)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-200 dark:border-slate-700/70 dark:bg-[linear-gradient(135deg,rgba(15,23,42,0.88),rgba(30,41,59,0.7),rgba(99,102,241,0.28))] dark:text-slate-100"
+      className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[1.15rem] text-slate-700 transition-all duration-200 hover:scale-105 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-200 dark:text-slate-100 dark:hover:text-amber-300"
       aria-label={`Switch to ${isDarkTheme ? "light" : "dark"} mode`}
       title={`Switch to ${isDarkTheme ? "light" : "dark"} mode`}
     >
