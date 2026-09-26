@@ -39,7 +39,7 @@ const contactItems = [
   },
 ];
 
-export default function ContactCards() {
+export default function ContactCards({ isDark = false }: { isDark?: boolean }) {
   return (
     <div className="grid gap-3 lg:pt-1">
       {contactItems.map((item) => (
@@ -48,7 +48,7 @@ export default function ContactCards() {
           href={item.href}
           target={item.target}
           rel={item.target === "_blank" ? "noreferrer" : undefined}
-          className="group block rounded-[26px] border border-slate-200/80 bg-white/90 p-4 shadow-[0_20px_42px_rgba(15,23,42,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:bg-white hover:shadow-[0_26px_54px_rgba(15,23,42,0.09)]"
+          className={`group block rounded-[26px] border p-4 shadow-[0_20px_42px_rgba(15,23,42,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_26px_54px_rgba(15,23,42,0.09)] ${isDark ? "border-slate-700 bg-slate-900/80 hover:border-slate-600 hover:bg-slate-900" : "border-slate-200/80 bg-white/90 hover:border-slate-300 hover:bg-white"}`}
         >
           <div className="flex items-center gap-3.5">
             <div className={`flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[20px] ${item.badge}`}>
@@ -56,9 +56,9 @@ export default function ContactCards() {
             </div>
 
             <div className="min-w-0 flex-1">
-              <h3 className="text-sm font-bold text-slate-800 transition-colors duration-200 group-hover:text-slate-900">{item.title}</h3>
+              <h3 className={`text-sm font-bold transition-colors duration-200 ${isDark ? "text-slate-100 group-hover:text-white" : "text-slate-800 group-hover:text-slate-900"}`}>{item.title}</h3>
               <div className={`mt-1 text-sm font-semibold ${item.text} transition-colors duration-200`}>{item.value}</div>
-              <div className="mt-1 text-[11px] text-slate-500 transition-colors duration-200 group-hover:text-slate-600">{item.detail}</div>
+              <div className={`mt-1 text-[11px] transition-colors duration-200 ${isDark ? "text-slate-400 group-hover:text-slate-300" : "text-slate-500 group-hover:text-slate-600"}`}>{item.detail}</div>
             </div>
           </div>
         </a>

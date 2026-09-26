@@ -241,8 +241,8 @@ export default function SuccessStoriesPage() {
               <div className={`absolute -left-8 top-10 h-28 w-28 rounded-full blur-2xl ${isDark ? "bg-violet-500/30" : "bg-violet-200/70"}`} aria-hidden="true" />
               <div className={`absolute -right-8 bottom-8 h-32 w-32 rounded-full blur-2xl ${isDark ? "bg-cyan-500/30" : "bg-cyan-200/70"}`} aria-hidden="true" />
 
-              <div className={`group relative rounded-[32px] border p-4 pb-5 shadow-[0_30px_70px_rgba(15,23,42,0.12)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_32px_70px_rgba(79,70,229,0.18)] ${isDark ? "border-slate-800 bg-slate-900/80" : "border-slate-200 bg-white/80"}`}>
-                <div className="rounded-[28px] bg-slate-900 p-5 text-white shadow-[0_28px_60px_rgba(15,23,42,0.24)] transition-transform duration-300 group-hover:scale-[1.01]">
+              <div className={`group relative rounded-[32px] border p-4 pb-5 shadow-[0_30px_70px_rgba(15,23,42,0.12)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_40px_120px_rgba(79,70,229,0.3),0_20px_45px_rgba(15,23,42,0.18)] hover:border-indigo-200/60 ${isDark ? "border-slate-800 bg-slate-900/80" : "border-slate-200 bg-white/80"}`}>
+                <div className="rounded-[28px] bg-slate-900 p-5 text-white shadow-[0_28px_60px_rgba(15,23,42,0.24)] transition-all duration-300 transform-gpu hover:-translate-y-1.5 hover:shadow-[0_42px_120px_rgba(79,70,229,0.35),0_24px_50px_rgba(14,165,233,0.2)] hover:ring-2 hover:ring-indigo-300/50 hover:border hover:border-indigo-200/40 hover:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.28),_transparent_42%),linear-gradient(145deg,_#0f172a_0%,_#111827_25%,_#312e81_100%)]">
                   <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.18em] text-indigo-100/80">
                     <span>Outcome tracker</span>
                     <span className="rounded-full border border-white/20 bg-white/5 px-2 py-1">
@@ -252,7 +252,7 @@ export default function SuccessStoriesPage() {
 
                   <div className="mt-5 space-y-3">
                     {stats.map((item) => (
-                      <div key={item.label} className="rounded-2xl bg-white/6 p-3 ring-1 ring-white/10 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/10 hover:ring-indigo-300/30">
+                      <div key={item.label} className="rounded-2xl bg-white/6 p-3 ring-1 ring-white/10 transition-all duration-300 hover:-translate-y-1 hover:bg-white/12 hover:shadow-[0_22px_40px_rgba(99,102,241,0.24),0_12px_25px_rgba(14,165,233,0.18)] hover:ring-2 hover:ring-indigo-200/60">
                         <div className="flex items-center justify-between gap-3 text-sm text-slate-200">
                           <span>{item.label}</span>
                           <span className="text-lg font-black text-white"><AnimatedCounter value={item.value} suffix={item.suffix} /></span>
@@ -262,7 +262,7 @@ export default function SuccessStoriesPage() {
                   </div>
                 </div>
 
-                <div className={`relative z-10 mt-4 rounded-[24px] border p-4 shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-[0_20px_42px_rgba(79,70,229,0.12)] ${isDark ? "border-slate-700 bg-slate-900/80" : "border-slate-200 bg-white"}`}>
+                <div className={`relative z-10 mt-4 rounded-[24px] border p-4 shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_45px_rgba(79,70,229,0.18),0_12px_30px_rgba(15,23,42,0.12)] hover:border-indigo-200/60 hover:ring-1 hover:ring-indigo-200/40 ${isDark ? "border-slate-700 bg-slate-900/80" : "border-slate-200 bg-white"}`}>
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <div className={`text-[11px] uppercase tracking-[0.2em] ${isDark ? "text-slate-400" : "text-slate-400"}`}>Career win</div>

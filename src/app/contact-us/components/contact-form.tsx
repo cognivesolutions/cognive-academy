@@ -9,7 +9,7 @@ type FeedbackState = {
   message: string;
 };
 
-export default function ContactForm({ courses = [] }: { courses?: CourseOption[] }) {
+export default function ContactForm({ courses = [], isDark = false }: { courses?: CourseOption[]; isDark?: boolean }) {
   const [form, setForm] = useState({ name: "", email: "", phone: "", occupation: "", course: "", message: "" });
   const [courseMenuOpen, setCourseMenuOpen] = useState(false);
   const [feedback, setFeedback] = useState<FeedbackState | null>(null);
@@ -66,49 +66,49 @@ export default function ContactForm({ courses = [] }: { courses?: CourseOption[]
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full rounded-[30px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_28px_70px_-26px_rgba(15,23,42,0.25)] backdrop-blur-sm md:p-6 lg:p-7">
+    <form onSubmit={handleSubmit} className={`w-full rounded-[30px] border p-5 shadow-[0_28px_70px_-26px_rgba(15,23,42,0.25)] backdrop-blur-sm md:p-6 lg:p-7 ${isDark ? "border-slate-700 bg-slate-900/85" : "border-slate-200/80 bg-white/90"}`}>
       <div className="mb-5">
-        <div className="inline-flex items-center rounded-full border border-indigo-200 bg-gradient-to-r from-indigo-50 to-violet-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-indigo-700 shadow-sm">Education for everyone</div>
-        <h2 className="mt-3 text-xl font-bold leading-tight text-slate-900 lg:text-[1.75rem]">Fill out the form below, and one of our friendly representatives will give you a call as soon as possible.</h2>
+        <div className={`inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] shadow-sm ${isDark ? "border-indigo-500/30 bg-indigo-500/10 text-indigo-200" : "border-indigo-200 bg-gradient-to-r from-indigo-50 to-violet-50 text-indigo-700"}`}>Education for everyone</div>
+        <h2 className={`mt-3 text-xl font-bold leading-tight lg:text-[1.75rem] ${isDark ? "text-white" : "text-slate-900"}`}>Fill out the form below, and one of our friendly representatives will give you a call as soon as possible.</h2>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="md:col-span-2">
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Name <span className="text-red-500">*</span></label>
-          <input name="name" value={form.name} onChange={handleChange} required placeholder="Enter your full name" className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50/80 px-3.5 py-3 text-sm text-slate-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] outline-none transition-all duration-200 placeholder:text-sm placeholder:font-medium placeholder:text-slate-400 hover:border-slate-300 focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-100" />
+          <label className={`mb-1.5 block text-sm font-medium ${isDark ? "text-slate-200" : "text-slate-700"}`}>Name <span className="text-red-500">*</span></label>
+          <input name="name" value={form.name} onChange={handleChange} required placeholder="Enter your full name" className={`h-12 w-full rounded-2xl border px-3.5 py-3 text-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] outline-none transition-all duration-200 placeholder:text-sm placeholder:font-medium hover:border-slate-300 focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 ${isDark ? "border-slate-700 bg-slate-800/80 text-slate-50 placeholder:text-slate-400 focus:bg-slate-800" : "border-slate-200 bg-slate-50/80 text-slate-800 placeholder:text-slate-400 focus:bg-white"}`} />
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Email <span className="text-red-500">*</span></label>
-          <input name="email" type="email" value={form.email} onChange={handleChange} required placeholder="Enter your email" className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50/80 px-3.5 py-3 text-sm text-slate-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] outline-none transition-all duration-200 placeholder:text-sm placeholder:font-medium placeholder:text-slate-400 hover:border-slate-300 focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-100" />
+          <label className={`mb-1.5 block text-sm font-medium ${isDark ? "text-slate-200" : "text-slate-700"}`}>Email <span className="text-red-500">*</span></label>
+          <input name="email" type="email" value={form.email} onChange={handleChange} required placeholder="Enter your email" className={`h-12 w-full rounded-2xl border px-3.5 py-3 text-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] outline-none transition-all duration-200 placeholder:text-sm placeholder:font-medium hover:border-slate-300 focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 ${isDark ? "border-slate-700 bg-slate-800/80 text-slate-50 placeholder:text-slate-400 focus:bg-slate-800" : "border-slate-200 bg-slate-50/80 text-slate-800 placeholder:text-slate-400 focus:bg-white"}`} />
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Phone Number <span className="text-red-500">*</span></label>
-          <input name="phone" type="tel" value={form.phone} onChange={handleChange} required placeholder="Enter your phone number" className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50/80 px-3.5 py-3 text-sm text-slate-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] outline-none transition-all duration-200 placeholder:text-sm placeholder:font-medium placeholder:text-slate-400 hover:border-slate-300 focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-100" />
+          <label className={`mb-1.5 block text-sm font-medium ${isDark ? "text-slate-200" : "text-slate-700"}`}>Phone Number <span className="text-red-500">*</span></label>
+          <input name="phone" type="tel" value={form.phone} onChange={handleChange} required placeholder="Enter your phone number" className={`h-12 w-full rounded-2xl border px-3.5 py-3 text-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] outline-none transition-all duration-200 placeholder:text-sm placeholder:font-medium hover:border-slate-300 focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 ${isDark ? "border-slate-700 bg-slate-800/80 text-slate-50 placeholder:text-slate-400 focus:bg-slate-800" : "border-slate-200 bg-slate-50/80 text-slate-800 placeholder:text-slate-400 focus:bg-white"}`} />
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Skill / Occupation</label>
-          <input name="occupation" value={form.occupation} onChange={handleChange} placeholder="Your current role or field" className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50/80 px-3.5 py-3 text-sm text-slate-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] outline-none transition-all duration-200 placeholder:text-sm placeholder:font-medium placeholder:text-slate-400 hover:border-slate-300 focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-100" />
+          <label className={`mb-1.5 block text-sm font-medium ${isDark ? "text-slate-200" : "text-slate-700"}`}>Skill / Occupation</label>
+          <input name="occupation" value={form.occupation} onChange={handleChange} placeholder="Your current role or field" className={`h-12 w-full rounded-2xl border px-3.5 py-3 text-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] outline-none transition-all duration-200 placeholder:text-sm placeholder:font-medium hover:border-slate-300 focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 ${isDark ? "border-slate-700 bg-slate-800/80 text-slate-50 placeholder:text-slate-400 focus:bg-slate-800" : "border-slate-200 bg-slate-50/80 text-slate-800 placeholder:text-slate-400 focus:bg-white"}`} />
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Course</label>
+          <label className={`mb-1.5 block text-sm font-medium ${isDark ? "text-slate-200" : "text-slate-700"}`}>Course</label>
           <div className="relative">
             <button
               type="button"
               onClick={() => setCourseMenuOpen((open) => !open)}
-              className={`flex h-12 w-full items-center justify-between rounded-2xl border bg-slate-50/80 px-3.5 pr-10 text-left text-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-100 ${form.course ? "border-slate-200 text-slate-800" : "border-slate-200 text-slate-500"}`}
+              className={`flex h-12 w-full items-center justify-between rounded-2xl border px-3.5 pr-10 text-left text-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 ${isDark ? "border-slate-700 bg-slate-800/80 text-slate-200" : "border-slate-200 bg-slate-50/80 text-slate-500"} ${form.course ? (isDark ? "text-slate-50" : "text-slate-800") : "text-slate-500"}`}
             >
-              <span className={form.course ? "text-slate-800" : "text-slate-500"}>{form.course || "Select a course"}</span>
+              <span className={form.course ? (isDark ? "text-slate-50" : "text-slate-800") : "text-slate-500"}>{form.course || "Select a course"}</span>
               <svg viewBox="0 0 20 20" fill="currentColor" className={`h-4 w-4 text-slate-500 transition-transform duration-200 ${courseMenuOpen ? "rotate-180" : "rotate-0"}`}>
                 <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
               </svg>
             </button>
 
             {courseMenuOpen && (
-              <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_24px_52px_-20px_rgba(15,23,42,0.35)] ring-1 ring-slate-100">
+              <div className={`absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border shadow-[0_24px_52px_-20px_rgba(15,23,42,0.35)] ring-1 ${isDark ? "border-slate-700 bg-slate-800 ring-slate-700" : "border-slate-200 bg-white ring-slate-100"}`}>
                 <div className="max-h-64 overflow-y-auto p-1.5">
                   <button
                     type="button"
@@ -116,7 +116,7 @@ export default function ContactForm({ courses = [] }: { courses?: CourseOption[]
                       setForm((s) => ({ ...s, course: "" }));
                       setCourseMenuOpen(false);
                     }}
-                    className="flex w-full items-center rounded-xl px-3 py-2 text-left text-sm text-slate-500 transition hover:bg-indigo-50 hover:text-indigo-700"
+                    className={`flex w-full items-center rounded-xl px-3 py-2 text-left text-sm transition ${isDark ? "text-slate-300 hover:bg-slate-700 hover:text-white" : "text-slate-500 hover:bg-indigo-50 hover:text-indigo-700"}`}
                   >
                     Select a course
                   </button>
@@ -130,8 +130,12 @@ export default function ContactForm({ courses = [] }: { courses?: CourseOption[]
                       }}
                       className={`flex w-full items-center rounded-xl px-3 py-2.5 text-left text-sm transition ${
                         form.course === course.title
-                          ? "bg-indigo-50 font-semibold text-indigo-700"
-                          : "text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"
+                          ? isDark
+                            ? "bg-indigo-500/15 font-semibold text-indigo-200"
+                            : "bg-indigo-50 font-semibold text-indigo-700"
+                          : isDark
+                            ? "text-slate-200 hover:bg-slate-700 hover:text-white"
+                            : "text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"
                       }`}
                     >
                       {course.title}
@@ -144,8 +148,8 @@ export default function ContactForm({ courses = [] }: { courses?: CourseOption[]
         </div>
 
         <div className="md:col-span-2">
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Message <span className="text-red-500">*</span></label>
-          <textarea name="message" value={form.message} onChange={handleChange} required rows={5} placeholder="Tell us about your learning goals" className="min-h-[120px] w-full rounded-2xl border border-slate-200 bg-slate-50/80 px-3.5 py-3 text-sm text-slate-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] outline-none transition-all duration-200 placeholder:text-sm placeholder:font-medium placeholder:text-slate-400 hover:border-slate-300 focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-100" />
+          <label className={`mb-1.5 block text-sm font-medium ${isDark ? "text-slate-200" : "text-slate-700"}`}>Message <span className="text-red-500">*</span></label>
+          <textarea name="message" value={form.message} onChange={handleChange} required rows={5} placeholder="Tell us about your learning goals" className={`min-h-[120px] w-full rounded-2xl border px-3.5 py-3 text-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] outline-none transition-all duration-200 placeholder:text-sm placeholder:font-medium hover:border-slate-300 focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 ${isDark ? "border-slate-700 bg-slate-800/80 text-slate-50 placeholder:text-slate-400 focus:bg-slate-800" : "border-slate-200 bg-slate-50/80 text-slate-800 placeholder:text-slate-400 focus:bg-white"}`} />
         </div>
       </div>
 
