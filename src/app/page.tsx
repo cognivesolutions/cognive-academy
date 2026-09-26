@@ -9,6 +9,7 @@ import LiveSection from "@/app/home/components/live-section";
 import RecordedSection from "@/app/home/components/recorded-section";
 import TestimonialsCarousel from "@/app/home/components/testimonials-carousel";
 import AnimatedTyping from "@/components/animated-typing";
+import { AnimatedStatCard } from "@/components/animated-stat-card";
 import { BackToTopButton } from "@/components/back-to-top";
 
 export const revalidate = 300;
@@ -167,16 +168,18 @@ export default async function HomePage({
 
         <div className="mx-auto max-w-6xl px-6 pb-14">
           <div className="grid gap-4 rounded-[28px] border border-slate-200 bg-white/80 p-4 shadow-[0_18px_40px_rgba(15,23,42,0.05)] backdrop-blur-sm md:grid-cols-4 dark:border-slate-700 dark:bg-slate-900/60 dark:shadow-[0_18px_40px_rgba(15,23,42,0.4)]">
-            {SITE.learnerStats.map((item) => (
-              <div
-                key={item.value}
-                className="group rounded-2xl border border-slate-200 bg-slate-50/70 p-4 text-center md:text-left transform transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-indigo-200 hover:bg-gradient-to-r hover:from-indigo-600 hover:to-violet-600 dark:border-slate-700 dark:bg-slate-800/80 dark:hover:border-indigo-500/40 dark:hover:from-indigo-600 dark:hover:to-violet-600"
-              >
-                <div className="text-3xl font-black tracking-tight text-slate-900 group-hover:text-white dark:text-white">
-                  {item.value}
-                </div>
-                <div className="mt-2 text-sm text-slate-600 group-hover:text-indigo-100 dark:text-slate-300">{item.label}</div>
-              </div>
+            {[
+              { value: 100, suffix: "+", label: "Learners across the countries" },
+              { value: 10, suffix: "+", label: "Courses" },
+              { value: 4.9, suffix: "/5", label: "Average course rating" },
+              { value: 25, suffix: "+", label: "Active Learners" },
+            ].map((item) => (
+              <AnimatedStatCard
+                key={item.label}
+                value={item.value}
+                suffix={item.suffix}
+                label={item.label}
+              />
             ))}
           </div>
         </div>
@@ -188,7 +191,7 @@ export default async function HomePage({
           <div className="mb-8 flex items-center justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Live Classroom</p>
-            <h2 className="mt-2 text-3xl font-bold dark:text-white">Join Live Classroom Courses</h2>
+            <h2 className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">Join Live Classroom Courses</h2>
           </div>
           <div>
             <Link href="/courses?type=live" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_20px_rgba(99,102,241,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:opacity-95 hover:shadow-[0_16px_28px_rgba(99,102,241,0.28)] dark:shadow-[0_14px_28px_rgba(99,102,241,0.42)]">
@@ -213,7 +216,7 @@ export default async function HomePage({
           <div className="mb-8 flex items-center justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Recorded</p>
-            <h2 className="mt-2 text-3xl font-bold dark:text-white">Recorded & Self-Paced Courses</h2>
+            <h2 className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">Recorded & Self-Paced Courses</h2>
           </div>
           <div>
             <Link href="/courses?type=recorded" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_20px_rgba(99,102,241,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:opacity-95 hover:shadow-[0_16px_28px_rgba(99,102,241,0.28)] dark:shadow-[0_14px_28px_rgba(99,102,241,0.42)]">
@@ -236,30 +239,30 @@ export default async function HomePage({
       </div>
 
       {/* How it works section */}
-      <section className="bg-slate-900 py-16 text-white">
+      <section className="bg-slate-50 py-16 text-slate-900 dark:bg-slate-900 dark:text-white">
         <div className="mx-auto max-w-6xl px-6">
           <div className="mb-10 max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-300">How it works</p>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight text-white">A simple path from learning to career momentum.</h2>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">How it works</p>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">A simple path from learning to career momentum.</h2>
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
-            <div className="rounded-3xl border border-slate-700 bg-slate-800/80 p-6 shadow-[0_18px_40px_rgba(15,23,42,0.25)] transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-400 hover:shadow-[0_20px_50px_rgba(99,102,241,0.18)]">
+            <div className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-[0_14px_36px_rgba(15,23,42,0.04)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_20px_42px_rgba(99,102,241,0.12)] dark:border-slate-700 dark:bg-slate-800/80 dark:shadow-[0_18px_40px_rgba(15,23,42,0.25)] dark:hover:border-indigo-400 dark:hover:shadow-[0_20px_50px_rgba(99,102,241,0.18)]">
               <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-sm font-black text-white">01</div>
-              <h3 className="text-xl font-bold text-white">Choose your track</h3>
-              <p className="mt-3 text-sm leading-6 text-slate-300">Start with a guided course path in data analytics, Python, SQL, or Power BI that fits your goals.</p>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">Choose your track</h3>
+              <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">Start with a guided course path in data analytics, Python, SQL, or Power BI that fits your goals.</p>
             </div>
 
-            <div className="rounded-3xl border border-slate-700 bg-slate-800/80 p-6 shadow-[0_18px_40px_rgba(15,23,42,0.25)] transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-400 hover:shadow-[0_20px_50px_rgba(99,102,241,0.18)]">
+            <div className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-[0_14px_36px_rgba(15,23,42,0.04)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_20px_42px_rgba(99,102,241,0.12)] dark:border-slate-700 dark:bg-slate-800/80 dark:shadow-[0_18px_40px_rgba(15,23,42,0.25)] dark:hover:border-indigo-400 dark:hover:shadow-[0_20px_50px_rgba(99,102,241,0.18)]">
               <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-indigo-500 text-sm font-black text-white">02</div>
-              <h3 className="text-xl font-bold text-white">Learn with support</h3>
-              <p className="mt-3 text-sm leading-6 text-slate-300">Follow structured lessons, get practical feedback, and stay on track with the right mentor guidance.</p>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">Learn with support</h3>
+              <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">Follow structured lessons, get practical feedback, and stay on track with the right mentor guidance.</p>
             </div>
 
-            <div className="rounded-3xl border border-slate-700 bg-slate-800/80 p-6 shadow-[0_18px_40px_rgba(15,23,42,0.25)] transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-400 hover:shadow-[0_20px_50px_rgba(99,102,241,0.18)]">
+            <div className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-[0_14px_36px_rgba(15,23,42,0.04)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_20px_42px_rgba(99,102,241,0.12)] dark:border-slate-700 dark:bg-slate-800/80 dark:shadow-[0_18px_40px_rgba(15,23,42,0.25)] dark:hover:border-indigo-400 dark:hover:shadow-[0_20px_50px_rgba(99,102,241,0.18)]">
               <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-sm font-black text-white">03</div>
-              <h3 className="text-xl font-bold text-white">Practice & grow</h3>
-              <p className="mt-3 text-sm leading-6 text-slate-300">Build confidence with mock interviews, portfolio support, and career-focused resources that translate into outcomes.</p>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">Practice &amp; grow</h3>
+              <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">Build confidence with mock interviews, portfolio support, and career-focused resources that translate into outcomes.</p>
             </div>
           </div>
         </div>
@@ -313,7 +316,10 @@ export default async function HomePage({
 
       {/* testimonials section */}
       <section id="success-stories" className="scroll-mt-28 mx-auto max-w-6xl px-6 py-12">
-        <h2 className="text-3xl font-bold">What learners say</h2>
+        <div className="mb-6">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Success stories</p>
+          <h2 className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">What learners say</h2>
+        </div>
           <div className="mt-8">
           {/* client carousel auto-scrolling right-to-left */}
           <TestimonialsCarousel items={TESTIMONIALS} />
@@ -321,29 +327,29 @@ export default async function HomePage({
       </section>
 
       {/* Why choose us section */}
-      <section id="about-us" className="bg-slate-900 py-20 text-white">
+      <section id="about-us" className="bg-slate-50 py-20 text-slate-900 dark:bg-slate-900 dark:text-white">
         <div className="mx-auto max-w-6xl px-6">
           <div className="mb-10 max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-300">Why learners choose us</p>
-            <h2 className="mt-3 text-4xl font-black tracking-tight">A learning experience built for momentum.</h2>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Why learners choose us</p>
+            <h2 className="mt-3 text-4xl font-black tracking-tight text-slate-900 dark:text-white">A learning experience built for momentum.</h2>
           </div>
-          <div className="rounded-2xl bg-slate-800/80 p-4 md:p-6">
+          <div className="rounded-2xl bg-white/70 p-4 shadow-[0_18px_40px_rgba(15,23,42,0.04)] ring-1 ring-slate-200 md:p-6 dark:bg-slate-800/80 dark:shadow-[0_18px_40px_rgba(15,23,42,0.25)] dark:ring-slate-700">
             <div className="grid gap-6 md:grid-cols-3">
-              <article className="group flex h-full flex-col rounded-3xl border border-slate-700 bg-slate-800 p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-400 hover:bg-slate-800/90 hover:shadow-[0_18px_40px_rgba(99,102,241,0.18)]" aria-label="Expert instructors and curriculum">
+              <article className="group flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:bg-indigo-50/70 hover:shadow-[0_20px_42px_rgba(99,102,241,0.12)] dark:border-slate-700 dark:bg-slate-800 dark:hover:border-indigo-400 dark:hover:bg-slate-800/90 dark:hover:shadow-[0_18px_40px_rgba(99,102,241,0.18)]" aria-label="Expert instructors and curriculum">
                 <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white" aria-hidden>
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 7a4 4 0 014-4h10a4 4 0 014 4v10a4 4 0 01-4 4H7a4 4 0 01-4-4V7z" />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-extrabold text-white">Industry-led curriculum</h3>
-                <p className="mt-3 text-slate-300">Courses designed and taught by practitioners — focused on projects you can show employers.</p>
+                <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">Industry-led curriculum</h3>
+                <p className="mt-3 text-slate-600 dark:text-slate-300">Courses designed and taught by practitioners — focused on projects you can show employers.</p>
                 <div className="mt-auto">
-                  <Link href="/courses" className="inline-flex items-center text-sm font-semibold text-indigo-300 hover:text-white">Browse programs →</Link>
+                  <Link href="/courses" className="inline-flex items-center text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-300 dark:hover:text-white">Browse programs →</Link>
                 </div>
               </article>
 
-              <article className="group flex h-full flex-col rounded-3xl border border-slate-700 bg-slate-800 p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-400 hover:bg-slate-800/90 hover:shadow-[0_18px_40px_rgba(99,102,241,0.18)]" aria-label="Mentoring and portfolio support">
+              <article className="group flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:bg-indigo-50/70 hover:shadow-[0_20px_42px_rgba(99,102,241,0.12)] dark:border-slate-700 dark:bg-slate-800 dark:hover:border-indigo-400 dark:hover:bg-slate-800/90 dark:hover:shadow-[0_18px_40px_rgba(99,102,241,0.18)]" aria-label="Mentoring and portfolio support">
                 <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white" aria-hidden>
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a4 4 0 00-4-4h-1" />
@@ -351,14 +357,14 @@ export default async function HomePage({
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 12a4 4 0 100-8 4 4 0 000 8z" />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-extrabold text-white">Mentors & practical feedback</h3>
-                <p className="mt-3 text-slate-300">Weekly mentor office hours, portfolio reviews, and actionable feedback on your projects.</p>
+                <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">Mentors &amp; practical feedback</h3>
+                <p className="mt-3 text-slate-600 dark:text-slate-300">Weekly mentor office hours, portfolio reviews, and actionable feedback on your projects.</p>
                 <div className="mt-auto">
-                  <Link href="/mentorship" className="inline-flex items-center text-sm font-semibold text-indigo-300 hover:text-white">Meet the mentors →</Link>
+                  <Link href="/mentorship" className="inline-flex items-center text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-300 dark:hover:text-white">Meet the mentors →</Link>
                 </div>
               </article>
 
-              <article className="group flex h-full flex-col rounded-3xl border border-slate-700 bg-slate-800 p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-400 hover:bg-slate-800/90 hover:shadow-[0_18px_40px_rgba(99,102,241,0.18)]" aria-label="Fast skill progress and outcomes">
+              <article className="group flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:bg-indigo-50/70 hover:shadow-[0_20px_42px_rgba(99,102,241,0.12)] dark:border-slate-700 dark:bg-slate-800 dark:hover:border-indigo-400 dark:hover:bg-slate-800/90 dark:hover:shadow-[0_18px_40px_rgba(99,102,241,0.18)]" aria-label="Fast skill progress and outcomes">
                 <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white" aria-hidden>
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v6h6" />
@@ -366,10 +372,10 @@ export default async function HomePage({
                     <path strokeLinecap="round" strokeLinejoin="round" d="M14 10l-4 4" />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-extrabold text-white">Fast, measurable progress</h3>
-                <p className="mt-3 text-slate-300">Structured lessons, hands-on work, and clear milestones to keep you progressing quickly.</p>
+                <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">Fast, measurable progress</h3>
+                <p className="mt-3 text-slate-600 dark:text-slate-300">Structured lessons, hands-on work, and clear milestones to keep you progressing quickly.</p>
                 <div className="mt-auto">
-                  <Link href="#success-stories" className="inline-flex items-center text-sm font-semibold text-indigo-300 hover:text-white">See outcomes →</Link>
+                  <Link href="#success-stories" className="inline-flex items-center text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-300 dark:hover:text-white">See outcomes →</Link>
                 </div>
               </article>
             </div>
@@ -380,19 +386,19 @@ export default async function HomePage({
       {/* CTA section */}
       <section className="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-12 text-center lg:flex-row lg:items-center lg:justify-between lg:text-left">
-          <div className="w-full rounded-2xl bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 p-6 shadow-[0_24px_60px_rgba(79,70,229,0.35)] dark:shadow-[0_24px_70px_rgba(99,102,241,0.35)]" role="region" aria-label="Get started call to action">
-            <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-              <div className="text-center sm:text-left">
-                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-100">Ready to start?</p>
-                <h2 className="mt-3 text-3xl font-black tracking-tight text-white">Turn learning into a career — start today.</h2>
+          <div className="group w-full min-h-[220px] rounded-[30px] bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 p-8 shadow-[0_24px_60px_rgba(79,70,229,0.35)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_30px_70px_rgba(79,70,229,0.42)] dark:shadow-[0_24px_70px_rgba(99,102,241,0.35)] dark:hover:shadow-[0_30px_70px_rgba(99,102,241,0.45)] md:p-10 lg:min-h-[250px]" role="region" aria-label="Get started call to action">
+            <div className="flex h-full flex-col items-center justify-between gap-5 sm:flex-row">
+              <div className="max-w-xl text-center sm:text-left">
+                <p className="text-sm font-semibold uppercase tracking-[0.22em] text-indigo-100">Ready to start?</p>
+                <h2 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-[2.5rem] lg:leading-tight">Turn learning into a career — start today.</h2>
                 <p className="mt-2 text-sm text-indigo-100/90">Skip the forms — chat with our team or create an account to get started quickly.</p>
               </div>
 
-              <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
-                <Link href="/signup" className="inline-flex items-center justify-center rounded-full px-6 py-3.5 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(99,102,241,0.32)] bg-gradient-to-r from-cyan-400 via-indigo-500 to-violet-600 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_34px_rgba(99,102,241,0.34)]">
+              <div className="flex shrink-0 flex-wrap justify-center gap-3 sm:justify-end">
+                <Link href="/signup" className="inline-flex items-center justify-center rounded-full bg-white/10 px-6 py-3.5 text-sm font-semibold text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.22)] backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/15 hover:shadow-[0_12px_28px_rgba(15,23,42,0.18)]">
                   Start learning now
                 </Link>
-                <Link href="/courses" className="inline-flex items-center justify-center rounded-full border border-white/30 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/20">
+                <Link href="/courses" className="inline-flex items-center justify-center rounded-full border border-white/35 bg-transparent px-6 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/10 hover:shadow-[0_12px_28px_rgba(15,23,42,0.18)]">
                   Explore courses
                 </Link>
               </div>

@@ -85,7 +85,9 @@ export default function AboutUsPage() {
       <section className={`mx-auto max-w-6xl px-6 py-16 md:py-20 lg:py-24 ${isDark ? "text-slate-50" : "text-slate-900"}`}>
         <div className="grid items-center gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">Our story</p>
+            <p className={`text-sm font-semibold uppercase tracking-[0.2em] ${isDark ? "text-indigo-300" : "text-indigo-600"}`}>
+              Our story
+            </p>
             <h2 className={`mt-3 text-3xl font-black tracking-tight sm:text-4xl lg:text-[2.7rem] lg:leading-tight ${headingText}`}>
               Built for people who need skills that actually move careers forward.
             </h2>
@@ -105,7 +107,9 @@ export default function AboutUsPage() {
                 ✓
               </div>
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-indigo-600">What we focus on</p>
+                <p className={`text-sm font-semibold uppercase tracking-[0.18em] ${isDark ? "text-indigo-300" : "text-indigo-600"}`}>
+                  What we focus on
+                </p>
                 <h3 className={`mt-2 text-xl font-bold ${headingText}`}>Career-ready skills, not just course completion.</h3>
               </div>
             </div>
@@ -129,11 +133,13 @@ export default function AboutUsPage() {
         </div>
       </section>
 
-      <section className={isDark ? "bg-slate-900 py-16 md:py-20 lg:py-24" : "bg-slate-900 py-16 md:py-20 lg:py-24"}>
+      <section className={isDark ? "bg-slate-900 py-16 md:py-20 lg:py-24" : "bg-slate-50 py-16 md:py-20 lg:py-24"}>
         <div className="mx-auto max-w-6xl px-6">
           <div className="mb-10 max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-300">What drives us</p>
-            <h2 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-[2.5rem] lg:leading-tight">
+            <p className={`text-sm font-semibold uppercase tracking-[0.2em] ${isDark ? "text-indigo-300" : "text-indigo-600"}`}>
+              What drives us
+            </p>
+            <h2 className={`mt-3 text-3xl font-black tracking-tight sm:text-4xl lg:text-[2.5rem] lg:leading-tight ${isDark ? "text-white" : "text-slate-900"}`}>
               A learning model built for real-world momentum.
             </h2>
           </div>
@@ -142,24 +148,24 @@ export default function AboutUsPage() {
       </section>
 
       <section className={`mx-auto max-w-6xl px-6 py-16 md:py-20 lg:py-24 ${isDark ? "text-slate-50" : "text-slate-900"}`}>
-        <div className="rounded-[32px] bg-gradient-to-r from-[#4b35d7] via-[#6f46d8] to-[#39a9ea] p-8 shadow-[0_24px_60px_rgba(89,66,214,0.28)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_70px_rgba(89,66,214,0.34)] md:p-10">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="rounded-[30px] bg-gradient-to-r from-[#4b35d7] via-[#6f46d8] to-[#39a9ea] p-8 shadow-[0_24px_60px_rgba(89,66,214,0.28)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_70px_rgba(89,66,214,0.34)] md:p-10">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-2xl">
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-indigo-100">Ready to begin?</p>
               <h2 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-[2.5rem] lg:leading-tight">
                 Start learning with a roadmap designed for your next move.
               </h2>
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap justify-center gap-3 sm:justify-end">
               <Link
                 href="/courses"
-                className="inline-flex items-center justify-center rounded-full bg-white/10 px-6 py-3.5 text-sm font-semibold text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.22)] backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/15"
+                className="inline-flex items-center justify-center rounded-full bg-white/10 px-6 py-3.5 text-sm font-semibold text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.22)] backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/15 hover:shadow-[0_12px_28px_rgba(15,23,42,0.18)]"
               >
                 Explore courses
               </Link>
               <Link
                 href="/contact-us#contact-hero"
-                className="inline-flex items-center justify-center rounded-full border border-white/35 bg-transparent px-6 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/10"
+                className="inline-flex items-center justify-center rounded-full border border-white/35 bg-transparent px-6 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/10 hover:shadow-[0_12px_28px_rgba(15,23,42,0.18)]"
               >
                 Contact us
               </Link>

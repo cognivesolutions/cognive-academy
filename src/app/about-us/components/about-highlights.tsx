@@ -15,16 +15,18 @@ function AnimatedValue({ value, suffix }: { value: number; suffix: string }) {
 
   useEffect(() => {
     let start: number | null = null;
-    const duration = 1200;
+    const duration = 1800;
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
     const tick = (timestamp: number) => {
       if (start === null) start = timestamp;
       const progress = Math.min((timestamp - start) / duration, 1);
+      const eased = easeOutCubic(progress);
 
       if (value % 1 === 0) {
-        setCount(Math.round(progress * value));
+        setCount(Math.round(eased * value));
       } else {
-        setCount(Number((progress * value).toFixed(1)));
+        setCount(Number((eased * value).toFixed(1)));
       }
 
       if (progress < 1) {
@@ -42,7 +44,7 @@ function AnimatedValue({ value, suffix }: { value: number; suffix: string }) {
   }, [value]);
 
   return (
-    <span>
+    <span className="inline-block animate-[pulse_1.2s_ease-out_1]">
       {count}
       {suffix}
     </span>
@@ -55,9 +57,9 @@ export default function AboutHighlights({ isDark = false }: { isDark?: boolean }
       {highlights.map((item) => (
         <div
           key={item.label}
-          className={`rounded-[24px] border p-5 shadow-[0_18px_40px_rgba(15,23,42,0.05)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_28px_64px_rgba(15,23,42,0.12),0_0_0_1px_rgba(99,102,241,0.06)] ${isDark ? "border-slate-700 bg-slate-900/80 hover:bg-slate-900" : "border-slate-200/80 bg-white/80 hover:bg-white"}`}
+          className={`group rounded-[24px] border p-5 shadow-[0_18px_40px_rgba(15,23,42,0.05)] backdrop-blur-sm transition-all duration-500 ease-out hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_30px_70px_rgba(79,70,229,0.18)] ${isDark ? "border-slate-700 bg-slate-900/80 hover:bg-slate-900" : "border-slate-200/80 bg-white/80 hover:bg-white"}`}
         >
-          <div className={`text-3xl font-black tracking-tight sm:text-4xl ${isDark ? "text-white" : "text-slate-900"}`}>
+          <div className={`text-3xl font-black tracking-tight transition-all duration-300 group-hover:scale-[1.03] sm:text-4xl ${isDark ? "text-white" : "text-slate-900"}`}>
             <AnimatedValue value={item.value} suffix={item.suffix} />
           </div>
           <div className={`mt-2 text-sm font-medium ${isDark ? "text-slate-300" : "text-slate-600"}`}>{item.label}</div>

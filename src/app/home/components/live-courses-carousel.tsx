@@ -64,7 +64,7 @@ export default function LiveCoursesCarousel({ courses }: { courses: Course[] }) 
             key={course.id}
             role="listitem"
             className="group flex-shrink-0 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_18px_40px_rgba(99,102,241,0.12)] hover:bg-gradient-to-br hover:from-white hover:to-indigo-50 snap-center dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-[0_20px_40px_rgba(15,23,42,0.26)] dark:hover:border-indigo-500/40 dark:hover:from-slate-900 dark:hover:to-indigo-950/80"
-            style={{ flex: "0 0 calc((100% - 2rem) / 3)" }}
+            style={{ flex: "0 0 calc((100% - 3rem) / 3)" }}
           >
             <div className="mb-4 h-40 w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
               {course.coverImage ? (
@@ -105,7 +105,7 @@ export default function LiveCoursesCarousel({ courses }: { courses: Course[] }) 
           </div>
         </div>
 
-        <div className="absolute right-4 top-1/2 transform -translate-y-1/2 z-30 flex items-center gap-3">
+        <div className="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2 z-30 flex items-center gap-3">
           {(() => {
             const prevDisabled = currentPage <= 0;
             return (

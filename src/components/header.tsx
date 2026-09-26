@@ -30,7 +30,7 @@ export default async function Header() {
               <div className="hidden md:block">
                 <Link
                   href="/login"
-                  className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_20px_rgba(99,102,241,0.25)] transition hover:opacity-95 hover:shadow-lg hover:scale-[1.02] focus-visible:ring-4 focus-visible:ring-indigo-200 leading-none"
+                  className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_20px_rgba(99,102,241,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_30px_rgba(99,102,241,0.32)] hover:brightness-110 focus-visible:ring-4 focus-visible:ring-indigo-200 leading-none"
                 >
                   LMS Login
                 </Link>

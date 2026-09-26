@@ -141,12 +141,14 @@ function AnimatedCounter({ value, suffix = "", decimals = 0 }: { value: number; 
 
   useEffect(() => {
     let start: number | null = null;
-    const duration = 1200;
+    const duration = 1800;
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
     const tick = (ts: number) => {
       if (start === null) start = ts;
       const progress = Math.min((ts - start) / duration, 1);
-      const nextValue = value * progress;
+      const eased = easeOutCubic(progress);
+      const nextValue = value * eased;
       setCount(Number(nextValue.toFixed(decimals)));
 
       if (progress < 1) {
@@ -163,7 +165,7 @@ function AnimatedCounter({ value, suffix = "", decimals = 0 }: { value: number; 
     };
   }, [value, decimals]);
 
-  return <span>{count}{suffix}</span>;
+  return <span className="inline-block animate-[pulse_1.2s_ease-out_1]">{count}{suffix}</span>;
 }
 
 export default function SuccessStoriesPage() {
@@ -460,24 +462,24 @@ export default function SuccessStoriesPage() {
 
       <section className={`border-t ${isDark ? "border-slate-800 bg-slate-950" : "border-slate-200 bg-white"}`}>
         <div className="mx-auto max-w-6xl px-6 py-16">
-          <div className="rounded-[32px] bg-gradient-to-r from-[#4b35d7] via-[#6f46d8] to-[#39a9ea] p-8 shadow-[0_24px_60px_rgba(89,66,214,0.28)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_70px_rgba(89,66,214,0.34)] md:p-10">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="rounded-[30px] bg-gradient-to-r from-[#4b35d7] via-[#6f46d8] to-[#39a9ea] p-8 shadow-[0_24px_60px_rgba(89,66,214,0.28)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_70px_rgba(89,66,214,0.34)] md:p-10">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-2xl">
                 <p className="text-sm font-semibold uppercase tracking-[0.22em] text-indigo-100">Ready for your next move?</p>
                 <h2 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-[2.5rem] lg:leading-tight">
                   Build a stronger profile with a roadmap designed for real outcomes.
                 </h2>
               </div>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap justify-center gap-3 sm:justify-end">
                 <Link
                   href="/courses"
-                  className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_16px_30px_rgba(79,70,229,0.26)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_20px_34px_rgba(79,70,229,0.32)]"
+                  className="inline-flex items-center justify-center rounded-full bg-white/10 px-6 py-3.5 text-sm font-semibold text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.22)] backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/15 hover:shadow-[0_12px_28px_rgba(15,23,42,0.18)]"
                 >
                   Explore courses
                 </Link>
                 <Link
                   href="/contact-us#contact-hero"
-                  className="inline-flex items-center justify-center rounded-full border border-white/35 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)] backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/15"
+                  className="inline-flex items-center justify-center rounded-full border border-white/35 bg-transparent px-6 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/10 hover:shadow-[0_12px_28px_rgba(15,23,42,0.18)]"
                 >
                   Contact us
                 </Link>
