@@ -19,6 +19,8 @@ function toBlob(canvas: HTMLCanvasElement, mime = "image/jpeg", quality = 0.9): 
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [baseScale, setBaseScale] = useState(1);
+  const [selectedFileName, setSelectedFileName] = useState("No file chosen");
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
   const [status, setStatus] = useState<string | null>(null);
 
@@ -29,6 +31,7 @@ function toBlob(canvas: HTMLCanvasElement, mime = "image/jpeg", quality = 0.9): 
 
   const onFile = async (f: File) => {
     const url = URL.createObjectURL(f);
+    setSelectedFileName(f.name);
     setSrc(url);
     setOffset({ x: 0, y: 0 });
     setZoom(1);
@@ -142,7 +145,35 @@ function toBlob(canvas: HTMLCanvasElement, mime = "image/jpeg", quality = 0.9): 
 
   return (
     <div className="space-y-2">
-      <input type="file" accept="image/*" onChange={(e) => e.target.files && onFile(e.target.files[0])} />
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="inline-flex cursor-pointer items-center justify-center rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200 dark:hover:bg-indigo-500/20"
+        >
+          Choose file
+        </button>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            if (e.target.files && e.target.files[0]) {
+              onFile(e.target.files[0]);
+            }
+          }}
+          className="hidden"
+        />
+
+        <span className="text-sm text-slate-500 dark:text-slate-400">{selectedFileName}</span>
+
+        {src && (
+          <button type="button" onClick={cropImage} className="rounded-full bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500">
+            Crop & Upload
+          </button>
+        )}
+      </div>
 
       {src && (
         <div
@@ -178,9 +209,6 @@ function toBlob(canvas: HTMLCanvasElement, mime = "image/jpeg", quality = 0.9): 
         </div>
       )}
 
-      <div className="flex items-center gap-2">
-        <button onClick={cropImage} className="rounded bg-indigo-600 px-3 py-1 text-white">Crop & Upload</button>
-      </div>
     </div>
   );
 }

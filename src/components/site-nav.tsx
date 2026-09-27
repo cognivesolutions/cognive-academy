@@ -221,20 +221,17 @@ export function SiteNav() {
                   <div
                     role="menu"
                     aria-label={item.label}
-                    className="absolute left-0 top-full z-50 mt-3 w-auto min-w-[190px] rounded-2xl border border-white bg-white p-3 shadow-[0_14px_36px_rgba(15,23,42,0.16),0_0_0_1px_rgba(255,255,255,0.38)] pointer-events-auto dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_14px_36px_rgba(2,6,23,0.7),0_0_0_1px_rgba(148,163,184,0.12)]"
-                    ref={leftMenuRef}
+                    className="absolute left-0 top-full z-50 mt-3 flex items-start gap-0 pointer-events-auto"
                     onMouseEnter={() => {
                       if (closeTimeoutRef.current) {
                         window.clearTimeout(closeTimeoutRef.current);
                         closeTimeoutRef.current = null;
                       }
-                      // pointer is inside left menu
                       popoverHoverRef.current = false;
                       setOpenMenu(item.label);
                     }}
                     onMouseLeave={() => {
                       closeTimeoutRef.current = window.setTimeout(() => {
-                        // only close if pointer is not inside the right popover
                         if (!popoverHoverRef.current) {
                           setOpenMenu(null);
                         }
@@ -247,7 +244,7 @@ export function SiteNav() {
                       }
                     }}
                   >
-                    <div className="relative">
+                    <div className="w-auto min-w-[190px] rounded-2xl border border-white bg-white p-3 shadow-[0_14px_36px_rgba(15,23,42,0.16),0_0_0_1px_rgba(255,255,255,0.38)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_14px_36px_rgba(2,6,23,0.7),0_0_0_1px_rgba(148,163,184,0.12)]">
                       <div className="w-auto space-y-1">
                         {item.items.map((subItem, idx) => (
                           <Link

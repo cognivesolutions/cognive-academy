@@ -48,6 +48,8 @@ async function saveUploadedImage(file: File | null, fallbackUrl?: string | null)
 }
 
 function parseForm(formData: FormData) {
+  const rawIsPublished = formData.get("isPublished");
+
   return {
     action: String(formData.get("action") ?? "create"),
     id: String(formData.get("id") ?? "").trim(),
@@ -59,6 +61,7 @@ function parseForm(formData: FormData) {
     durationHours: Number(formData.get("durationHours") ?? 0),
     language: String(formData.get("language") ?? "en").trim().toLowerCase(),
     isLive: String(formData.get("isLive") ?? "false") === "true",
+    isPublished: rawIsPublished === null ? undefined : String(rawIsPublished) === "true",
     shortDescription: String(formData.get("shortDescription") ?? "").trim(),
     description: String(formData.get("description") ?? "").trim(),
     instructorName: String(formData.get("instructorName") ?? "").trim(),
@@ -152,6 +155,7 @@ export async function POST(request: Request) {
           price: Number.isFinite(payload.price) ? payload.price : existing.price,
           durationHours: Number.isFinite(payload.durationHours) && payload.durationHours > 0 ? payload.durationHours : existing.durationHours,
           isLive: payload.isLive,
+          isPublished: typeof payload.isPublished === "boolean" ? payload.isPublished : existing.isPublished,
           language: payload.language === "hi" ? "hi" : "en",
           shortDescription: payload.shortDescription || existing.shortDescription || nextTitle,
           description: payload.description || existing.description,
@@ -200,7 +204,7 @@ export async function POST(request: Request) {
         durationHours: Number.isFinite(payload.durationHours) && payload.durationHours > 0 ? payload.durationHours : null,
         currency: "INR",
         featured: false,
-        isPublished: true,
+        isPublished: typeof payload.isPublished === "boolean" ? payload.isPublished : false,
         isLive: payload.isLive,
         language: payload.language === "hi" ? "hi" : "en",
         imageUrl: finalImageUrl,
@@ -212,7 +216,7 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.redirect(new URL("/admin?success=Course created successfully", request.url));
+    return NextResponse.redirect(new URL("/admin/drafts?success=Course saved as draft", request.url));
   } catch (error) {
     console.error("Course creation error:", error);
     return NextResponse.json(

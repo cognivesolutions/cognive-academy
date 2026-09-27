@@ -1,44 +1,149 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
-export default function CoursesBulk({ courses }: { courses: { id: string; title: string }[] }) {
+import ConfirmDialog from "@/components/confirm-dialog";
+
+export default function CoursesBulk({
+  courses,
+  variant = "default",
+}: {
+  courses: { id: string; title: string }[];
+  variant?: "default" | "drafts";
+}) {
   const [selected, setSelected] = useState<Record<string, boolean>>({});
-  const toggle = (id: string) => setSelected((s) => ({ ...s, [id]: !s[id] }));
+  const [pendingAction, setPendingAction] = useState<{ type: "publish" | "unpublish" | "delete"; ids: string[] } | null>(null);
+  const [feedback, setFeedback] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!feedback) return;
+    const timeout = window.setTimeout(() => setFeedback(null), 3000);
+    return () => window.clearTimeout(timeout);
+  }, [feedback]);
+
+  const clearFeedback = () => setFeedback(null);
 
   const selectAll = () => {
     const all: Record<string, boolean> = {};
     for (const c of courses) all[c.id] = true;
     setSelected(all);
+    clearFeedback();
   };
-  const clearAll = () => setSelected({});
+  const clearAll = () => {
+    setSelected({});
+    clearFeedback();
+  };
 
-  async function action(type: "publish" | "unpublish" | "delete") {
+  async function executeAction(type: "publish" | "unpublish" | "delete") {
     const ids = Object.keys(selected).filter((id) => selected[id]);
-    if (ids.length === 0) return alert("Select at least one course");
-    if (type === "delete" && !confirm(`Delete ${ids.length} courses? This cannot be undone.`)) return;
+    if (ids.length === 0) {
+      setFeedback("Select at least one course to continue.");
+      return;
+    }
 
     const res = await fetch("/api/admin/courses", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: type === "publish" ? "bulkPublish" : type === "unpublish" ? "bulkUnpublish" : "bulkDelete", ids }),
     });
-    if (!res.ok) return alert("Bulk action failed");
+
+    if (!res.ok) return;
+    setPendingAction(null);
     window.location.reload();
   }
 
+  function requestAction(type: "publish" | "unpublish" | "delete") {
+    const ids = Object.keys(selected).filter((id) => selected[id]);
+    if (ids.length === 0) {
+      setFeedback("Select at least one course to continue.");
+      return;
+    }
+    clearFeedback();
+    setPendingAction({ type, ids });
+  }
+
+  const isDraftMode = variant === "drafts";
+
   return (
-    <div className="mb-4 flex items-center justify-between gap-4">
-      <div className="flex items-center gap-2">
-        <button onClick={selectAll} className="rounded border px-2 py-1 text-sm">Select all</button>
-        <button onClick={clearAll} className="rounded border px-2 py-1 text-sm">Clear</button>
+    <>
+      {feedback ? (
+        <div className="mb-3 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] font-medium text-amber-800 shadow-sm dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200" aria-live="polite">
+          {feedback}
+        </div>
+      ) : null}
+
+      <div className="mb-4 flex items-center justify-between gap-3 rounded-[18px] border border-slate-200 bg-slate-50/80 p-2.5 shadow-[0_8px_20px_rgba(15,23,42,0.02)] dark:border-slate-700 dark:bg-slate-800/80">
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={selectAll}
+            className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:border-indigo-200 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-500/40 dark:hover:text-indigo-200"
+          >
+            Select all
+          </button>
+          <button
+            onClick={clearAll}
+            className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:border-indigo-200 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-500/40 dark:hover:text-indigo-200"
+          >
+            Clear
+          </button>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          {isDraftMode ? (
+            <>
+              <button
+                onClick={() => requestAction("publish")}
+                className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[11px] font-semibold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200"
+              >
+                Publish selected
+              </button>
+              <button
+                onClick={() => requestAction("delete")}
+                className="inline-flex items-center justify-center rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-[11px] font-semibold text-red-700 transition hover:bg-red-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200"
+              >
+                Delete
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => requestAction("publish")}
+                className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[11px] font-semibold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200"
+              >
+                Publish
+              </button>
+              <button
+                onClick={() => requestAction("unpublish")}
+                className="inline-flex items-center justify-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] font-semibold text-amber-700 transition hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
+              >
+                Unpublish
+              </button>
+              <button
+                onClick={() => requestAction("delete")}
+                className="inline-flex items-center justify-center rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-[11px] font-semibold text-red-700 transition hover:bg-red-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200"
+              >
+                Delete
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        <button onClick={() => action("publish")} className="rounded bg-green-600 px-3 py-1 text-sm text-white">Publish</button>
-        <button onClick={() => action("unpublish")} className="rounded bg-yellow-600 px-3 py-1 text-sm text-white">Unpublish</button>
-        <button onClick={() => action("delete")} className="rounded bg-red-600 px-3 py-1 text-sm text-white">Delete</button>
-      </div>
-    </div>
+      <ConfirmDialog
+        open={!!pendingAction}
+        title={pendingAction?.type === "delete" ? "Delete selected courses?" : pendingAction?.type === "publish" ? "Publish selected courses?" : "Unpublish selected courses?"}
+        description={
+          pendingAction
+            ? `This will ${pendingAction.type === "delete" ? "permanently delete" : pendingAction.type === "publish" ? "publish" : "unpublish"} ${pendingAction.ids.length} selected course${pendingAction.ids.length > 1 ? "s" : ""}.`
+            : ""
+        }
+        confirmLabel={pendingAction?.type === "delete" ? "Yes, delete" : pendingAction?.type === "publish" ? "Yes, publish" : "Yes, unpublish"}
+        onConfirm={() => {
+          if (!pendingAction) return;
+          executeAction(pendingAction.type);
+        }}
+        onCancel={() => setPendingAction(null)}
+      />
+    </>
   );
 }

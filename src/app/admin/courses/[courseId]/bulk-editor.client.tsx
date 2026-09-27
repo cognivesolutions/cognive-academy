@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+
+import ConfirmDialog from "@/components/confirm-dialog";
 
 type Lecture = { id: string; title: string; position: number; liveSessionUrl?: string | null };
 type Module = { id: string; title: string; lectures: Lecture[] };
@@ -11,14 +13,30 @@ export default function BulkEditor({ modules, courseId }: { modules: Module[]; c
   const [showConfirm, setShowConfirm] = useState(false);
   const [dragging, setDragging] = useState<{ modIndex: number; lecIndex: number } | null>(null);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
+  const [feedback, setFeedback] = useState<string | null>(null);
 
-  const toggleSelect = (id: string) => setSelected((s) => ({ ...s, [id]: !s[id] }));
+  useEffect(() => {
+    if (!feedback) return;
+    const timeout = window.setTimeout(() => setFeedback(null), 3000);
+    return () => window.clearTimeout(timeout);
+  }, [feedback]);
+
+  const clearFeedback = () => setFeedback(null);
+
+  const toggleSelect = (id: string) => {
+    setSelected((s) => ({ ...s, [id]: !s[id] }));
+    clearFeedback();
+  };
   const selectAll = () => {
     const all: Record<string, boolean> = {};
     local.forEach((m) => m.lectures.forEach((l) => (all[l.id] = true)));
     setSelected(all);
+    clearFeedback();
   };
-  const clearAll = () => setSelected({});
+  const clearAll = () => {
+    setSelected({});
+    clearFeedback();
+  };
 
   function swapLectures(src: { modIndex: number; lecIndex: number }, dest: { modIndex: number; lecIndex: number }) {
     setLocal((prev) => {
@@ -73,7 +91,7 @@ export default function BulkEditor({ modules, courseId }: { modules: Module[]; c
   }
 
   function openConfirm() {
-    setShowConfirm(true);
+    setPendingAction({ type: "save", ids: Object.keys(selected).filter((id) => selected[id]) || [] });
   }
 
   async function confirmSubmit() {
@@ -97,33 +115,61 @@ export default function BulkEditor({ modules, courseId }: { modules: Module[]; c
       window.location.reload();
     } catch (err) {
       console.error(err);
-      alert("Bulk update failed — see console.");
       setSubmitting(false);
       setShowConfirm(false);
     }
   }
 
+  const [pendingAction, setPendingAction] = useState<{ type: "publish" | "unpublish" | "delete" | "save"; ids: string[] } | null>(null);
+
   async function batchAction(type: "publish" | "unpublish" | "delete") {
     const ids = Object.keys(selected).filter((id) => selected[id]);
-    if (ids.length === 0) return alert("Select at least one lecture");
-    if (type === "delete" && !confirm(`Delete ${ids.length} lectures? This cannot be undone.`)) return;
+    if (ids.length === 0) {
+      setFeedback("Select at least one lecture to continue.");
+      return;
+    }
+    clearFeedback();
+    setPendingAction({ type, ids });
+  }
 
-    // delegate to a new admin API endpoint /api/admin/lectures/batch
+  async function executePendingAction() {
+    if (!pendingAction) return;
+    const { type, ids } = pendingAction;
+
+    if (type === "save") {
+      await confirmSubmit();
+      return;
+    }
+
     const res = await fetch(`/api/admin/lectures`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: type === "publish" ? "bulkPublish" : type === "unpublish" ? "bulkUnpublish" : "bulkDelete", ids }),
     });
-    if (!res.ok) return alert("Batch action failed");
+
+    if (!res.ok) {
+      setPendingAction(null);
+      return;
+    }
+
+    setPendingAction(null);
     window.location.reload();
   }
 
   return (
     <div className="space-y-4">
+      {feedback ? (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] font-medium text-amber-800 shadow-sm dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200" aria-live="polite">
+          {feedback}
+        </div>
+      ) : null}
+
       {local.map((mod, mi) => (
-        <div key={mod.id} className="rounded-md border p-3">
-          <div className="font-semibold">Module: {mod.title}</div>
-          <div className="mt-2 space-y-2">
+        <div key={mod.id} className="rounded-[20px] border border-slate-200 bg-slate-50/80 p-3 shadow-[0_8px_20px_rgba(15,23,42,0.03)] dark:border-slate-700 dark:bg-slate-800/80">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <div className="text-sm font-semibold text-slate-900 dark:text-white">Module: {mod.title}</div>
+          </div>
+          <div className="space-y-2">
             {mod.lectures.map((lec, li) => (
               <div
                 key={lec.id}
@@ -131,52 +177,65 @@ export default function BulkEditor({ modules, courseId }: { modules: Module[]; c
                 onDragStart={(e) => handleDragStart(e, mi, li)}
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDrop(e, mi, li)}
-                className="flex items-center gap-2"
+                className="flex items-start gap-2 rounded-xl border border-slate-200 bg-white p-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:border-slate-700 dark:bg-slate-900"
               >
-                <input type="checkbox" checked={!!selected[lec.id]} onChange={() => toggleSelect(lec.id)} className="mr-2" />
-                <div className="flex flex-col flex-1">
-                  <input value={lec.title} onChange={(e) => updateField(mi, li, "title", e.target.value)} className="rounded-md border px-2 py-1" />
-                  <input value={lec.liveSessionUrl ?? ""} onChange={(e) => updateField(mi, li, "liveSessionUrl", e.target.value)} placeholder="Live URL" className="mt-1 rounded-md border px-2 py-1 text-sm" />
+                <input type="checkbox" checked={!!selected[lec.id]} onChange={() => toggleSelect(lec.id)} className="mt-3 h-4 w-4 accent-indigo-600" />
+                <div className="flex flex-1 flex-col gap-2">
+                  <input value={lec.title} onChange={(e) => updateField(mi, li, "title", e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" />
+                  <input value={lec.liveSessionUrl ?? ""} onChange={(e) => updateField(mi, li, "liveSessionUrl", e.target.value)} placeholder="Live URL" className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500" />
                 </div>
-                <div className="flex flex-col items-center gap-1">
+                <div className="flex flex-col items-center gap-1 pt-1">
                   <button type="button" onClick={() => {
                     if (li > 0) swapLectures({ modIndex: mi, lecIndex: li }, { modIndex: mi, lecIndex: li - 1 });
-                  }} className="rounded border bg-white px-2 py-1 text-xs">▲</button>
+                  }} className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-[10px] text-slate-600 transition hover:border-indigo-200 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-500/40 dark:hover:text-indigo-200">▲</button>
                   <button type="button" onClick={() => {
                     swapLectures({ modIndex: mi, lecIndex: li }, { modIndex: mi, lecIndex: li + 1 });
-                  }} className="rounded border bg-white px-2 py-1 text-xs">▼</button>
+                  }} className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-[10px] text-slate-600 transition hover:border-indigo-200 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-500/40 dark:hover:text-indigo-200">▼</button>
                 </div>
               </div>
             ))}
-            <div onDragOver={handleDragOver} onDrop={(e) => handleDropOnModuleEnd(e, mi)} className="h-6" />
+            <div onDragOver={handleDragOver} onDrop={(e) => handleDropOnModuleEnd(e, mi)} className="h-4" />
           </div>
         </div>
       ))}
 
       <div className="pt-2">
-        <div className="flex items-center gap-2">
-          <button onClick={selectAll} className="rounded border px-2 py-1 text-sm">Select all</button>
-          <button onClick={clearAll} className="rounded border px-2 py-1 text-sm">Clear</button>
-          <button onClick={() => batchAction("publish")} className="rounded bg-green-600 px-3 py-1 text-sm text-white">Publish</button>
-          <button onClick={() => batchAction("unpublish")} className="rounded bg-yellow-600 px-3 py-1 text-sm text-white">Unpublish</button>
-          <button onClick={() => batchAction("delete")} className="rounded bg-red-600 px-3 py-1 text-sm text-white">Delete</button>
-          <button disabled={submitting} onClick={openConfirm} className="ml-auto rounded-full bg-indigo-600 px-4 py-2 text-white">Save changes</button>
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-[18px] border border-slate-200 bg-slate-50/80 p-2.5 shadow-[0_8px_20px_rgba(15,23,42,0.02)] dark:border-slate-700 dark:bg-slate-800/80">
+          <div className="flex items-center gap-1.5">
+            <button onClick={selectAll} className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:border-indigo-200 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-500/40 dark:hover:text-indigo-200">Select all</button>
+            <button onClick={clearAll} className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:border-indigo-200 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-500/40 dark:hover:text-indigo-200">Clear</button>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <button onClick={() => batchAction("publish")} className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[11px] font-semibold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">Publish</button>
+            <button onClick={() => batchAction("unpublish")} className="inline-flex items-center justify-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] font-semibold text-amber-700 transition hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">Unpublish</button>
+            <button onClick={() => batchAction("delete")} className="inline-flex items-center justify-center rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-[11px] font-semibold text-red-700 transition hover:bg-red-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">Delete</button>
+            <button disabled={submitting} onClick={openConfirm} className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 px-4 py-2 text-[11px] font-semibold text-white shadow-[0_10px_24px_rgba(99,102,241,0.24)] transition hover:-translate-y-0.5 disabled:opacity-70">Save changes</button>
+          </div>
         </div>
       </div>
 
-      {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setShowConfirm(false)} />
-          <div className="relative z-10 w-full max-w-lg rounded-lg bg-white p-6 shadow-lg dark:bg-slate-900">
-            <h3 className="text-lg font-semibold">Confirm bulk update</h3>
-            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">You're about to apply changes to {local.reduce((s, m) => s + m.lectures.length, 0)} lectures. This will update titles and positions.</p>
-            <div className="mt-4 flex justify-end gap-2">
-              <button onClick={() => setShowConfirm(false)} className="rounded-md border px-3 py-2">Cancel</button>
-              <button disabled={submitting} onClick={confirmSubmit} className="rounded-md bg-indigo-600 px-3 py-2 text-white">{submitting ? "Saving..." : "Confirm"}</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        open={!!pendingAction}
+        title={pendingAction?.type === "save" ? "Save lecture changes?" : pendingAction?.type === "delete" ? "Delete selected lectures?" : pendingAction?.type === "publish" ? "Publish selected lectures?" : "Unpublish selected lectures?"}
+        description={
+          pendingAction?.type === "save"
+            ? `This will save updates for ${local.reduce((s, m) => s + m.lectures.length, 0)} lecture${local.reduce((s, m) => s + m.lectures.length, 0) > 1 ? "s" : ""}.`
+            : `This will ${pendingAction?.type === "delete" ? "delete" : pendingAction?.type === "publish" ? "publish" : "unpublish"} ${pendingAction?.ids.length ?? 0} selected lecture${(pendingAction?.ids.length ?? 0) > 1 ? "s" : ""}.`
+        }
+        confirmLabel={pendingAction?.type === "save" ? "Yes, save" : pendingAction?.type === "delete" ? "Yes, delete" : pendingAction?.type === "publish" ? "Yes, publish" : "Yes, unpublish"}
+        onConfirm={async () => {
+          if (!pendingAction) return;
+          if (pendingAction.type === "save") {
+            setPendingAction(null);
+            await confirmSubmit();
+            return;
+          }
+
+          await executePendingAction();
+        }}
+        onCancel={() => setPendingAction(null)}
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import BackButton from "@/components/back-button";
 
 type Props = { params: { courseId: string; lectureId: string } };
 
@@ -25,7 +26,7 @@ export default async function LectureEditPage({ params }: Props) {
             <h1 className="text-2xl font-black">Edit lecture — {lecture.title}</h1>
             <p className="text-sm text-slate-600">Set a live session URL to enable Join Live buttons for this lecture.</p>
           </div>
-          <Link href={`/admin/courses/${params.courseId}/lectures`} className="text-sm text-indigo-600">Back</Link>
+          <BackButton href={`/admin/courses/${params.courseId}/lectures`} />
         </div>
 
         <form action="/api/admin/lectures" method="POST" className="space-y-4 rounded-lg bg-white p-6 dark:bg-slate-900">
