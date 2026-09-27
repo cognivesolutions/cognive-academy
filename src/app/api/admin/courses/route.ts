@@ -216,7 +216,7 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.redirect(new URL("/admin/drafts?success=Course saved as draft", request.url));
+    return NextResponse.redirect(new URL("/admin?success=Course saved successfully", request.url));
   } catch (error) {
     console.error("Course creation error:", error);
     return NextResponse.json(

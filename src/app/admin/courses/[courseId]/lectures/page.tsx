@@ -67,7 +67,7 @@ export default async function LecturesPage({ params, searchParams }: Props) {
             <h1 className="text-2xl font-black">Manage lectures — {course.title}</h1>
             <p className="text-sm text-slate-600">Add or edit lectures and set a live session URL for each lecture.</p>
           </div>
-          <BackButton href="/admin" />
+          <BackButton href="/admin/courses" />
         </div>
 
         <div className="space-y-6">
@@ -89,6 +89,12 @@ export default async function LecturesPage({ params, searchParams }: Props) {
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-indigo-600 dark:text-indigo-300">Structure</p>
                 <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">Module management</h2>
               </div>
+              <a
+                href="#new-module-title"
+                className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 px-3.5 py-2 text-xs font-semibold text-white shadow-[0_12px_24px_rgba(99,102,241,0.28)] transition hover:-translate-y-0.5"
+              >
+                Add module
+              </a>
             </div>
             <div>
               <ModuleManagement courseId={course.id} modules={course.modules.map((m) => ({ id: m.id, title: m.title, position: m.position }))} />

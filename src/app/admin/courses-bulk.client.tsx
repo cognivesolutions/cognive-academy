@@ -7,11 +7,16 @@ import ConfirmDialog from "@/components/confirm-dialog";
 export default function CoursesBulk({
   courses,
   variant = "default",
+  selected,
+  onSelectionChange,
 }: {
   courses: { id: string; title: string }[];
-  variant?: "default" | "drafts";
+  variant?: "default" | "unpublished";
+  selected?: Record<string, boolean>;
+  onSelectionChange?: (next: Record<string, boolean>) => void;
 }) {
-  const [selected, setSelected] = useState<Record<string, boolean>>({});
+  const [internalSelected, setInternalSelected] = useState<Record<string, boolean>>({});
+  const currentSelected = selected ?? internalSelected;
   const [pendingAction, setPendingAction] = useState<{ type: "publish" | "unpublish" | "delete"; ids: string[] } | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
 
@@ -23,19 +28,27 @@ export default function CoursesBulk({
 
   const clearFeedback = () => setFeedback(null);
 
+  const updateSelected = (next: Record<string, boolean>) => {
+    if (selected !== undefined && onSelectionChange) {
+      onSelectionChange(next);
+      return;
+    }
+    setInternalSelected(next);
+  };
+
   const selectAll = () => {
     const all: Record<string, boolean> = {};
     for (const c of courses) all[c.id] = true;
-    setSelected(all);
+    updateSelected(all);
     clearFeedback();
   };
   const clearAll = () => {
-    setSelected({});
+    updateSelected({});
     clearFeedback();
   };
 
   async function executeAction(type: "publish" | "unpublish" | "delete") {
-    const ids = Object.keys(selected).filter((id) => selected[id]);
+    const ids = Object.keys(currentSelected).filter((id) => currentSelected[id]);
     if (ids.length === 0) {
       setFeedback("Select at least one course to continue.");
       return;
@@ -53,7 +66,7 @@ export default function CoursesBulk({
   }
 
   function requestAction(type: "publish" | "unpublish" | "delete") {
-    const ids = Object.keys(selected).filter((id) => selected[id]);
+    const ids = Object.keys(currentSelected).filter((id) => currentSelected[id]);
     if (ids.length === 0) {
       setFeedback("Select at least one course to continue.");
       return;
@@ -62,7 +75,7 @@ export default function CoursesBulk({
     setPendingAction({ type, ids });
   }
 
-  const isDraftMode = variant === "drafts";
+  const isUnpublishedMode = variant === "unpublished";
 
   return (
     <>
@@ -89,7 +102,7 @@ export default function CoursesBulk({
         </div>
 
         <div className="flex items-center gap-1.5">
-          {isDraftMode ? (
+          {isUnpublishedMode ? (
             <>
               <button
                 onClick={() => requestAction("publish")}

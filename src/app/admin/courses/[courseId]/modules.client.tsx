@@ -114,6 +114,7 @@ export default function ModuleManagement({ courseId, modules }: { courseId: stri
 
       <div className="flex items-center gap-2 pt-2">
         <input
+          id="new-module-title"
           placeholder="New module title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
