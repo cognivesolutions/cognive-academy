@@ -102,7 +102,7 @@ export default async function MyCoursesPage({
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <Link href="/courses" className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15">
+              <Link href="/courses#course-results" className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15">
                 Browse catalog
               </Link>
               <Link href="/dashboard" className="inline-flex items-center justify-center rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:bg-slate-100">
@@ -178,7 +178,7 @@ export default async function MyCoursesPage({
             <div className="rounded-[24px] border border-dashed border-slate-300 bg-slate-50 p-10 text-center text-slate-600 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-300">
               <div className="text-lg font-semibold text-slate-900 dark:text-white">No courses match this view</div>
               <p className="mt-2 text-sm">Try a different filter or browse more courses in the catalog.</p>
-              <Link href="/courses" className="mt-5 inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white">
+              <Link href="/courses#course-results" className="mt-5 inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white">
                 Explore catalog
               </Link>
             </div>

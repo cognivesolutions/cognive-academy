@@ -7,6 +7,7 @@ import CoursesBulk from "./courses-bulk.client";
 import ImageCropWrapper from "./components/image-crop-wrapper.client";
 import ImageFileUploader from "./components/image-file-uploader.client";
 import CourseThumbnail from "./components/course-thumbnail.client";
+import AdminCoursesInfinite from "@/components/admin-courses-infinite.client";
 
 export default async function AdminPage({
   searchParams,
@@ -27,28 +28,67 @@ export default async function AdminPage({
   const successMessage =
     typeof resolvedSearchParams.success === "string" ? resolvedSearchParams.success : "";
 
-  const courses = await prisma.course.findMany({
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      title: true,
-      category: true,
-      isLive: true,
-      language: true,
-      price: true,
-      slug: true,
-      imageUrl: true,
-      previewLectureUrl: true,
-      shortDescription: true,
-      description: true,
-      instructorName: true,
-      instructorTitle: true,
-      durationHours: true,
-      level: true,
-      isPublished: true,
-      featured: true,
-    },
-  });
+  // Parse common query params
+  const q = Array.isArray(resolvedSearchParams.q) ? resolvedSearchParams.q[0] : resolvedSearchParams.q ?? "";
+  const categoryParam = Array.isArray(resolvedSearchParams.category) ? resolvedSearchParams.category[0] : resolvedSearchParams.category ?? "";
+  const publishedParam = Array.isArray(resolvedSearchParams.published) ? resolvedSearchParams.published[0] : resolvedSearchParams.published;
+
+  const page = Math.max(Number(Array.isArray(resolvedSearchParams.page) ? resolvedSearchParams.page[0] : resolvedSearchParams.page ?? 1) || 1, 1);
+  const pageSize = Math.max(Number(Array.isArray(resolvedSearchParams.pageSize) ? resolvedSearchParams.pageSize[0] : resolvedSearchParams.pageSize ?? 10) || 10, 1);
+
+  const where: any = {};
+  if (q) {
+    where.OR = [
+      { title: { contains: q, mode: "insensitive" } },
+      { shortDescription: { contains: q, mode: "insensitive" } },
+      { description: { contains: q, mode: "insensitive" } },
+    ];
+  }
+
+  if (categoryParam) {
+    where.category = categoryParam;
+  }
+
+  if (publishedParam !== undefined) {
+    if (publishedParam === "true" || publishedParam === "1") {
+      where.isPublished = true;
+    } else if (publishedParam === "false" || publishedParam === "0") {
+      where.isPublished = false;
+    }
+  }
+
+  const [courses, total] = await Promise.all([
+    prisma.course.findMany({
+      where,
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        category: true,
+        isLive: true,
+        language: true,
+        price: true,
+        slug: true,
+        imageUrl: true,
+        previewLectureUrl: true,
+        shortDescription: true,
+        description: true,
+        instructorName: true,
+        instructorTitle: true,
+        durationHours: true,
+        level: true,
+        isPublished: true,
+        featured: true,
+      },
+    }),
+    prisma.course.count({ where }),
+  ]);
+
+  const totalPages = Math.max(Math.ceil(total / pageSize), 1);
+
+  // AdminCoursesInfinite is a client component ("use client") and can be imported directly.
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
@@ -263,8 +303,50 @@ export default async function AdminPage({
           <aside className="space-y-6">
             <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900/80">
               <h2 className="text-xl font-black text-slate-900 dark:text-white">Manage courses</h2>
-              <div className="mt-4 space-y-4">
-                <CoursesBulk courses={courses.map((c) => ({ id: c.id, title: c.title }))} />
+                <div className="mt-4 space-y-4">
+                <form method="GET" className="flex flex-col gap-3">
+                    <div className="flex gap-2">
+                      <input
+                        name="q"
+                        defaultValue={q}
+                        placeholder="Search title or description"
+                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100"
+                      />
+                      <select
+                        name="published"
+                        defaultValue={publishedParam ?? ""}
+                        className="hidden md:inline-block rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100"
+                      >
+                        <option value="">Any</option>
+                        <option value="true">Published</option>
+                        <option value="false">Unpublished</option>
+                      </select>
+                      <select
+                        name="pageSize"
+                        defaultValue={String(pageSize)}
+                        className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100"
+                      >
+                        <option value="1">1</option>
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                      </select>
+                      <button className="ml-2 rounded-lg bg-indigo-600 px-3 py-2 text-sm text-white">Search</button>
+                    </div>
+                    <div className="flex gap-2 text-xs text-slate-500 dark:text-slate-400">
+                      <input name="category" defaultValue={categoryParam} placeholder="Category (optional)" className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm outline-none dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100" />
+                    </div>
+                  </form>
+
+                  <CoursesBulk courses={courses.map((c) => ({ id: c.id, title: c.title }))} />
+
+                  {/* If user requests infinite mode, mount client infinite list */}
+                  {String(resolvedSearchParams.infinite ?? "") === "1" ? (
+                    <div>
+                      <AdminCoursesInfinite initialItems={courses} initialCursor={courses.length ? courses[courses.length - 1].id : null} pageSize={pageSize} />
+                    </div>
+                  ) : null}
                 {courses.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
                     No courses added yet.
@@ -404,6 +486,44 @@ export default async function AdminPage({
                     </div>
                   ))
                 )}
+              </div>
+              {/* pager */}
+              <div className="mt-6 flex items-center justify-between text-sm">
+                <div className="text-slate-600 dark:text-slate-300">Page {page} of {totalPages} • {total} courses</div>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={`?page=${Math.max(page - 1, 1)}&pageSize=${pageSize}&q=${encodeURIComponent(q || "")}&category=${encodeURIComponent(categoryParam || "")}&published=${encodeURIComponent(publishedParam ?? "")}`}
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs ${page === 1 ? 'opacity-50 pointer-events-none' : ''}`}
+                  >
+                    Prev
+                  </a>
+
+                  {/* page numbers: show up to 5 pages centered on current */}
+                  {(() => {
+                    const start = Math.max(1, page - 2);
+                    const end = Math.min(totalPages, page + 2);
+                    const items = [] as any[];
+                    for (let p = start; p <= end; p++) {
+                      items.push(
+                        <a
+                          key={p}
+                          href={`?page=${p}&pageSize=${pageSize}&q=${encodeURIComponent(q || "")}&category=${encodeURIComponent(categoryParam || "")}&published=${encodeURIComponent(publishedParam ?? "")}`}
+                          className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-xs border ${p === page ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 dark:bg-slate-900/80 dark:text-slate-200'}`}
+                        >
+                          {p}
+                        </a>
+                      );
+                    }
+                    return items;
+                  })()}
+
+                  <a
+                    href={`?page=${Math.min(page + 1, totalPages)}&pageSize=${pageSize}&q=${encodeURIComponent(q || "")}&category=${encodeURIComponent(categoryParam || "")}&published=${encodeURIComponent(publishedParam ?? "")}`}
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs ${page === totalPages ? 'opacity-50 pointer-events-none' : ''}`}
+                  >
+                    Next
+                  </a>
+                </div>
               </div>
             </section>
           </aside>

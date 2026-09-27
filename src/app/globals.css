@@ -131,6 +131,13 @@
   html {
     @apply font-sans;
     scroll-behavior: smooth;
+    /* Reserve scrollbar space to avoid layout shifts when scrollbars appear/disappear */
+    scrollbar-gutter: stable both-edges;
+  }
+
+  /* Ensure all native button elements show pointer cursor across the site */
+  button {
+    cursor: pointer;
   }
 }
 

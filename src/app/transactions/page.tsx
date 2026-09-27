@@ -152,20 +152,17 @@ export default async function TransactionsPage({
           </Link>
         </div>
 
-        <div className="mb-8 overflow-hidden rounded-[30px] border border-slate-200 bg-gradient-to-r from-slate-900 via-indigo-900 to-violet-900 p-6 text-white shadow-[0_24px_60px_rgba(79,70,229,0.22)] dark:border-slate-700">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-indigo-200">Payment overview</p>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-white">{formatCurrency(totalAmount)}</h2>
-            </div>
-
-            <form method="GET" className="flex w-full max-w-xl flex-col gap-2 rounded-[20px] border border-white/15 bg-white/5 p-2 backdrop-blur-sm sm:flex-row sm:items-center">
+        <div className="mb-8 overflow-hidden rounded-[30px] border border-slate-200 p-6 dark:border-slate-700">
+          <form
+            method="GET"
+            className="flex w-full max-w-xl flex-col gap-2 rounded-[20px] border border-white/15 bg-slate-900/40 p-2 sm:flex-row sm:items-center dark:bg-slate-800/40"
+          >
               <input
                 type="search"
                 name="search"
                 defaultValue={searchQuery}
                 placeholder="Search invoice or course"
-                className="w-full bg-transparent px-3 py-2 text-sm text-white placeholder:text-indigo-200/80 focus:outline-none"
+                className="w-full rounded-full border border-white/15 bg-transparent px-3 py-2 text-sm text-white placeholder:text-indigo-200/80 focus:outline-none"
               />
               <div className="flex items-center gap-2 sm:w-auto">
                 <input
@@ -189,16 +186,6 @@ export default async function TransactionsPage({
                 Search
               </button>
             </form>
-          </div>
-
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {monthlySummary.map((entry) => (
-              <div key={entry.monthName} className="rounded-[20px] border border-white/10 bg-white/5 p-4">
-                <div className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-200">{entry.monthName}</div>
-                <div className="mt-2 text-xl font-black text-white">{formatCurrency(entry.monthTotal)}</div>
-              </div>
-            ))}
-          </div>
         </div>
 
         {filteredOrders.length === 0 ? (
@@ -379,15 +366,15 @@ export default async function TransactionsPage({
               )}
             </section>
 
-            <aside className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900/80">
-              <div className="mb-5 flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-indigo-600 dark:text-indigo-300">Payment details</p>
-                  <h2 className="mt-2 text-xl font-black text-slate-900 dark:text-white">Invoice overview</h2>
+            {selectedOrder ? (
+              <aside className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900/80">
+                <div className="mb-5 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-indigo-600 dark:text-indigo-300">Payment details</p>
+                    <h2 className="mt-2 text-xl font-black text-slate-900 dark:text-white">Invoice overview</h2>
+                  </div>
                 </div>
-              </div>
 
-              {selectedOrder ? (
                 <div className="space-y-5">
                   <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/80">
                     <div className="text-sm text-slate-500 dark:text-slate-400">Invoice</div>
@@ -448,8 +435,8 @@ export default async function TransactionsPage({
                     Download invoice
                   </a>
                 </div>
-              ) : null}
-            </aside>
+              </aside>
+            ) : null}
           </div>
         )}
       </div>

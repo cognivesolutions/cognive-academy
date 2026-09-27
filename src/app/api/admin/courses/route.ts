@@ -221,3 +221,70 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export async function GET(request: Request) {
+  const session = await auth();
+
+  if (!session?.user?.id || session.user.role !== "ADMIN") {
+    return NextResponse.json({ success: false, message: "Forbidden" }, { status: 403 });
+  }
+
+  const url = new URL(request.url);
+  const params = url.searchParams;
+
+  const q = params.get("q") ?? "";
+  const category = params.get("category") ?? undefined;
+  const published = params.get("published");
+  const limit = Math.min(Math.max(Number(params.get("limit") ?? params.get("pageSize") ?? 20), 1), 100);
+  const cursor = params.get("cursor") ?? undefined;
+  const sort = params.get("sort") ?? "createdAt";
+  const dir = (params.get("dir") ?? "desc").toLowerCase() === "asc" ? "asc" : "desc";
+
+  const where: any = {};
+  if (q) {
+    where.OR = [
+      { title: { contains: q, mode: "insensitive" } },
+      { shortDescription: { contains: q, mode: "insensitive" } },
+      { description: { contains: q, mode: "insensitive" } },
+    ];
+  }
+  if (category) where.category = category;
+  if (published !== null) {
+    if (published === "true" || published === "1") where.isPublished = true;
+    else if (published === "false" || published === "0") where.isPublished = false;
+  }
+
+  const orderBy: any = {};
+  if (sort === "price") orderBy.price = dir;
+  else if (sort === "title") orderBy.title = dir;
+  else orderBy.createdAt = dir;
+
+  const findArgs: any = {
+    where,
+    orderBy,
+    take: limit,
+    select: {
+      id: true,
+      title: true,
+      category: true,
+      isLive: true,
+      language: true,
+      price: true,
+      slug: true,
+      imageUrl: true,
+      shortDescription: true,
+      isPublished: true,
+    },
+  };
+
+  if (cursor) {
+    findArgs.cursor = { id: cursor };
+    findArgs.skip = 1;
+  }
+
+  const items = await prisma.course.findMany(findArgs);
+
+  const nextCursor = items.length ? items[items.length - 1].id : null;
+
+  return NextResponse.json({ items, nextCursor });
+}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { SiteNav } from "./site-nav";
+import { SiteNav } from "@/components/site-nav";
 import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
 import MobileMenu from "./mobile-menu";
