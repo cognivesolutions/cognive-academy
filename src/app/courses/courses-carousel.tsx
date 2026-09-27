@@ -11,11 +11,14 @@ type Course = {
   description?: string | null;
   category?: string | null;
   level?: string | null;
-  price: number | string;
+  price?: number | string | null;
   featured?: boolean | null;
   imageUrl?: string | null;
+  coverImage?: string | null;
+  isLive?: boolean | null;
   instructorName?: string | null;
   durationHours?: number | null;
+  language?: string | null;
 };
 
 const VISIBLE = 3;

@@ -3,7 +3,23 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 
-type Course = any;
+type Course = {
+  id: string;
+  slug: string;
+  title: string;
+  shortDescription?: string | null;
+  description?: string | null;
+  category?: string | null;
+  level?: string | null;
+  price?: number | string | null;
+  featured?: boolean | null;
+  imageUrl?: string | null;
+  coverImage?: string | null;
+  isLive?: boolean | null;
+  instructorName?: string | null;
+  durationHours?: number | null;
+  language?: string | null;
+};
 
 const VISIBLE = 3;
 
@@ -37,14 +53,20 @@ const formatCategory = (value?: string | null) => {
 export default function LiveCoursesCarousel({ courses }: { courses: Course[] }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const rafRef = useRef<number | null>(null);
-  const [pageCount, setPageCount] = useState(Math.max(0, Math.ceil(courses.length / VISIBLE)));
+  const safeCourses = Array.isArray(courses) ? courses : [];
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [pageCount, setPageCount] = useState(Math.max(0, Math.ceil(safeCourses.length / VISIBLE)));
   const [currentPage, setCurrentPage] = useState(0);
 
   useEffect(() => {
-    const nextPageCount = Math.max(0, Math.ceil(courses.length / VISIBLE));
+    setIsHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    const nextPageCount = Math.max(0, Math.ceil(safeCourses.length / VISIBLE));
     setPageCount(nextPageCount);
     setCurrentPage((previous) => Math.min(previous, Math.max(0, nextPageCount - 1)));
-  }, [courses.length]);
+  }, [safeCourses.length]);
 
   const updateCurrentPage = useCallback(() => {
     const el = containerRef.current;
@@ -107,13 +129,16 @@ export default function LiveCoursesCarousel({ courses }: { courses: Course[] }) 
   const nextDisabled = pageCount <= 1 || currentPage >= pageCount - 1;
 
   return (
-    <div className="relative">
+    <div className="relative" suppressHydrationWarning>
       <div
         ref={containerRef}
         className="-mx-3 flex gap-6 overflow-x-auto px-3 pb-10 pr-8 scroll-smooth snap-x snap-mandatory touch-pan-x hide-scrollbar"
         role="list"
       >
-        {courses.map((course) => (
+        {safeCourses.map((course) => {
+          const imgSrc = course.coverImage ?? course.imageUrl ?? undefined;
+
+          return (
           <article
             key={course.id}
             role="listitem"
@@ -121,8 +146,8 @@ export default function LiveCoursesCarousel({ courses }: { courses: Course[] }) 
             style={{ flex: "0 0 calc((100% - 2rem) / 3)" }}
           >
             <div className="mb-4 overflow-hidden rounded-[20px] bg-slate-100 ring-1 ring-slate-200 transition-all duration-300 group-hover:ring-indigo-200/60 dark:bg-slate-800 dark:ring-slate-700 dark:group-hover:ring-indigo-500/40">
-              {(course.coverImage || course.imageUrl) ? (
-                <img src={course.coverImage || course.imageUrl} alt={course.title} className="h-48 w-full object-cover transition-all duration-500 group-hover:scale-[1.04] group-hover:brightness-[1.02]" />
+              {imgSrc ? (
+                <img src={imgSrc} alt={course.title} className="h-48 w-full object-cover transition-all duration-500 group-hover:scale-[1.04] group-hover:brightness-[1.02]" />
               ) : (
                 <div className="flex h-48 w-full items-center justify-center bg-gradient-to-br from-indigo-100 via-violet-100 to-sky-100 text-sm font-semibold text-indigo-700 transition-all duration-300 group-hover:scale-[1.02] dark:from-indigo-500/20 dark:via-violet-500/15 dark:to-sky-500/15 dark:text-indigo-200">
                   {formatCategory(course.category)}
@@ -170,56 +195,59 @@ export default function LiveCoursesCarousel({ courses }: { courses: Course[] }) 
               </div>
             </div>
           </article>
-        ))}
+          );
+        })}
       </div>
 
-      <div className="mt-4 relative">
-        {pageCount > 1 ? (
-          <div className="flex items-center justify-center">
-            <div className="flex gap-2">
-              {Array.from({ length: pageCount }).map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => scrollToPage(i)}
-                  aria-label={`Go to page ${i + 1}`}
-                  aria-current={i === currentPage}
-                  className={`h-2.5 rounded-full transition-all ${i === currentPage ? "w-5 bg-slate-900 dark:bg-white" : "w-2.5 bg-slate-300 dark:bg-slate-600"} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500`}
-                />
-              ))}
+      {isHydrated ? (
+        <div className="mt-4 relative">
+          {pageCount > 1 ? (
+            <div className="flex items-center justify-center">
+              <div className="flex gap-2">
+                {Array.from({ length: pageCount }).map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => scrollToPage(i)}
+                    aria-label={`Go to page ${i + 1}`}
+                    aria-current={i === currentPage}
+                    className={`h-2.5 rounded-full transition-all ${i === currentPage ? "w-5 bg-slate-900 dark:bg-white" : "w-2.5 bg-slate-300 dark:bg-slate-600"} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500`}
+                  />
+                ))}
+              </div>
             </div>
+          ) : null}
+
+          <div className="absolute right-2 md:right-4 top-1/2 z-30 flex -translate-y-1/2 items-center gap-3">
+            <button
+              onClick={() => !prevDisabled && scrollPrev()}
+              aria-label="Previous"
+              aria-disabled={prevDisabled}
+              disabled={prevDisabled}
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/95 shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-slate-800/90 dark:shadow-[0_8px_24px_rgba(15,23,42,0.45)] ${
+                prevDisabled ? "pointer-events-none cursor-not-allowed opacity-40" : "hover:bg-white dark:hover:bg-slate-700"
+              }`}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-slate-700 dark:text-slate-200">
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+            </button>
+
+            <button
+              onClick={() => !nextDisabled && scrollNext()}
+              aria-label="Next"
+              aria-disabled={nextDisabled}
+              disabled={nextDisabled}
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/95 shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-slate-800/90 dark:shadow-[0_8px_24px_rgba(15,23,42,0.45)] ${
+                nextDisabled ? "pointer-events-none cursor-not-allowed opacity-40" : "hover:bg-white dark:hover:bg-slate-700"
+              }`}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-slate-700 dark:text-slate-200">
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </button>
           </div>
-        ) : null}
-
-        <div className="absolute right-2 md:right-4 top-1/2 z-30 flex -translate-y-1/2 items-center gap-3">
-          <button
-            onClick={() => !prevDisabled && scrollPrev()}
-            aria-label="Previous"
-            aria-disabled={prevDisabled}
-            disabled={prevDisabled}
-            className={`inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/95 shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-slate-800/90 dark:shadow-[0_8px_24px_rgba(15,23,42,0.45)] ${
-              prevDisabled ? "pointer-events-none cursor-not-allowed opacity-40" : "hover:bg-white dark:hover:bg-slate-700"
-            }`}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-slate-700 dark:text-slate-200">
-              <path d="m15 18-6-6 6-6" />
-            </svg>
-          </button>
-
-          <button
-            onClick={() => !nextDisabled && scrollNext()}
-            aria-label="Next"
-            aria-disabled={nextDisabled}
-            disabled={nextDisabled}
-            className={`inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/95 shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-slate-800/90 dark:shadow-[0_8px_24px_rgba(15,23,42,0.45)] ${
-              nextDisabled ? "pointer-events-none cursor-not-allowed opacity-40" : "hover:bg-white dark:hover:bg-slate-700"
-            }`}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-slate-700 dark:text-slate-200">
-              <path d="m9 18 6-6-6-6" />
-            </svg>
-          </button>
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }
