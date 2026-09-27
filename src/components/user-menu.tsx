@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
+import ConfirmDialog from "./confirm-dialog";
+
 
 const menuItems = [
   {
@@ -51,6 +53,7 @@ const menuItems = [
 export function UserMenu() {
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -125,23 +128,50 @@ export function UserMenu() {
 
             <div className="my-1 h-px bg-slate-200 dark:bg-slate-700" />
 
-            <button
-              type="button"
-              onClick={() => signOut({ callbackUrl: "/login" })}
-              className="group flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left text-sm font-medium text-red-600 transition-all duration-200 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
-            >
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-50 text-red-600 transition group-hover:bg-red-100 dark:bg-red-950/30 dark:text-red-300 dark:group-hover:bg-red-900/50">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
-                  <path d="M9 21H5.5A2.5 2.5 0 0 1 3 18.5v-13A2.5 2.5 0 0 1 5.5 3H9" />
-                  <path d="M16 17 21 12l-5-5" />
-                  <path d="M21 12H9" />
-                </svg>
-              </span>
-              <span>Logout</span>
-            </button>
+            {/* Use modal confirmation for logout */}
+            <LogoutInlineConfirm onOpenDialog={() => {
+              // close the avatar menu and open the confirmation dialog
+              setOpen(false);
+              setLogoutDialogOpen(true);
+            }} />
           </div>
         </div>
       ) : null}
+
+      <ConfirmDialog
+        open={logoutDialogOpen}
+        title="Sign out"
+        description="You will be signed out of your account. Are you sure you want to continue?"
+        confirmLabel="Sign out"
+        cancelLabel="Stay signed in"
+        onConfirm={() => {
+          setLogoutDialogOpen(false);
+          signOut({ callbackUrl: "/login" });
+        }}
+        onCancel={() => setLogoutDialogOpen(false)}
+      />
     </div>
+  );
+}
+
+function LogoutInlineConfirm({ onOpenDialog }: { onOpenDialog?: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        onOpenDialog?.();
+      }}
+      className="group flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left text-sm font-medium text-red-600 transition-all duration-200 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
+    >
+      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-50 text-red-600 transition group-hover:bg-red-100 dark:bg-red-950/30 dark:text-red-300 dark:group-hover:bg-red-900/50">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+          <path d="M9 21H5.5A2.5 2.5 0 0 1 3 18.5v-13A2.5 2.5 0 0 1 5.5 3H9" />
+          <path d="M16 17 21 12l-5-5" />
+          <path d="M21 12H9" />
+        </svg>
+      </span>
+      <span>Logout</span>
+    </button>
   );
 }
