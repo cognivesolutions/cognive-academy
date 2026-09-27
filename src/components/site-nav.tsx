@@ -123,10 +123,19 @@ export function SiteNav() {
                 <div className="flex items-center justify-center gap-1 rounded-full px-3 py-2 transition focus-within:text-indigo-700 dark:focus-within:text-indigo-300">
                   <Link
                     href={item.href}
-                    className={`flex flex-col items-center justify-center leading-none transition ${isOpen || resolvedActiveLabel === item.label ? "text-indigo-700 dark:text-indigo-300" : "text-slate-700 hover:text-slate-800 dark:text-slate-200 dark:hover:text-slate-100"}`}
+                    className={`group flex flex-col items-center justify-center leading-none transition ${
+                      isOpen || resolvedActiveLabel === item.label
+                        ? "text-indigo-700 dark:text-indigo-300"
+                        : "text-slate-700 hover:text-slate-800 dark:text-slate-200 dark:hover:text-slate-100"
+                    }`}
                   >
                     <span className="inline-flex translate-y-0.5 items-center gap-1.5">
-                      <span className={`tracking-normal transition-all duration-200 ${isOpen || resolvedActiveLabel === item.label ? "font-bold text-indigo-700 dark:text-indigo-300" : "font-medium text-slate-700 hover:font-medium dark:text-slate-200"}`}>
+                      <span
+                        className={`text-sm tracking-normal transition-all duration-200 ${
+                          isOpen || resolvedActiveLabel === item.label
+                            ? "text-indigo-700 dark:text-indigo-300"
+                            : "text-slate-700 dark:text-slate-200"
+                        } group-hover:font-bold`}>
                         {item.label}
                       </span>
                     </span>
@@ -192,7 +201,7 @@ export function SiteNav() {
                         ref={(el) => {
                           if (idx === 0) menuFirstRefs.current[item.label] = el;
                         }}
-                        className="block w-full rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-white/70 hover:text-indigo-700 focus:outline-none focus:ring-0 dark:text-slate-200 dark:hover:bg-slate-800/75 dark:hover:text-indigo-300"
+                        className="block w-full rounded-xl px-3 py-2.5 text-sm text-slate-600 transition-all duration-200 hover:bg-white/70 hover:text-indigo-700 hover:font-bold focus:outline-none focus:ring-0 dark:text-slate-200 dark:hover:bg-slate-800/75 dark:hover:text-indigo-300"
                         onClick={() => {
                           setOpenMenu(null);
                         }}
@@ -212,7 +221,15 @@ export function SiteNav() {
               href={item.href}
               className={`group inline-flex flex-col items-center justify-center rounded-full px-3 py-2 transition ${resolvedActiveLabel === item.label ? "text-indigo-700 dark:text-indigo-300" : "hover:text-indigo-700 dark:hover:text-indigo-300"} focus-visible:text-indigo-700 dark:focus-visible:text-indigo-300`}
             >
-              <span className={`leading-none tracking-normal translate-y-0.5 group-hover:font-bold group-active:font-bold group-focus-visible:font-bold group-active:text-indigo-700 group-focus-visible:text-indigo-700 active:font-bold active:text-indigo-700 ${resolvedActiveLabel === item.label ? "font-bold text-indigo-700 dark:text-indigo-300" : "dark:text-slate-200"}`}>{item.label}</span>
+              <span
+                className={`text-sm leading-none tracking-normal translate-y-0.5 group-hover:font-bold group-active:font-bold group-focus-visible:font-bold group-active:text-indigo-700 group-focus-visible:text-indigo-700 active:font-bold active:text-indigo-700 ${
+                  resolvedActiveLabel === item.label
+                    ? "font-bold text-indigo-700 dark:text-indigo-300"
+                    : "text-slate-700 dark:text-slate-200 group-hover:text-indigo-700 dark:group-hover:text-indigo-300"
+                }`}
+              >
+                {item.label}
+              </span>
               <span className={`mt-1 block h-[2px] w-full bg-indigo-600 transform ${resolvedActiveLabel === item.label ? "scale-x-100" : "scale-x-0"} origin-left transition-transform duration-200 group-hover:scale-x-100`} />
             </Link>
           );

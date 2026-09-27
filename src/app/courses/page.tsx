@@ -142,6 +142,9 @@ export default async function CoursesPage({
     return activeLang === "hi" ? language === "hi" : language === "en";
   });
 
+  // Sort so that live courses appear first, then recorded courses
+  coursesByLanguage.sort((a, b) => (isCourseLive(b) ? 1 : 0) - (isCourseLive(a) ? 1 : 0));
+
   const pageSize = 3;
   const totalPages = Math.max(1, Math.ceil(coursesByLanguage.length / pageSize));
   const safePage = Math.min(Math.max(1, activePage), totalPages);

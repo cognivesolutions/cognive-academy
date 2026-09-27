@@ -398,6 +398,15 @@ export default async function AdminPage({
                           </button>
                         </div>
                       </form>
+
+                      <div className="mt-3">
+                        <Link
+                          href={`/admin/courses/${course.id}/lectures?courseId=${course.id}`}
+                          className="inline-flex items-center justify-center rounded-full border border-slate-200 px-3 py-2 text-xs text-slate-700 transition hover:border-indigo-200 hover:text-indigo-700 dark:border-slate-700 dark:text-slate-200 dark:hover:border-indigo-500/40 dark:hover:text-indigo-200"
+                        >
+                          Manage lectures
+                        </Link>
+                        </div>
                     </div>
                   ))
                 )}

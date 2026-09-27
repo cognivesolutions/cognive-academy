@@ -146,13 +146,22 @@ export default function LiveCoursesCarousel({ courses }: { courses: Course[] }) 
             style={{ flex: "0 0 calc((100% - 2rem) / 3)" }}
           >
             <div className="mb-4 overflow-hidden rounded-[20px] bg-slate-100 ring-1 ring-slate-200 transition-all duration-300 group-hover:ring-indigo-200/60 dark:bg-slate-800 dark:ring-slate-700 dark:group-hover:ring-indigo-500/40">
-              {imgSrc ? (
-                <img src={imgSrc} alt={course.title} className="h-48 w-full object-cover transition-all duration-500 group-hover:scale-[1.04] group-hover:brightness-[1.02]" />
-              ) : (
-                <div className="flex h-48 w-full items-center justify-center bg-gradient-to-br from-indigo-100 via-violet-100 to-sky-100 text-sm font-semibold text-indigo-700 transition-all duration-300 group-hover:scale-[1.02] dark:from-indigo-500/20 dark:via-violet-500/15 dark:to-sky-500/15 dark:text-indigo-200">
-                  {formatCategory(course.category)}
-                </div>
-              )}
+              {(() => {
+                const DEFAULT_IMG = "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1200&q=80";
+                const src = imgSrc ?? DEFAULT_IMG;
+                return (
+                  <img
+                    src={src}
+                    alt={course.title}
+                    loading="lazy"
+                    onError={(e) => {
+                      const target = e.currentTarget as HTMLImageElement;
+                      if (target.src !== DEFAULT_IMG) target.src = DEFAULT_IMG;
+                    }}
+                    className="h-48 w-full object-cover block transition-all duration-500 group-hover:scale-[1.04] group-hover:brightness-[1.02]"
+                  />
+                );
+              })()}
             </div>
 
             <div className="flex items-center justify-between gap-3">

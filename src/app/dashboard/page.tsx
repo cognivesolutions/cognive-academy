@@ -14,7 +14,17 @@ export default async function DashboardPage() {
   const [enrollments, orders] = await Promise.all([
     prisma.enrollment.findMany({
       where: { userId: session.user.id },
-      include: { course: true },
+      include: {
+        course: {
+          include: {
+            modules: {
+              include: {
+                lectures: true,
+              },
+            },
+          },
+        },
+      },
       orderBy: { createdAt: "desc" },
     }),
     prisma.order.findMany({
@@ -27,11 +37,21 @@ export default async function DashboardPage() {
   const userName = session.user.name ?? "Student";
   const totalProgress = enrollments.length ? Math.min(100, 72 + enrollments.length * 8) : 0;
   const weeklyProgress = [42, 68, 58, 82, 76, 91, 86];
-  const savedCourses = [
-    { title: "Power BI Dashboarding", tag: "Recorded" },
-    { title: "SQL for Analytics", tag: "Live" },
-    { title: "Excel Productivity Bootcamp", tag: "Saved" },
-  ];
+  // Guard: `prisma.savedCourse` may be undefined until `prisma generate` has been run
+  // (Prisma client must be regenerated after schema changes). Fall back to an
+  // empty list to avoid runtime exceptions in dev until the client is ready.
+  let savedCourses: any[] = [];
+  if (prisma.savedCourse && typeof prisma.savedCourse.findMany === "function") {
+    savedCourses = await prisma.savedCourse.findMany({
+      where: { userId: session.user.id },
+      include: { course: true },
+      orderBy: { createdAt: "desc" },
+    });
+  } else {
+    // eslint-disable-next-line no-console
+    console.warn("prisma.savedCourse is not available. Run `npx prisma generate` to regenerate the client.");
+    savedCourses = [];
+  }
   const nextClass = enrollments[0]
     ? {
         title: enrollments[0].course.title,
@@ -88,7 +108,7 @@ export default async function DashboardPage() {
           <section id="courses" className="rounded-[30px] border border-slate-200 bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(248,250,252,0.94))] p-4 shadow-[0_18px_40px_rgba(15,23,42,0.05)] transition-colors duration-300 dark:border-slate-700 dark:bg-[linear-gradient(180deg,_rgba(15,23,42,0.96),_rgba(15,23,42,0.82))] dark:shadow-[0_20px_44px_rgba(2,6,23,0.35)] sm:p-6 lg:p-7">
             <div className="mb-5 flex items-center justify-between gap-3 sm:mb-6">
               <h2 className="text-xl font-black tracking-tight text-slate-900 dark:text-white sm:text-2xl">Continue Learning</h2>
-              <Link href="/" className="text-sm font-semibold text-indigo-600 transition hover:text-indigo-500 dark:text-indigo-300 dark:hover:text-indigo-200">Browse catalog</Link>
+              <Link href="/courses" className="text-sm font-semibold text-indigo-600 transition hover:text-indigo-500 dark:text-indigo-300 dark:hover:text-indigo-200">Browse catalog</Link>
             </div>
 
             {enrollments.length === 0 ? (
@@ -152,12 +172,27 @@ export default async function DashboardPage() {
                 </span>
               </div>
 
-              <div className="mt-5 rounded-[22px] border border-indigo-100 bg-gradient-to-br from-indigo-50 to-violet-50 p-4 shadow-inner dark:border-indigo-500/20 dark:from-indigo-500/5 dark:to-violet-500/5">
+                <div className="mt-5 rounded-[22px] border border-indigo-100 bg-gradient-to-br from-indigo-50 to-violet-50 p-4 shadow-inner dark:border-indigo-500/20 dark:from-indigo-500/5 dark:to-violet-500/5">
                 <div className="text-sm text-slate-500 dark:text-slate-300">Upcoming</div>
                 <div className="mt-2 text-lg font-bold text-slate-900 dark:text-white">{nextClass.title}</div>
                 <div className="mt-3 flex items-center justify-between text-sm text-slate-600 dark:text-slate-300">
                   <span>{nextClass.time}</span>
-                  <span className="font-semibold text-indigo-600 dark:text-indigo-300">Join live</span>
+                  {enrollments[0] && enrollments[0].course.modules && enrollments[0].course.modules.length > 0 && enrollments[0].course.modules[0].lectures ? (
+                    (() => {
+                      // look for a lecture with a liveSessionUrl
+                      const lectureWithLive = enrollments[0].course.modules.flatMap((m: any) => m.lectures).find((l: any) => l.liveSessionUrl);
+                      const joinHref = lectureWithLive ? lectureWithLive.liveSessionUrl : `/live/${enrollments[0].id}`;
+                      return (
+                        <a href={joinHref} target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-full bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-indigo-500">
+                          Join live
+                        </a>
+                      );
+                    })()
+                  ) : (
+                    <a href={`/live/${enrollments[0]?.id ?? ""}`} className="inline-flex items-center rounded-full bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-indigo-500">
+                      Join live
+                    </a>
+                  )}
                 </div>
               </div>
             </section>
@@ -205,10 +240,10 @@ export default async function DashboardPage() {
               <div className="space-y-3">
                 {savedCourses.map((course) => (
                   <div key={course.title} className="flex items-center justify-between rounded-[18px] border border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100 px-3 py-3 shadow-sm transition-colors hover:border-indigo-200 dark:border-slate-700 dark:from-slate-800/90 dark:to-slate-800/70 dark:hover:border-indigo-500/40">
-                    <div className="text-sm font-medium text-slate-900 dark:text-white">{course.title}</div>
-                    <span className="rounded-full bg-violet-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-700 dark:bg-violet-500/10 dark:text-violet-300">
-                      {course.tag}
-                    </span>
+                        <div className="text-sm font-medium text-slate-900 dark:text-white">{course.course.title}</div>
+                        <span className="rounded-full bg-violet-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-700 dark:bg-violet-500/10 dark:text-violet-300">
+                          {course.course.isLive ? "Live" : "Recorded"}
+                        </span>
                   </div>
                 ))}
               </div>
