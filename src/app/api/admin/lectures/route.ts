@@ -53,6 +53,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true });
     }
 
+    // support lecture batch actions (publish/unpublish/delete)
+    // expects JSON: { action: 'bulkPublish'|'bulkUnpublish'|'bulkDelete', ids: string[] }
+    const contentType = request.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      const body = await request.json().catch(() => ({}));
+      const action = body.action;
+      const ids: string[] = body.ids || [];
+      if (action === "bulkPublish") {
+        await prisma.lecture.updateMany({ where: { id: { in: ids } }, data: { isPreview: false } });
+        return NextResponse.json({ success: true });
+      }
+      if (action === "bulkUnpublish") {
+        await prisma.lecture.updateMany({ where: { id: { in: ids } }, data: { isPreview: true } });
+        return NextResponse.json({ success: true });
+      }
+      if (action === "bulkDelete") {
+        await prisma.lecture.deleteMany({ where: { id: { in: ids } } });
+        return NextResponse.json({ success: true });
+      }
+    }
+
     if (!payload.id) return NextResponse.json({ success: false, message: "Lecture id required" }, { status: 400 });
 
     await prisma.lecture.update({ where: { id: payload.id }, data: { title: payload.title || undefined, liveSessionUrl: payload.liveSessionUrl } });

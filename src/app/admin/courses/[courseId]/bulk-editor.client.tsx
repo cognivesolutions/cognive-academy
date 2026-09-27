@@ -10,6 +10,15 @@ export default function BulkEditor({ modules, courseId }: { modules: Module[]; c
   const [submitting, setSubmitting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [dragging, setDragging] = useState<{ modIndex: number; lecIndex: number } | null>(null);
+  const [selected, setSelected] = useState<Record<string, boolean>>({});
+
+  const toggleSelect = (id: string) => setSelected((s) => ({ ...s, [id]: !s[id] }));
+  const selectAll = () => {
+    const all: Record<string, boolean> = {};
+    local.forEach((m) => m.lectures.forEach((l) => (all[l.id] = true)));
+    setSelected(all);
+  };
+  const clearAll = () => setSelected({});
 
   function swapLectures(src: { modIndex: number; lecIndex: number }, dest: { modIndex: number; lecIndex: number }) {
     setLocal((prev) => {
@@ -94,6 +103,21 @@ export default function BulkEditor({ modules, courseId }: { modules: Module[]; c
     }
   }
 
+  async function batchAction(type: "publish" | "unpublish" | "delete") {
+    const ids = Object.keys(selected).filter((id) => selected[id]);
+    if (ids.length === 0) return alert("Select at least one lecture");
+    if (type === "delete" && !confirm(`Delete ${ids.length} lectures? This cannot be undone.`)) return;
+
+    // delegate to a new admin API endpoint /api/admin/lectures/batch
+    const res = await fetch(`/api/admin/lectures`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: type === "publish" ? "bulkPublish" : type === "unpublish" ? "bulkUnpublish" : "bulkDelete", ids }),
+    });
+    if (!res.ok) return alert("Batch action failed");
+    window.location.reload();
+  }
+
   return (
     <div className="space-y-4">
       {local.map((mod, mi) => (
@@ -109,6 +133,7 @@ export default function BulkEditor({ modules, courseId }: { modules: Module[]; c
                 onDrop={(e) => handleDrop(e, mi, li)}
                 className="flex items-center gap-2"
               >
+                <input type="checkbox" checked={!!selected[lec.id]} onChange={() => toggleSelect(lec.id)} className="mr-2" />
                 <div className="flex flex-col flex-1">
                   <input value={lec.title} onChange={(e) => updateField(mi, li, "title", e.target.value)} className="rounded-md border px-2 py-1" />
                   <input value={lec.liveSessionUrl ?? ""} onChange={(e) => updateField(mi, li, "liveSessionUrl", e.target.value)} placeholder="Live URL" className="mt-1 rounded-md border px-2 py-1 text-sm" />
@@ -129,9 +154,14 @@ export default function BulkEditor({ modules, courseId }: { modules: Module[]; c
       ))}
 
       <div className="pt-2">
-        <button disabled={submitting} onClick={openConfirm} className="rounded-full bg-indigo-600 px-4 py-2 text-white">
-          Save changes
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={selectAll} className="rounded border px-2 py-1 text-sm">Select all</button>
+          <button onClick={clearAll} className="rounded border px-2 py-1 text-sm">Clear</button>
+          <button onClick={() => batchAction("publish")} className="rounded bg-green-600 px-3 py-1 text-sm text-white">Publish</button>
+          <button onClick={() => batchAction("unpublish")} className="rounded bg-yellow-600 px-3 py-1 text-sm text-white">Unpublish</button>
+          <button onClick={() => batchAction("delete")} className="rounded bg-red-600 px-3 py-1 text-sm text-white">Delete</button>
+          <button disabled={submitting} onClick={openConfirm} className="ml-auto rounded-full bg-indigo-600 px-4 py-2 text-white">Save changes</button>
+        </div>
       </div>
 
       {showConfirm && (

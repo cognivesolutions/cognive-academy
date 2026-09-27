@@ -4,6 +4,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import BulkEditor from "..\/bulk-editor.client";
+import ModuleManagement from "..\/modules.client";
 
 type Props = {
   params: { courseId?: string };
@@ -74,6 +75,20 @@ export default async function LecturesPage({ params, searchParams }: Props) {
               <BulkEditor courseId={course.id} modules={course.modules.map((m) => ({ id: m.id, title: m.title, lectures: m.lectures.map((l) => ({ id: l.id, title: l.title, position: l.position, liveSessionUrl: l.liveSessionUrl })) }))} />
             </div>
           </section>
+          <section className="rounded-xl border bg-white p-4 dark:bg-slate-900">
+            <h2 className="font-semibold">Bulk edit lectures</h2>
+            <div className="mt-3">
+              <BulkEditor courseId={course.id} modules={course.modules.map((m) => ({ id: m.id, title: m.title, lectures: m.lectures.map((l) => ({ id: l.id, title: l.title, position: l.position, liveSessionUrl: l.liveSessionUrl })) }))} />
+            </div>
+          </section>
+
+          <section className="rounded-xl border bg-white p-4 dark:bg-slate-900">
+            <h2 className="font-semibold">Module management</h2>
+            <div className="mt-3">
+              <ModuleManagement courseId={course.id} modules={course.modules.map((m) => ({ id: m.id, title: m.title, position: m.position }))} />
+            </div>
+          </section>
+
           <section className="rounded-xl border bg-white p-4 dark:bg-slate-900">
             <h2 className="font-semibold">Create lecture</h2>
             <form action="/api/admin/lectures" method="POST" className="mt-3 grid gap-3 sm:grid-cols-2">

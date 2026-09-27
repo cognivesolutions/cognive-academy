@@ -49,7 +49,7 @@ export default function MobileMenu() {
 
       {open ? (
         <div className="absolute inset-x-0 top-full z-50 bg-white border-b border-slate-200 shadow-lg">
-          <div className="mx-auto max-w-6xl px-4 py-4">
+          <div className="mx-auto max-w-6xl px-6 py-4">
             <nav className="flex flex-col gap-1">
               {navItems.map((item) => (
                 <Link
