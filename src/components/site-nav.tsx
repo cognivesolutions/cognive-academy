@@ -2,29 +2,34 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 
-const coursesMenu = [
-  { label: "Data Analytics", href: "/courses/sql-for-analytics" },
-  { label: "Python", href: "/courses/python-for-data-tasks" },
-  { label: "SQL", href: "/courses/sql-for-analytics" },
-  { label: "Power BI", href: "/courses/power-bi-dashboarding" },
+type CourseChild = { label: string; href: string };
+type CourseMenuItem = { label: string; href?: string; children?: CourseChild[] };
+
+const coursesMenu: CourseMenuItem[] = [
+  { label: "Software Development", children: [{ label: "Live", href: "/courses/software-development/live" }, { label: "Self Paced", href: "/courses/software-development/recorded" }] },
+  { label: "AI Engineering", children: [{ label: "Live", href: "/courses/ai-engineering/live" }, { label: "Self Paced", href: "/courses/ai-engineering/recorded" }] },
+  { label: "Data Engineering", children: [{ label: "Live", href: "/courses/data-engineering/live" }, { label: "Self Paced", href: "/courses/data-engineering/recorded" }] },
+  { label: "Data Analytics", children: [{ label: "Live", href: "/courses/data-analytics/live" }, { label: "Self Paced", href: "/courses/data-analytics/recorded" }] },
+  { label: "Data Structures and Algorithms (DSA)", children: [{ label: "Live", href: "/courses/data-structures-algorithms/live" }, { label: "Self Paced", href: "/courses/data-structures-algorithms/recorded" }] },
 ];
 
 const resourcesMenu = [
-  { label: "Resume Analyzer", href: "/resume-analyzer" },
-  { label: "Tech Blog", href: "/tech-blog" },
-  { label: "Interview Experiences", href: "/interview-experiences" },
+  { label: "Resume Analyzer", href: "/resources/resume-analyzer" },
+  { label: "Tech Blog", href: "/resources/tech-blog" },
+  { label: "Interview Experiences", href: "/resources/interview-experiences" },
 ];
 
 const servicesMenu = [
-  { label: "1:1 Mentorship", href: "/mentorship" },
-  { label: "Mock Interviews", href: "/mock-interviews" },
-  { label: "Corporate Training", href: "/corporate-training" },
+  { label: "1:1 Mentorship", href: "/services/mentorship" },
+  { label: "Mock Interviews", href: "/services/mock-interviews" },
+  { label: "Corporate Training", href: "/services/corporate-training" },
 ];
 
 type NavItem =
-  | { label: string; type: "dropdown"; items: typeof coursesMenu; href: string }
+  | { label: string; type: "dropdown"; items: CourseMenuItem[]; href: string }
   | { label: string; type: "link"; href: string };
 
 const navItems: NavItem[] = [
@@ -39,9 +44,40 @@ const navItems: NavItem[] = [
 export function SiteNav() {
   const pathname = usePathname();
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [hoveredCourse, setHoveredCourse] = useState<string | null>(null);
   const closeTimeoutRef = useRef<number | null>(null);
   const navRef = useRef<HTMLDivElement | null>(null);
+  const leftMenuRef = useRef<HTMLDivElement | null>(null);
+  const [leftMenuRect, setLeftMenuRect] = useState<DOMRect | null>(null);
+  const [hoveredItemRect, setHoveredItemRect] = useState<DOMRect | null>(null);
+  const [hoveredItemHref, setHoveredItemHref] = useState<string | null>(null);
+  const popoverHoverRef = useRef<boolean>(false);
   const menuFirstRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
+
+  // Track the left menu DOMRect so the right popover can be positioned outside
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    function updateRect() {
+      if (leftMenuRef.current) {
+        try {
+          setLeftMenuRect(leftMenuRef.current.getBoundingClientRect());
+        } catch (e) {
+          setLeftMenuRect(null);
+        }
+      } else {
+        setLeftMenuRect(null);
+      }
+    }
+
+    updateRect();
+    window.addEventListener("resize", updateRect);
+    window.addEventListener("scroll", updateRect, true);
+    return () => {
+      window.removeEventListener("resize", updateRect);
+      window.removeEventListener("scroll", updateRect, true);
+    };
+  }, [openMenu]);
 
   const routeActiveLabel = useMemo(() => {
     if (!pathname) return null;
@@ -84,6 +120,16 @@ export function SiteNav() {
     return () => document.removeEventListener("mousedown", handlePointerDown);
   }, []);
 
+  // When the Courses menu opens, default the hovered course to the first item so
+  // Clear hoveredCourse when menu closes. Do NOT default to the first item —
+  // we only want the right popover to show after the user hovers/focuses an item.
+  useEffect(() => {
+    if (openMenu !== "Courses") {
+      setHoveredCourse(null);
+      setHoveredItemRect(null);
+    }
+  }, [openMenu]);
+
   // When a menu opens, focus its first item for keyboard users
   useEffect(() => {
     if (!openMenu) return;
@@ -115,7 +161,9 @@ export function SiteNav() {
                 }}
                 onMouseLeave={() => {
                   closeTimeoutRef.current = window.setTimeout(() => {
-                    setOpenMenu(null);
+                    if (!popoverHoverRef.current) {
+                      setOpenMenu(null);
+                    }
                     closeTimeoutRef.current = null;
                   }, 250);
                 }}
@@ -131,7 +179,7 @@ export function SiteNav() {
                   >
                     <span className="inline-flex translate-y-0.5 items-center gap-1.5">
                       <span
-                        className={`text-sm tracking-normal transition-all duration-200 ${
+                        className={`text-sm tracking-normal transition-all duration-200 whitespace-nowrap ${
                           isOpen || resolvedActiveLabel === item.label
                             ? "text-indigo-700 dark:text-indigo-300"
                             : "text-slate-700 dark:text-slate-200"
@@ -173,17 +221,23 @@ export function SiteNav() {
                   <div
                     role="menu"
                     aria-label={item.label}
-                    className="absolute left-0 top-full z-50 mt-3 w-56 rounded-2xl border border-white/60 bg-white/75 p-2 shadow-[0_18px_42px_rgba(15,23,42,0.12),0_0_0_1px_rgba(255,255,255,0.32)] backdrop-blur-xl pointer-events-auto dark:border-slate-700/70 dark:bg-slate-900/75 dark:shadow-[0_18px_40px_rgba(2,6,23,0.58),0_0_0_1px_rgba(148,163,184,0.08)]"
+                    className="absolute left-0 top-full z-50 mt-3 w-auto min-w-[190px] rounded-2xl border border-white bg-white p-3 shadow-[0_14px_36px_rgba(15,23,42,0.16),0_0_0_1px_rgba(255,255,255,0.38)] pointer-events-auto dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_14px_36px_rgba(2,6,23,0.7),0_0_0_1px_rgba(148,163,184,0.12)]"
+                    ref={leftMenuRef}
                     onMouseEnter={() => {
                       if (closeTimeoutRef.current) {
                         window.clearTimeout(closeTimeoutRef.current);
                         closeTimeoutRef.current = null;
                       }
+                      // pointer is inside left menu
+                      popoverHoverRef.current = false;
                       setOpenMenu(item.label);
                     }}
                     onMouseLeave={() => {
                       closeTimeoutRef.current = window.setTimeout(() => {
-                        setOpenMenu(null);
+                        // only close if pointer is not inside the right popover
+                        if (!popoverHoverRef.current) {
+                          setOpenMenu(null);
+                        }
                         closeTimeoutRef.current = null;
                       }, 250);
                     }}
@@ -193,22 +247,99 @@ export function SiteNav() {
                       }
                     }}
                   >
-                    {item.items.map((subItem, idx) => (
-                      <Link
-                        key={subItem.label}
-                        href={subItem.href}
-                        role="menuitem"
-                        ref={(el) => {
-                          if (idx === 0) menuFirstRefs.current[item.label] = el;
-                        }}
-                        className="block w-full rounded-xl px-3 py-2.5 text-sm text-slate-600 transition-all duration-200 hover:bg-white/70 hover:text-indigo-700 hover:font-bold focus:outline-none focus:ring-0 dark:text-slate-200 dark:hover:bg-slate-800/75 dark:hover:text-indigo-300"
-                        onClick={() => {
-                          setOpenMenu(null);
-                        }}
-                      >
-                        {subItem.label}
-                      </Link>
-                    ))}
+                    <div className="relative">
+                      <div className="w-auto space-y-1">
+                        {item.items.map((subItem, idx) => (
+                          <Link
+                            key={subItem.label}
+                            href={subItem.href ?? '#'}
+                            role="menuitem"
+                            tabIndex={0}
+                            onMouseEnter={(e) => {
+                              setHoveredCourse(subItem.label);
+                              setHoveredItemHref(subItem.href ?? null);
+                              const target = e.currentTarget as HTMLElement;
+                              try {
+                                setHoveredItemRect(target.getBoundingClientRect());
+                              } catch (err) {
+                                setHoveredItemRect(null);
+                              }
+                            }}
+                            onFocus={(e) => {
+                              setHoveredCourse(subItem.label);
+                              setHoveredItemHref(subItem.href ?? null);
+                              const target = e.currentTarget as HTMLElement;
+                              try {
+                                setHoveredItemRect(target.getBoundingClientRect());
+                              } catch (err) {
+                                setHoveredItemRect(null);
+                              }
+                            }}
+                            onClick={() => setOpenMenu(null)}
+                            className={`block w-full text-left rounded-lg px-3 py-2.5 text-sm transition cursor-pointer ${
+                              hoveredCourse === subItem.label
+                                ? "bg-slate-100 text-indigo-700 font-bold dark:bg-slate-800/60 dark:text-indigo-300"
+                                : "text-slate-600 hover:bg-white/70 hover:text-indigo-700 hover:font-bold focus:font-bold dark:text-slate-200"
+                            }`}
+                          >
+                            {subItem.label}
+                          </Link>
+                        ))}
+                      </div>
+
+                      {/* right popover is rendered into document.body via portal (keeps it separate) */}
+                      {item.label === "Courses" && hoveredCourse && hoveredItemRect && (function renderRightPopover() {
+                        const active = hoveredCourse;
+                        if (!active || !hoveredItemRect) return null;
+                          // prefer explicit href-based slug if available (keeps nav linked to real DB slugs)
+                          const hrefBase = hoveredItemHref ? hoveredItemHref.split("/")[2] : null;
+                          const toSlug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+                          const base = hrefBase ?? toSlug(active);
+
+                        const style: React.CSSProperties = {
+                          position: "absolute",
+                          // anchor the right popover to the left menu's right edge (no gap)
+                          left: Math.round(((leftMenuRect?.right ?? hoveredItemRect.right) ?? 0) + window.scrollX),
+                          // align vertically with the hovered item; nudge further down
+                          top: Math.round((hoveredItemRect.top ?? 0) + 8 + window.scrollY),
+                          minWidth: 160,
+                          zIndex: 120,
+                        };
+
+                        return createPortal(
+                          <div
+                            role="menu"
+                            aria-label={`${active} course options`}
+                            onMouseEnter={() => {
+                              popoverHoverRef.current = true;
+                              if (closeTimeoutRef.current) {
+                                window.clearTimeout(closeTimeoutRef.current);
+                                closeTimeoutRef.current = null;
+                              }
+                            }}
+                            onMouseLeave={() => {
+                              popoverHoverRef.current = false;
+                              closeTimeoutRef.current = window.setTimeout(() => {
+                                setOpenMenu(null);
+                                closeTimeoutRef.current = null;
+                              }, 250);
+                            }}
+                            style={style}
+                            className="rounded-2xl border border-white bg-white p-3 shadow-[0_14px_36px_rgba(15,23,42,0.16),0_0_0_1px_rgba(255,255,255,0.38)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_14px_36px_rgba(2,6,23,0.7),0_0_0_1px_rgba(148,163,184,0.12)]"
+                          >
+                            <ul className="space-y-2" onKeyDown={(e) => { if (e.key === 'Escape') setOpenMenu(null); }}>
+                              <li>
+                                <Link href={`/courses/${base}/live`} role="menuitem" tabIndex={0} onMouseEnter={() => setHoveredCourse(active)} onFocus={() => setHoveredCourse(active)} className="block w-full rounded-lg px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 hover:text-indigo-700 hover:font-bold focus:font-bold dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-indigo-300 transition-colors duration-150 cursor-pointer">Live Courses</Link>
+                              </li>
+                              <li>
+                                <Link href={`/courses/${base}/self-paced`} role="menuitem" tabIndex={0} onMouseEnter={() => setHoveredCourse(active)} onFocus={() => setHoveredCourse(active)} className="block w-full rounded-lg px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 hover:text-indigo-700 hover:font-bold focus:font-bold dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-indigo-300 transition-colors duration-150 cursor-pointer">Self Paced Courses</Link>
+                              </li>
+                            </ul>
+                          </div>,
+                          document.body,
+                        );
+                      })()}
+                    </div>
                   </div>
                 ) : null}
               </div>
@@ -222,7 +353,7 @@ export function SiteNav() {
               className={`group inline-flex flex-col items-center justify-center rounded-full px-3 py-2 transition ${resolvedActiveLabel === item.label ? "text-indigo-700 dark:text-indigo-300" : "hover:text-indigo-700 dark:hover:text-indigo-300"} focus-visible:text-indigo-700 dark:focus-visible:text-indigo-300`}
             >
               <span
-                className={`text-sm leading-none tracking-normal translate-y-0.5 group-hover:font-bold group-active:font-bold group-focus-visible:font-bold group-active:text-indigo-700 group-focus-visible:text-indigo-700 active:font-bold active:text-indigo-700 ${
+                className={`text-sm leading-none tracking-normal translate-y-0.5 whitespace-nowrap group-hover:font-bold group-active:font-bold group-focus-visible:font-bold group-active:text-indigo-700 group-focus-visible:text-indigo-700 active:font-bold active:text-indigo-700 ${
                   resolvedActiveLabel === item.label
                     ? "font-bold text-indigo-700 dark:text-indigo-300"
                     : "text-slate-700 dark:text-slate-200 group-hover:text-indigo-700 dark:group-hover:text-indigo-300"

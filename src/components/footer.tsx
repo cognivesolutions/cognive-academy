@@ -56,19 +56,20 @@ export default function Footer() {
           <nav aria-label="Courses links">
             <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Courses</h3>
             <ul className="mt-5 space-y-3 text-sm text-slate-300">
-              <li><Link href="/courses/sql-for-analytics" className="transition-colors hover:text-indigo-300 hover:font-semibold">Data Analytics</Link></li>
-              <li><Link href="/courses/python-for-data-tasks" className="transition-colors hover:text-indigo-300 hover:font-semibold">Python</Link></li>
-              <li><Link href="/courses/sql-for-analytics" className="transition-colors hover:text-indigo-300 hover:font-semibold">SQL</Link></li>
-              <li><Link href="/courses/power-bi-dashboarding" className="transition-colors hover:text-indigo-300 hover:font-semibold">Power BI</Link></li>
+              <li><Link href="/courses/software-development" className="transition-colors hover:text-indigo-300 hover:font-semibold">Software Development</Link></li>
+              <li><Link href="/courses/ai-engineering" className="transition-colors hover:text-indigo-300 hover:font-semibold">AI Engineering</Link></li>
+              <li><Link href="/courses/data-analyst" className="transition-colors hover:text-indigo-300 hover:font-semibold">Data Analyst</Link></li>
+              <li><Link href="/courses/data-engineering" className="transition-colors hover:text-indigo-300 hover:font-semibold">Data Engineering</Link></li>
+              <li><Link href="/courses/data-structures-algorithms" className="transition-colors hover:text-indigo-300 hover:font-semibold">Data Structures and Algorithms (DSA)</Link></li>
             </ul>
           </nav>
 
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Services</h3>
             <ul className="mt-5 space-y-3 text-sm text-slate-300">
-              <li><Link href="/mentorship" className="transition-colors hover:text-indigo-300 hover:font-semibold">1:1 Mentorship</Link></li>
-              <li><Link href="/mock-interviews" className="transition-colors hover:text-indigo-300 hover:font-semibold">Mock Interviews</Link></li>
-              <li><Link href="/corporate-training" className="transition-colors hover:text-indigo-300 hover:font-semibold">Corporate Training</Link></li>
+              <li><Link href="/services/mentorship" className="transition-colors hover:text-indigo-300 hover:font-semibold">1:1 Mentorship</Link></li>
+              <li><Link href="/services/mock-interviews" className="transition-colors hover:text-indigo-300 hover:font-semibold">Mock Interviews</Link></li>
+              <li><Link href="/services/corporate-training" className="transition-colors hover:text-indigo-300 hover:font-semibold">Corporate Training</Link></li>
             </ul>
           </div>
 

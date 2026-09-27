@@ -1,18 +1,27 @@
 "use client";
+import Link from "next/link";
+import React from "react";
 
-export default function BackButton({ className }: { className?: string }) {
+export default function BackButton({ href = -1 as unknown as string | number, className }: { href?: string | number; className?: string }) {
+  const baseClass =
+    "inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition";
+
+  const mergedClass = (className ? `${className} ` : "") + baseClass;
+
+  // if href is -1 (default), go back in history
+  if (typeof href === "number" && href === -1) {
+    return (
+      <button type="button" onClick={() => window.history.back()} className={mergedClass} aria-label="Go back">
+        <span aria-hidden>←</span>
+        <span>Back</span>
+      </button>
+    );
+  }
+
   return (
-    <button
-      type="button"
-      onClick={() => window.history.back()}
-      aria-label="Go back"
-      className={
-        (className ?? "") +
-        " mb-5 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(79,70,229,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_30px_rgba(79,70,229,0.35)]"
-      }
-    >
+    <Link href={String(href)} className={mergedClass} aria-label="Go back">
       <span aria-hidden>←</span>
       <span>Back</span>
-    </button>
+    </Link>
   );
 }

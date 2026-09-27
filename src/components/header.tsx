@@ -18,7 +18,7 @@ export default function Header() {
         <div className="flex h-20 items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-3 self-center leading-none">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 via-violet-600 to-sky-500 text-sm font-black text-white shadow-[0_8px_16px_rgba(99,102,241,0.25)] ring-2 ring-indigo-100/80 dark:shadow-[0_0_0_rgba(0,0,0,0)] dark:ring-0">C</div>
-            <div className="text-xl font-black tracking-tight text-slate-900 leading-none dark:text-slate-50">Cognive Academy</div>
+            <div className="text-xl font-black tracking-tight text-slate-900 leading-none dark:text-slate-50 whitespace-nowrap">Cognive Academy</div>
           </Link>
 
           <div className="hidden flex-1 items-center justify-center md:flex md:translate-y-1">

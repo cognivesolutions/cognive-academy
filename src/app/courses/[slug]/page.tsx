@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import CheckoutButton from "@/components/checkout-button";
+import BackButton from "@/components/back-button";
 
 export default async function CourseDetailPage({
   params,
@@ -34,6 +35,7 @@ export default async function CourseDetailPage({
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.12),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(14,165,233,0.12),_transparent_26%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_32%,_#f8fafc_100%)] text-slate-900 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(14,165,233,0.12),_transparent_28%),linear-gradient(180deg,_#020817_0%,_#0f172a_38%,_#111827_100%)] dark:text-slate-50">
       <div className="mx-auto max-w-6xl px-6 py-12">
+        <BackButton />
         <div className="grid gap-8 lg:grid-cols-[1.4fr_0.6fr]">
           <section>
             <span className="inline-flex rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-200">

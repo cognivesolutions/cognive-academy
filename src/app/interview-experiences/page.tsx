@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import BackButton from "@/components/back-button";
 
 import ScrollToTopOnMount from "@/components/scroll-to-top-on-mount";
 
@@ -9,15 +10,7 @@ export default function InterviewExperiencesPage() {
     <main className="flex min-h-[calc(100vh-180px)] items-center justify-center bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_30%),linear-gradient(135deg,_#f8fbff_0%,_#f5f3ff_50%,_#eef7ff_100%)] px-6 py-16 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top_left,_rgba(79,70,229,0.22),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(14,165,233,0.18),_transparent_26%),linear-gradient(135deg,_#020817_0%,_#0f172a_40%,_#111827_100%)]">
       <ScrollToTopOnMount />
       <div className="w-full max-w-6xl">
-        <button
-          type="button"
-          onClick={() => window.history.back()}
-          aria-label="Go back"
-          className="mb-5 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(79,70,229,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_30px_rgba(79,70,229,0.35)] dark:shadow-[0_14px_30px_rgba(99,102,241,0.3)]"
-        >
-          <span aria-hidden>←</span>
-          <span>Back</span>
-        </button>
+        <BackButton />
         <div className="rounded-[32px] border border-slate-200 bg-white/80 p-8 text-center shadow-[0_30px_70px_rgba(15,23,42,0.08)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_32px_74px_rgba(79,70,229,0.12)] dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-[0_30px_70px_rgba(2,6,23,0.42)] md:p-10">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 text-2xl font-black text-white shadow-[0_16px_30px_rgba(79,70,229,0.24)]">
             !
