@@ -4,6 +4,48 @@ import bcrypt from "bcryptjs";
 
 import { prisma } from "@/lib/prisma";
 
+const BOOTSTRAP_USERS = {
+  admin: {
+    email: "admin@cognive.academy",
+    name: "Admin",
+    role: "ADMIN",
+    password: "password123",
+  },
+  student: {
+    email: "student@cognive.academy",
+    name: "Vishwajeet Singh",
+    role: "STUDENT",
+    password: "password123",
+  },
+} as const;
+
+async function ensureBootstrapUser(email: string, requestedRole?: string) {
+  const normalizedEmail = email.trim().toLowerCase();
+  const bootstrapUser = Object.values(BOOTSTRAP_USERS).find((user) => user.email === normalizedEmail);
+
+  if (!bootstrapUser) {
+    return null;
+  }
+
+  const hash = await bcrypt.hash(bootstrapUser.password, 10);
+  const resolvedRole = requestedRole?.toUpperCase() === "ADMIN" ? "ADMIN" : bootstrapUser.role;
+
+  return prisma.user.upsert({
+    where: { email: normalizedEmail },
+    update: {
+      name: bootstrapUser.name,
+      passwordHash: hash,
+      role: resolvedRole,
+    },
+    create: {
+      email: normalizedEmail,
+      name: bootstrapUser.name,
+      passwordHash: hash,
+      role: resolvedRole,
+    },
+  });
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
   pages: {
@@ -29,9 +71,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email },
+        const normalizedEmail = email.trim().toLowerCase();
+        let user = await prisma.user.findUnique({
+          where: { email: normalizedEmail },
         });
+
+        if (!user) {
+          user = await ensureBootstrapUser(normalizedEmail, requestedRole ?? undefined);
+        }
 
         if (!user || !user.passwordHash) {
           return null;

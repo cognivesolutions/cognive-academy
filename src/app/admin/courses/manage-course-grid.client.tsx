@@ -12,6 +12,7 @@ export type ManageCourse = {
   id: string;
   title: string;
   slug: string;
+  category: string;
   price: number;
   imageUrl?: string | null;
   isLive: boolean;
@@ -28,7 +29,7 @@ export default function ManageCourseGrid({ courses }: { courses: ManageCourse[] 
 
   return (
     <>
-      <div className="pt-1">
+      <div className="pt-2">
         <CoursesBulk
           courses={courses.map((course) => ({ id: course.id, title: course.title }))}
           selected={selected}
@@ -39,16 +40,19 @@ export default function ManageCourseGrid({ courses }: { courses: ManageCourse[] 
       <div className="grid gap-4 md:grid-cols-2">
         {courses.map((course) => (
           <div key={course.id} className="rounded-[20px] border border-slate-200 bg-slate-50/80 p-3 shadow-[0_8px_20px_rgba(15,23,42,0.03)] transition duration-200 hover:border-indigo-200 dark:border-slate-700 dark:bg-slate-800/80">
-            <div className="mb-3 flex items-start justify-between gap-3">
+            <div className="mb-3 flex items-start justify-between gap-3 pt-0.5">
               <div className="min-w-0 flex-1">
-                <div className="truncate text-[0.9rem] font-semibold tracking-[-0.02em] text-slate-900 dark:text-white">{course.title}</div>
+                <div className="line-clamp-2 break-words text-[0.9rem] font-semibold tracking-[-0.02em] text-slate-900 dark:text-white">{course.title}</div>
+                <div className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                  {course.category} • {course.isLive ? "Live" : "Recorded"} • {course.language === "hi" ? "Hindi" : "English"}
+                </div>
               </div>
 
               <input
                 type="checkbox"
                 checked={!!selected[course.id]}
                 onChange={() => toggleCard(course.id)}
-                className="h-4 w-4 cursor-pointer accent-indigo-600"
+                className="h-5 w-5 cursor-pointer rounded-md border border-slate-300 bg-slate-50/90 accent-emerald-500 shadow-[0_1px_4px_rgba(15,23,42,0.06)] transition-all duration-200 hover:border-emerald-300 hover:shadow-[0_1px_6px_rgba(16,185,129,0.12)] checked:border-emerald-500 checked:bg-emerald-500 dark:border-slate-600 dark:bg-slate-900/80 dark:checked:border-emerald-400 dark:checked:bg-emerald-500"
                 aria-label={`Select ${course.title}`}
               />
             </div>
@@ -64,7 +68,9 @@ export default function ManageCourseGrid({ courses }: { courses: ManageCourse[] 
             </div>
 
             <div className="mb-3 flex items-start justify-between gap-3">
-              <div className="min-w-0" />
+              <span className="rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
+                {course.isLive ? "Live" : "Recorded"}
+              </span>
               <span className="shrink-0 rounded-full bg-indigo-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-200">
                 ₹{Number(course.price).toLocaleString("en-IN")}
               </span>
@@ -80,7 +86,7 @@ export default function ManageCourseGrid({ courses }: { courses: ManageCourse[] 
                 <input
                   name="title"
                   defaultValue={course.title}
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+                  className="mt-1.5 w-full min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 break-words placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
                 />
               </label>
 
@@ -125,7 +131,7 @@ export default function ManageCourseGrid({ courses }: { courses: ManageCourse[] 
                   name="imageUrl"
                   type="url"
                   defaultValue={course.imageUrl ?? ""}
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+                  className="mt-1.5 w-full min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 break-all placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
                 />
               </label>
 
@@ -142,7 +148,7 @@ export default function ManageCourseGrid({ courses }: { courses: ManageCourse[] 
                   name="previewLectureUrl"
                   type="url"
                   defaultValue={course.previewLectureUrl ?? ""}
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+                  className="mt-1.5 w-full min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 break-all placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
                 />
               </label>
 

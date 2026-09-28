@@ -30,7 +30,7 @@ export default function Header() {
             {isAdmin && (
               <Link
                 href="/admin"
-                className="hidden rounded-full border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-indigo-700 transition hover:border-indigo-300 hover:bg-indigo-100 md:inline-flex dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200"
+                className="hidden rounded-full border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-indigo-700 shadow-[0_8px_20px_rgba(99,102,241,0.08)] transition duration-200 hover:border-indigo-300 hover:bg-indigo-100 hover:shadow-[0_10px_24px_rgba(99,102,241,0.14)] hover:brightness-105 active:scale-100 md:inline-flex dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200 dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15"
               >
                 Admin
               </Link>

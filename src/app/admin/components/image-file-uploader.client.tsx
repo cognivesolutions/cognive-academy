@@ -18,27 +18,44 @@ export default function ImageFileUploader() {
     function onChange(e: Event) {
       const input = e.target as HTMLInputElement;
       if (!input || input.name !== "imageFile") return;
+
       const files = input.files;
       if (!files || files.length === 0) return;
+
       const file = files[0];
       const form = input.closest("form");
       const urlInput = form ? (form.querySelector('input[name="imageUrl"]') as HTMLInputElement | null) : null;
+      if (!urlInput) return;
 
-      // optimistic UI: show uploading text
-      const originalValue = urlInput ? urlInput.value : "";
-      if (urlInput) urlInput.value = "Uploading...";
+      const originalValue = urlInput.value;
+      const wasInvalid = urlInput.validity.valid === false;
 
-      uploadFile(file).then((url) => {
-        if (urlInput) {
+      urlInput.setCustomValidity("");
+      urlInput.value = "";
+      urlInput.setAttribute("aria-busy", "true");
+      urlInput.setAttribute("placeholder", "Uploading thumbnail...");
+      urlInput.dispatchEvent(new Event("input", { bubbles: true }));
+
+      uploadFile(file)
+        .then((url) => {
           urlInput.value = url;
+          urlInput.setCustomValidity("");
+          urlInput.removeAttribute("aria-busy");
+          urlInput.removeAttribute("placeholder");
           urlInput.dispatchEvent(new Event("input", { bubbles: true }));
           urlInput.dispatchEvent(new Event("change", { bubbles: true }));
-        }
-      }).catch((err) => {
-        console.error("Upload failed:", err);
-        if (urlInput) urlInput.value = originalValue;
-        alert("Image upload failed");
-      });
+        })
+        .catch((err) => {
+          console.error("Upload failed:", err);
+          urlInput.value = originalValue;
+          urlInput.setCustomValidity("Image upload failed. Please try again.");
+          urlInput.reportValidity();
+          urlInput.removeAttribute("aria-busy");
+          urlInput.removeAttribute("placeholder");
+          if (wasInvalid) {
+            urlInput.setAttribute("aria-invalid", "true");
+          }
+        });
     }
 
     document.addEventListener("change", onChange, true);

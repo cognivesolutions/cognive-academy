@@ -88,7 +88,7 @@ export default async function ManageCoursesPage({
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
       <div className="mx-auto max-w-6xl px-6 py-12">
-        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Admin</p>
             <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900 dark:text-white">Manage courses</h1>
@@ -96,13 +96,13 @@ export default async function ManageCoursesPage({
           <div className="flex items-center gap-2">
             <Link
               href="/admin/courses/new"
-              className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(99,102,241,0.28)] transition hover:-translate-y-0.5"
+              className="inline-flex items-center justify-center rounded-full border border-indigo-200 bg-indigo-50/80 px-4 py-2 text-sm font-semibold text-indigo-700 shadow-[0_8px_20px_rgba(99,102,241,0.08)] backdrop-blur-sm transition duration-200 hover:border-indigo-300 hover:bg-indigo-100 hover:shadow-[0_10px_24px_rgba(99,102,241,0.12)] hover:brightness-105 active:scale-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200 dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15"
             >
               Create course
             </Link>
             <Link
               href="/admin/unpublished"
-              className="inline-flex items-center justify-center rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
+              className="inline-flex items-center justify-center rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 shadow-[0_8px_20px_rgba(245,158,11,0.08)] transition duration-200 hover:border-amber-300 hover:bg-amber-100 hover:shadow-[0_10px_24px_rgba(245,158,11,0.12)] hover:brightness-105 active:scale-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200 dark:hover:border-amber-400/50 dark:hover:bg-amber-500/15"
             >
               Unpublished
             </Link>
@@ -110,16 +110,26 @@ export default async function ManageCoursesPage({
         </div>
 
         <section className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.05)] dark:border-slate-700 dark:bg-slate-900/80">
+          <div className="mb-5 flex items-center justify-between gap-3 border-b border-slate-200 pb-4 dark:border-slate-700">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-indigo-600 dark:text-indigo-300">Manage</p>
+              <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">Courses</h2>
+            </div>
+            <div className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
+              {total} course{total === 1 ? "" : "s"}
+            </div>
+          </div>
+
           <div className="space-y-3">
             <form method="GET" className="space-y-2">
-              <div className="flex flex-wrap items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-2 rounded-full border border-slate-700 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.22),_rgba(10,18,31,0.96)_38%,_rgba(2,6,23,1)_100%)] p-2 shadow-[0_18px_32px_rgba(15,23,42,0.28)]">
                 <input
                   name="q"
                   defaultValue={q}
                   placeholder="Search course title, category, description..."
-                  className="min-w-[220px] flex-1 rounded-xl border border-slate-200 bg-white/90 px-3 py-2 text-[0.92rem] text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04)] placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+                  className="min-w-[220px] flex-1 rounded-full border border-slate-700 bg-slate-950/35 px-4 py-3 text-[0.92rem] text-slate-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-slate-950/50 focus:ring-2 focus:ring-indigo-500/10"
                 />
-                <div className="w-[84px]">
+                <div className="w-[96px]">
                   <CourseSelect
                     name="pageSize"
                     label=""
@@ -133,30 +143,30 @@ export default async function ManageCoursesPage({
                       { value: "20", label: "20" },
                       { value: "50", label: "50" },
                     ]}
-                    triggerClassName="min-h-[38px] !bg-slate-50 dark:!bg-slate-800"
-                    menuClassName="min-w-[84px]"
+                    triggerClassName="!min-h-[44px] !rounded-full !border-slate-700 !bg-slate-900/70 !text-slate-100 !shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                    menuClassName="!min-w-[96px] !rounded-2xl !border-slate-700 !bg-slate-950 !text-slate-100"
                   />
                 </div>
-                <div className="min-w-[148px]">
+                <div className="min-w-[132px]">
                   <CourseSelect
                     name="published"
                     label=""
                     hideLabel
                     compact
-                    placeholder="Any status"
+                    placeholder="Published"
                     defaultValue={publishedParam ?? ""}
                     options={[
                       { value: "", label: "Any status" },
                       { value: "true", label: "Published" },
                       { value: "false", label: "Unpublished" },
                     ]}
-                    triggerClassName="min-h-[38px] !bg-slate-50 dark:!bg-slate-800"
-                    menuClassName="min-w-[148px]"
+                    triggerClassName="!min-h-[44px] !rounded-full !border-slate-700 !bg-slate-900/70 !text-slate-100 !shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                    menuClassName="!min-w-[132px] !rounded-2xl !border-slate-700 !bg-slate-950 !text-slate-100"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(99,102,241,0.22)] transition hover:brightness-110"
+                  className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50/80 px-4 py-2.5 text-sm font-semibold text-emerald-700 shadow-[0_8px_20px_rgba(16,185,129,0.08)] backdrop-blur-sm transition duration-200 hover:border-emerald-300 hover:bg-emerald-100 hover:shadow-[0_10px_24px_rgba(16,185,129,0.12)] hover:brightness-105 active:scale-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:border-emerald-400/50 dark:hover:bg-emerald-500/15"
                 >
                   Apply Filter
                 </button>
@@ -173,6 +183,7 @@ export default async function ManageCoursesPage({
                   id: course.id,
                   title: course.title,
                   slug: course.slug,
+                  category: course.category,
                   price: Number(course.price),
                   imageUrl: course.imageUrl,
                   isLive: course.isLive,

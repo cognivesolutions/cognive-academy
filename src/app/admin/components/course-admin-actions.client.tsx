@@ -11,28 +11,28 @@ export default function CourseAdminActions({ courseId }: { courseId: string }) {
   return (
     <>
       <div className="flex items-center justify-end gap-2 pt-2">
-        <Link
-          href={`/admin/courses/${courseId}/lectures?courseId=${courseId}`}
-          className="inline-flex items-center justify-center rounded-full border border-slate-200 px-3 py-2 text-[11px] text-slate-700 transition hover:border-indigo-200 hover:text-indigo-700 dark:border-slate-700 dark:text-slate-200 dark:hover:border-indigo-500/40 dark:hover:text-indigo-200"
+        <button
+          type="button"
+          onClick={() => setPendingAction("update")}
+          className="inline-flex items-center justify-center rounded-full border border-amber-200 bg-amber-50/80 px-3 py-2 text-[11px] font-semibold text-amber-700 shadow-[0_8px_20px_rgba(245,158,11,0.08)] backdrop-blur-sm transition duration-200 hover:border-amber-300 hover:bg-amber-100 hover:shadow-[0_10px_24px_rgba(245,158,11,0.12)] hover:brightness-105 active:scale-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200 dark:hover:border-amber-400/50 dark:hover:bg-amber-500/15"
         >
-          Manage lectures
-        </Link>
+          Update
+        </button>
 
         <button
           type="button"
           onClick={() => setPendingAction("delete")}
-          className="inline-flex items-center justify-center rounded-full border border-red-200 bg-red-50 px-3 py-2 text-[11px] font-semibold text-red-700 transition hover:bg-red-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200"
+          className="inline-flex items-center justify-center rounded-full border border-red-200 bg-red-50 px-3 py-2 text-[11px] font-semibold text-red-700 transition duration-200 hover:border-red-300 hover:bg-red-100 hover:shadow-[0_10px_24px_rgba(239,68,68,0.12)] hover:brightness-105 active:scale-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200 dark:hover:border-red-400/50 dark:hover:bg-red-500/15"
         >
           Delete
         </button>
 
-        <button
-          type="button"
-          onClick={() => setPendingAction("update")}
-          className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-3 py-2 text-[11px] font-semibold text-white shadow-[0_10px_24px_rgba(99,102,241,0.24)] transition hover:bg-indigo-500"
+        <Link
+          href={`/admin/courses/${courseId}/lectures?courseId=${courseId}`}
+          className="inline-flex items-center justify-center rounded-full border border-indigo-200 bg-indigo-50/80 px-3 py-2 text-[11px] font-semibold text-indigo-700 shadow-[0_8px_20px_rgba(99,102,241,0.08)] backdrop-blur-sm transition duration-200 hover:border-indigo-300 hover:bg-indigo-100 hover:shadow-[0_10px_24px_rgba(99,102,241,0.12)] hover:brightness-105 active:scale-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200 dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15"
         >
-          Update
-        </button>
+          Manage lectures
+        </Link>
       </div>
 
       <ConfirmDialog
@@ -48,6 +48,8 @@ export default function CourseAdminActions({ courseId }: { courseId: string }) {
           if (!pendingAction) return;
           const form = document.getElementById(`course-form-${courseId}`) as HTMLFormElement | null;
           if (form) {
+            form.querySelectorAll('input[name="action"]').forEach((node) => node.remove());
+
             const actionInput = document.createElement("input");
             actionInput.type = "hidden";
             actionInput.name = "action";

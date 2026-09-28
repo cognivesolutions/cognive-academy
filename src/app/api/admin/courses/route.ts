@@ -80,6 +80,30 @@ export async function POST(request: Request) {
   }
 
   try {
+    const contentType = request.headers.get("content-type") ?? "";
+
+    if (contentType.includes("application/json")) {
+      const json = await request.json().catch(() => null);
+      if (json && typeof json.action === "string" && Array.isArray(json.ids)) {
+        if (json.action === "bulkPublish") {
+          await prisma.course.updateMany({ where: { id: { in: json.ids } }, data: { isPublished: true } });
+          return NextResponse.json({ success: true });
+        }
+        if (json.action === "bulkUnpublish") {
+          await prisma.course.updateMany({ where: { id: { in: json.ids } }, data: { isPublished: false } });
+          return NextResponse.json({ success: true });
+        }
+        if (json.action === "bulkDelete") {
+          const courses = await prisma.course.findMany({ where: { id: { in: json.ids } } });
+          for (const c of courses) {
+            await deleteUploadedFile(c.imageUrl);
+          }
+          await prisma.course.deleteMany({ where: { id: { in: json.ids } } });
+          return NextResponse.json({ success: true });
+        }
+      }
+    }
+
     const formData = await request.formData();
     const payload = parseForm(formData);
 
@@ -97,33 +121,6 @@ export async function POST(request: Request) {
       await prisma.course.delete({ where: { id: payload.id } });
 
       return NextResponse.redirect(new URL("/admin?success=Course deleted successfully", request.url));
-    }
-
-    // JSON bulk actions
-    // expect { action: 'bulkPublish'|'bulkUnpublish'|'bulkDelete', ids: [] }
-    try {
-      const json = await request.json().catch(() => null);
-      if (json && typeof json.action === "string" && Array.isArray(json.ids)) {
-        if (json.action === "bulkPublish") {
-          await prisma.course.updateMany({ where: { id: { in: json.ids } }, data: { isPublished: true } });
-          return NextResponse.json({ success: true });
-        }
-        if (json.action === "bulkUnpublish") {
-          await prisma.course.updateMany({ where: { id: { in: json.ids } }, data: { isPublished: false } });
-          return NextResponse.json({ success: true });
-        }
-        if (json.action === "bulkDelete") {
-          // delete images for the courses first
-          const courses = await prisma.course.findMany({ where: { id: { in: json.ids } } });
-          for (const c of courses) {
-            await deleteUploadedFile(c.imageUrl);
-          }
-          await prisma.course.deleteMany({ where: { id: { in: json.ids } } });
-          return NextResponse.json({ success: true });
-        }
-      }
-    } catch (e) {
-      // ignore JSON parse errors and continue with form handling
     }
 
     if (payload.action === "update") {
