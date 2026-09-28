@@ -47,7 +47,10 @@ export function CreateCourseForm() {
 
       <div className="grid gap-3 md:grid-cols-2">
         <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
-          Course title
+          <span className="inline-flex items-center gap-1">
+            Course title
+            <span className="text-red-500">*</span>
+          </span>
           <input
             name="title"
             required
@@ -91,7 +94,10 @@ export function CreateCourseForm() {
         />
 
         <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
-          Price (INR)
+          <span className="inline-flex items-center gap-1">
+            Price (INR)
+            <span className="text-red-500">*</span>
+          </span>
           <input
             name="price"
             type="number"
@@ -135,7 +141,10 @@ export function CreateCourseForm() {
         />
 
         <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 md:col-span-2">
-          Instructor name
+          <span className="inline-flex items-center gap-1">
+            Instructor name
+            <span className="text-red-500">*</span>
+          </span>
           <input
             name="instructorName"
             required
@@ -164,7 +173,10 @@ export function CreateCourseForm() {
         </label>
 
         <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 md:col-span-2">
-          Full description
+          <span className="inline-flex items-center gap-1">
+            Full description
+            <span className="text-red-500">*</span>
+          </span>
           <textarea
             name="description"
             rows={4}

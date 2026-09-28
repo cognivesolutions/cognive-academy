@@ -4,7 +4,7 @@ import React from "react";
 
 export default function BackButton({ href = -1 as unknown as string | number, className }: { href?: string | number; className?: string }) {
   const baseClass =
-    "inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-2 text-sm font-medium text-slate-600 shadow-sm transition hover:border-indigo-200 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-200 dark:hover:border-indigo-500/40 dark:hover:text-indigo-200";
+    "inline-flex h-[34px] items-center gap-2 rounded-full border border-white/60 bg-white/70 px-3 py-1.5 text-sm font-medium text-slate-700 shadow-[0_8px_20px_rgba(15,23,42,0.06)] backdrop-blur-sm transition hover:border-indigo-200 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-200 dark:hover:border-indigo-500/40 dark:hover:text-indigo-200";
 
   const mergedClass = (className ? `${className} ` : "") + baseClass;
 

@@ -5,16 +5,23 @@ import { useState } from "react";
 import CourseThumbnail from "@/app/admin/components/course-thumbnail.client";
 import CoursesBulk from "@/app/admin/courses-bulk.client";
 
+import { CourseSelect } from "../components/course-select";
+
 export type UnpublishedCourse = {
   id: string;
   title: string;
   slug: string;
   category: string;
+  level?: string | null;
   isLive: boolean;
   language: string;
   price: number;
   imageUrl?: string | null;
   shortDescription?: string | null;
+  description?: string | null;
+  instructorName?: string | null;
+  instructorTitle?: string | null;
+  durationHours?: number | null;
   previewLectureUrl?: string | null;
 };
 
@@ -43,7 +50,7 @@ export default function UnpublishedCourseGrid({ courses }: { courses: Unpublishe
               <div className="min-w-0 flex-1">
                 <div className="line-clamp-2 break-words text-[0.9rem] font-semibold tracking-[-0.02em] text-slate-900 dark:text-white">{course.title}</div>
                 <div className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-                  {course.category} • {course.isLive ? "Live" : "Recorded"} • {course.language === "hi" ? "Hindi" : "English"}
+                  {course.category} • {course.level ?? "Beginner"} • {course.isLive ? "Live" : "Recorded"} • {course.language === "hi" ? "Hindi" : "English"}
                 </div>
               </div>
 
@@ -67,7 +74,8 @@ export default function UnpublishedCourseGrid({ courses }: { courses: Unpublishe
             </div>
 
             <div className="mb-3 flex items-start justify-between gap-3">
-              <span className="rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
+                <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />
                 Unpublished
               </span>
               <span className="shrink-0 rounded-full bg-indigo-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-200">
@@ -91,6 +99,43 @@ export default function UnpublishedCourseGrid({ courses }: { courses: Unpublishe
               </label>
 
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                Slug
+                <input
+                  name="slug"
+                  defaultValue={course.slug}
+                  className="mt-1.5 w-full min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 break-words placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+                />
+              </label>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <CourseSelect
+                  name="category"
+                  label="Category"
+                  placeholder="Select a category"
+                  defaultValue={course.category}
+                  options={[
+                    { value: "Software Development", label: "Software Development" },
+                    { value: "AI Engineering", label: "AI Engineering" },
+                    { value: "Data Engineering", label: "Data Engineering" },
+                    { value: "Data Analytics", label: "Data Analytics" },
+                    { value: "Data Structure & Algorithms", label: "Data Structure & Algorithms (DSA)" },
+                  ]}
+                />
+
+                <CourseSelect
+                  name="level"
+                  label="Level"
+                  placeholder="Select level"
+                  defaultValue={course.level ?? "Beginner"}
+                  options={[
+                    { value: "Beginner", label: "Beginner" },
+                    { value: "Intermediate", label: "Intermediate" },
+                    { value: "Advanced", label: "Advanced" },
+                  ]}
+                />
+              </div>
+
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
                 Short description
                 <textarea
                   name="shortDescription"
@@ -100,31 +145,101 @@ export default function UnpublishedCourseGrid({ courses }: { courses: Unpublishe
                 />
               </label>
 
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                Full description
+                <textarea
+                  name="description"
+                  defaultValue={course.description ?? ""}
+                  rows={4}
+                  className="mt-1.5 w-full min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 break-words placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+                />
+              </label>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <CourseSelect
+                  name="isLive"
+                  label="Format"
+                  placeholder="Select format"
+                  defaultValue={String(course.isLive)}
+                  options={[
+                    { value: "false", label: "Recorded" },
+                    { value: "true", label: "Live" },
+                  ]}
+                />
+
+                <CourseSelect
+                  name="language"
+                  label="Language"
+                  placeholder="Select language"
+                  defaultValue={course.language}
+                  options={[
+                    { value: "en", label: "English" },
+                    { value: "hi", label: "Hindi" },
+                  ]}
+                />
+              </div>
+
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
-                  Format
-                  <select
-                    name="isLive"
-                    defaultValue={String(course.isLive)}
-                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-                  >
-                    <option value="false">Recorded</option>
-                    <option value="true">Live</option>
-                  </select>
+                  Price (INR)
+                  <input
+                    name="price"
+                    type="number"
+                    min="0"
+                    defaultValue={Number(course.price)}
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 pr-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 [&::-webkit-outer-spin-button]:opacity-100 [&::-webkit-inner-spin-button]:opacity-100 [&::-webkit-outer-spin-button]:h-5 [&::-webkit-inner-spin-button]:h-5"
+                  />
                 </label>
 
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
-                  Language
-                  <select
-                    name="language"
-                    defaultValue={course.language}
-                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-                  >
-                    <option value="en">English</option>
-                    <option value="hi">Hindi</option>
-                  </select>
+                  Duration (hours)
+                  <input
+                    name="durationHours"
+                    type="number"
+                    min="1"
+                    defaultValue={course.durationHours ?? ""}
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 pr-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 [&::-webkit-outer-spin-button]:opacity-100 [&::-webkit-inner-spin-button]:opacity-100 [&::-webkit-outer-spin-button]:h-5 [&::-webkit-inner-spin-button]:h-5"
+                  />
                 </label>
               </div>
+
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                Instructor name
+                <input
+                  name="instructorName"
+                  defaultValue={course.instructorName ?? ""}
+                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+                />
+              </label>
+
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                Instructor title
+                <input
+                  name="instructorTitle"
+                  defaultValue={course.instructorTitle ?? ""}
+                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+                />
+              </label>
+
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                Thumbnail URL
+                <input
+                  name="imageUrl"
+                  type="url"
+                  defaultValue={course.imageUrl ?? ""}
+                  className="mt-1.5 w-full min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 break-all placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+                />
+              </label>
+
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                Preview lecture URL
+                <input
+                  name="previewLectureUrl"
+                  type="url"
+                  defaultValue={course.previewLectureUrl ?? ""}
+                  className="mt-1.5 w-full min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 break-all placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+                />
+              </label>
 
               <div className="flex items-center justify-end gap-2 pt-2">
                 <button

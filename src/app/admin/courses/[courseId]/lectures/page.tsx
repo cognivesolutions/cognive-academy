@@ -31,7 +31,7 @@ export default async function LecturesPage({ params, searchParams }: Props) {
   if (!courseId) {
     return (
       <main className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-        <div className="mx-auto max-w-4xl px-4 py-10">
+        <div className="mx-auto max-w-6xl px-6 py-12">
           <div className="rounded-xl border bg-white p-6 dark:bg-slate-900">
             <h1 className="text-2xl font-black">Missing course id</h1>
             <p className="mt-2 text-sm text-slate-600">This page expects a course id in the URL. Go back to the <a href="/admin" className="text-indigo-600">admin list</a>.</p>
@@ -49,7 +49,7 @@ export default async function LecturesPage({ params, searchParams }: Props) {
   if (!course) {
     return (
       <main className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-        <div className="mx-auto max-w-4xl px-4 py-10">
+        <div className="mx-auto max-w-6xl px-6 py-12">
           <div className="rounded-xl border bg-white p-6 dark:bg-slate-900">
             <h1 className="text-2xl font-black">Course not found</h1>
             <p className="mt-2 text-sm text-slate-600">No course matches the requested id. Return to the <a href="/admin" className="text-indigo-600">admin list</a> to try another course.</p>
@@ -61,7 +61,7 @@ export default async function LecturesPage({ params, searchParams }: Props) {
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-      <div className="mx-auto max-w-4xl px-4 py-10">
+      <div className="mx-auto max-w-6xl px-6 py-12">
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-black">Manage lectures — {course.title}</h1>
@@ -91,9 +91,9 @@ export default async function LecturesPage({ params, searchParams }: Props) {
               </div>
               <a
                 href="#new-module-title"
-                className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 px-3.5 py-2 text-xs font-semibold text-white shadow-[0_12px_24px_rgba(99,102,241,0.28)] transition hover:-translate-y-0.5"
+                className="inline-flex items-center justify-center rounded-full border border-white/60 bg-white/70 px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-[0_12px_24px_rgba(15,23,42,0.07)] backdrop-blur-sm transition hover:border-indigo-200 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-200 dark:hover:border-indigo-500/40 dark:hover:text-indigo-200"
               >
-                Add module
+                Add
               </a>
             </div>
             <div>
@@ -129,7 +129,7 @@ export default async function LecturesPage({ params, searchParams }: Props) {
                   name="position"
                   type="number"
                   defaultValue={1}
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 pr-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 [&::-webkit-outer-spin-button]:opacity-100 [&::-webkit-inner-spin-button]:opacity-100 [&::-webkit-outer-spin-button]:h-5 [&::-webkit-inner-spin-button]:h-5"
                 />
               </label>
 
@@ -138,7 +138,7 @@ export default async function LecturesPage({ params, searchParams }: Props) {
                   name="isPreview"
                   label="Preview"
                   placeholder="Select preview status"
-                  defaultValue="false"
+                  defaultValue=""
                   options={[
                     { value: "false", label: "No" },
                     { value: "true", label: "Yes" },
@@ -156,8 +156,8 @@ export default async function LecturesPage({ params, searchParams }: Props) {
               </label>
 
               <div className="sm:col-span-2 flex justify-end">
-                <button type="submit" className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(99,102,241,0.28)] transition hover:-translate-y-0.5">
-                  Create lecture
+                <button type="submit" className="inline-flex h-[34px] items-center justify-center rounded-full border border-emerald-200 bg-emerald-50/80 px-5 py-1.5 text-sm font-semibold text-emerald-700 shadow-[0_8px_20px_rgba(16,185,129,0.08)] backdrop-blur-sm transition duration-200 hover:border-emerald-300 hover:bg-emerald-100 hover:shadow-[0_10px_24px_rgba(16,185,129,0.12)] hover:brightness-105 active:scale-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:border-emerald-400/50 dark:hover:bg-emerald-500/15">
+                  Create
                 </button>
               </div>
             </form>

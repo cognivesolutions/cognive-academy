@@ -60,7 +60,10 @@ export default async function NewCoursePage() {
 
             <div className="grid gap-3 md:grid-cols-2">
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
-                Course title
+                <span className="inline-flex items-center gap-1">
+                  Course title
+                  <span className="text-red-500">*</span>
+                </span>
                 <input
                   name="title"
                   required
@@ -104,7 +107,10 @@ export default async function NewCoursePage() {
               />
 
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
-                Price (INR)
+                <span className="inline-flex items-center gap-1">
+                  Price (INR)
+                  <span className="text-red-500">*</span>
+                </span>
                 <input
                   name="price"
                   type="number"
@@ -148,7 +154,10 @@ export default async function NewCoursePage() {
               />
 
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 md:col-span-2">
-                Instructor name
+                <span className="inline-flex items-center gap-1">
+                  Instructor name
+                  <span className="text-red-500">*</span>
+                </span>
                 <input
                   name="instructorName"
                   required
@@ -177,7 +186,10 @@ export default async function NewCoursePage() {
               </label>
 
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 md:col-span-2">
-                Full description
+                <span className="inline-flex items-center gap-1">
+                  Full description
+                  <span className="text-red-500">*</span>
+                </span>
                 <textarea
                   name="description"
                   rows={4}
@@ -227,9 +239,9 @@ export default async function NewCoursePage() {
           <button
             type="submit"
             form="create-course-form"
-            className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50/80 px-5 py-2.5 text-sm font-semibold text-emerald-700 shadow-[0_8px_20px_rgba(16,185,129,0.08)] backdrop-blur-sm transition duration-200 hover:border-emerald-300 hover:bg-emerald-100 hover:shadow-[0_10px_24px_rgba(16,185,129,0.12)] hover:brightness-105 active:scale-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:border-emerald-400/50 dark:hover:bg-emerald-500/15"
+            className="inline-flex h-[34px] items-center justify-center rounded-full border border-emerald-200 bg-emerald-50/80 px-5 py-1.5 text-sm font-semibold text-emerald-700 shadow-[0_8px_20px_rgba(16,185,129,0.08)] backdrop-blur-sm transition duration-200 hover:border-emerald-300 hover:bg-emerald-100 hover:shadow-[0_10px_24px_rgba(16,185,129,0.12)] hover:brightness-105 active:scale-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:border-emerald-400/50 dark:hover:bg-emerald-500/15"
           >
-            Save
+            Create
           </button>
         </div>
       </div>
