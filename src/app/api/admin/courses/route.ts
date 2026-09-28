@@ -80,6 +80,13 @@ export async function POST(request: Request) {
   }
 
   try {
+    // DEBUG: log incoming request info to help diagnose 404s from client
+    try {
+      const ct = request.headers.get("content-type");
+      console.log("[api/admin/courses] POST called", { url: request.url, contentType: ct, user: session?.user?.id });
+    } catch (e) {
+      console.error("[api/admin/courses] debug log failed", e);
+    }
     const contentType = request.headers.get("content-type") ?? "";
 
     if (contentType.includes("application/json")) {

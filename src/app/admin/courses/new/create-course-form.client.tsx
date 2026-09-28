@@ -1,13 +1,35 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 
 import { CourseSelect } from "@/app/admin/components/course-select";
 import ImageCropWrapper from "@/app/admin/components/image-crop-wrapper.client";
 import ImageFileUploader from "@/app/admin/components/image-file-uploader.client";
 
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 90);
+}
+
 export function CreateCourseForm() {
   const router = useRouter();
+  const [title, setTitle] = useState("");
+  const [slug, setSlug] = useState("");
+  const [isSlugManual, setIsSlugManual] = useState(false);
+
+  const slugValue = useMemo(() => slugify(title), [title]);
+
+  const handleTitleChange = (value: string) => {
+    setTitle(value);
+    if (!isSlugManual) {
+      setSlug(slugify(value));
+    }
+  };
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -27,8 +49,20 @@ export function CreateCourseForm() {
       });
 
       if (!response.ok && response.status !== 303) {
-        const data = await response.json().catch(() => null);
-        throw new Error(data?.message ?? "Failed to save course.");
+        // attempt to parse JSON body, otherwise text
+        let bodyText: string | null = null;
+        try {
+          const data = await response.json().catch(() => null);
+          bodyText = data?.message || JSON.stringify(data);
+        } catch (e) {
+          try {
+            bodyText = await response.text();
+          } catch (e) {
+            bodyText = null;
+          }
+        }
+        console.error("Create course failed", { status: response.status, body: bodyText });
+        throw new Error(bodyText ? `HTTP ${response.status}: ${bodyText}` : `Failed to save course (status ${response.status})`);
       }
 
       const destination = response.redirected && response.url ? response.url : "/admin?success=Course saved successfully";
@@ -54,6 +88,8 @@ export function CreateCourseForm() {
           <input
             name="title"
             required
+            value={title}
+            onChange={(event) => handleTitleChange(event.target.value)}
             placeholder="e.g. Data Analytics Bootcamp"
             className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
           />
@@ -63,6 +99,18 @@ export function CreateCourseForm() {
           Slug (optional)
           <input
             name="slug"
+            value={slug}
+            onChange={(event) => {
+              const value = event.target.value;
+              setSlug(value);
+              setIsSlugManual(value.trim().length > 0);
+            }}
+            onBlur={() => {
+              if (!slug.trim()) {
+                setSlug(slugValue);
+                setIsSlugManual(false);
+              }
+            }}
             placeholder="e.g. data-analytics-bootcamp"
             className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
           />
@@ -197,8 +245,8 @@ export function CreateCourseForm() {
           Or use image URL
           <input
             name="imageUrl"
-            type="url"
-            placeholder="https://example.com/course-image.jpg"
+            type="text"
+            placeholder="https://example.com/course-image.jpg or /uploads/course-thumbnails/your-image.jpg"
             className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
           />
         </label>
