@@ -50,6 +50,14 @@ const menuItems = [
   },
 ];
 
+function getLogoutRedirectPath() {
+  if (typeof window === "undefined") {
+    return "/login";
+  }
+
+  return window.location.pathname.startsWith("/admin") ? "/admin/login" : "/login";
+}
+
 export function UserMenu() {
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
@@ -146,7 +154,7 @@ export function UserMenu() {
         cancelLabel="Stay signed in"
         onConfirm={() => {
           setLogoutDialogOpen(false);
-          signOut({ callbackUrl: "/login" });
+          signOut({ callbackUrl: getLogoutRedirectPath(), redirect: true });
         }}
         onCancel={() => setLogoutDialogOpen(false)}
       />

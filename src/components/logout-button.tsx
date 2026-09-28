@@ -4,6 +4,14 @@ import { signOut } from "next-auth/react";
 import { useState } from "react";
 import ConfirmDialog from "./confirm-dialog";
 
+function getLogoutRedirectPath() {
+  if (typeof window === "undefined") {
+    return "/login";
+  }
+
+  return window.location.pathname.startsWith("/admin") ? "/admin/login" : "/login";
+}
+
 export function LogoutButton() {
   const [open, setOpen] = useState(false);
 
@@ -25,7 +33,7 @@ export function LogoutButton() {
         cancelLabel="Stay signed in"
         onConfirm={() => {
           setOpen(false);
-          signOut({ callbackUrl: "/login" });
+          signOut({ callbackUrl: getLogoutRedirectPath(), redirect: true });
         }}
         onCancel={() => setOpen(false)}
       />

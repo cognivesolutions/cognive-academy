@@ -36,7 +36,7 @@ export default function ManageCourseGrid({ courses }: { courses: ManageCourse[] 
         />
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2">
         {courses.map((course) => (
           <div key={course.id} className="rounded-[20px] border border-slate-200 bg-slate-50/80 p-3 shadow-[0_8px_20px_rgba(15,23,42,0.03)] transition duration-200 hover:border-indigo-200 dark:border-slate-700 dark:bg-slate-800/80">
             <div className="mb-3 flex items-start justify-between gap-3">
