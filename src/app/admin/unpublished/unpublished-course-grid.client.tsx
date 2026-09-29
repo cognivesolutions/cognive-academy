@@ -26,6 +26,7 @@ export type UnpublishedCourse = {
   category: string;
   level?: string | null;
   isLive: boolean;
+  isPublished?: boolean;
   language: string;
   price: number;
   imageUrl?: string | null;
@@ -199,7 +200,7 @@ function UnpublishedCourseCard({
     <div className="rounded-[20px] border border-slate-200 bg-slate-50/80 p-3 shadow-[0_8px_20px_rgba(15,23,42,0.03)] transition duration-200 hover:border-indigo-200 dark:border-slate-700 dark:bg-slate-800/80">
       <div className="mb-3 flex items-start justify-between gap-3 pt-0.5">
         <div className="min-w-0 flex-1">
-          <div className="line-clamp-2 break-words text-[0.9rem] font-semibold tracking-[-0.02em] text-slate-900 dark:text-white">{titleValue}</div>
+          <div className="line-clamp-2 break-words text-[0.9rem] font-semibold tracking-[-0.02em] text-slate-900 dark:text-white">{course.title}</div>
           <div className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
             {course.category} • {course.level ?? "Beginner"} • {course.isLive ? "Live" : "Recorded"} • {course.language === "hi" ? "Hindi" : "English"}
           </div>
@@ -490,7 +491,13 @@ function UnpublishedCourseCard({
             <button
               type="button"
               disabled={pendingAction !== null}
-              onClick={() => setPendingConfirmAction("publish")}
+              onClick={() => {
+                if (course.isPublished) {
+                  setWarning("This course is already published.");
+                  return;
+                }
+                setPendingConfirmAction("publish");
+              }}
               className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50/80 px-3 py-2 text-[11px] font-semibold text-emerald-700 shadow-[0_8px_20px_rgba(16,185,129,0.08)] backdrop-blur-sm transition duration-200 hover:border-emerald-300 hover:bg-emerald-100 hover:shadow-[0_10px_24px_rgba(16,185,129,0.12)] hover:brightness-105 active:scale-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:border-emerald-400/50 dark:hover:bg-emerald-500/15"
             >
               {pendingAction === "publish" ? "Publishing..." : "Publish"}

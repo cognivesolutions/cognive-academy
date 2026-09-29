@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { AdminMessage } from "../admin-message.client";
 import { CourseSearchInput } from "../components/course-search-input";
 import { CourseSelect } from "../components/course-select";
 import { PaginationPageSizeSelect } from "../components/pagination-page-size-select";
@@ -24,6 +25,7 @@ export default async function ManageCoursesPage({
   }
 
   const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
+  const successMessage = typeof resolvedSearchParams.success === "string" ? resolvedSearchParams.success : "";
 
   const q = Array.isArray(resolvedSearchParams.q) ? resolvedSearchParams.q[0] : resolvedSearchParams.q ?? "";
   const categoryParam = Array.isArray(resolvedSearchParams.category) ? resolvedSearchParams.category[0] : resolvedSearchParams.category ?? "";
@@ -193,6 +195,8 @@ export default async function ManageCoursesPage({
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
       <div className="mx-auto max-w-6xl px-6 py-12">
+        {successMessage ? <AdminMessage message={successMessage} type="success" /> : null}
+
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Admin</p>
@@ -357,6 +361,7 @@ export default async function ManageCoursesPage({
                   price: Number(course.price),
                   imageUrl: course.imageUrl,
                   isLive: course.isLive,
+                  isPublished: course.isPublished,
                   language: course.language,
                   durationHours: course.durationHours,
                   previewLectureUrl: course.previewLectureUrl,

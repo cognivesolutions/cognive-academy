@@ -18,6 +18,7 @@ export default function CoursesBulk({
     category?: string;
     level?: string | null;
     isLive?: boolean;
+    isPublished?: boolean;
     language?: string;
     price?: number;
     imageUrl?: string | null;
@@ -45,6 +46,26 @@ export default function CoursesBulk({
   }, [feedback]);
 
   const clearFeedback = () => setFeedback(null);
+
+  const formHasAnyChanges = (form: HTMLFormElement | null) => {
+    if (!form) return false;
+    if (form.dataset.dirty === "true") return true;
+
+    for (const field of Array.from(form.querySelectorAll("[name]"))) {
+      const input = field as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+      const name = input.name;
+      if (!name || name === "action" || name === "id") continue;
+
+      const currentValue = String(input.value ?? "").trim();
+      const originalValue = String((input as HTMLInputElement).defaultValue ?? "").trim();
+
+      if (currentValue !== originalValue) {
+        return true;
+      }
+    }
+
+    return false;
+  };
 
   const setActionFeedback = (type: "publish" | "unpublish" | "delete" | "update", message: string, toneOverride?: "amber" | "red" | "green") => {
     const tone = toneOverride ?? "amber";
@@ -77,6 +98,30 @@ export default function CoursesBulk({
       return;
     }
 
+    if (type === "publish") {
+      const alreadyPublished = ids.filter((id) => courses.find((course) => course.id === id)?.isPublished === true);
+      if (alreadyPublished.length > 0) {
+        setActionFeedback(
+          type,
+          alreadyPublished.length === ids.length ? "Selected courses are already published." : "Some courses are already published.",
+          "amber",
+        );
+        return;
+      }
+    }
+
+    if (type === "delete") {
+      const publishedSelection = ids.filter((id) => courses.find((course) => course.id === id)?.isPublished === true);
+      if (publishedSelection.length > 0) {
+        setActionFeedback(
+          type,
+          publishedSelection.length === ids.length ? "Please unpublish this course before deleting it." : "Some courses are published.",
+          "amber",
+        );
+        return;
+      }
+    }
+
     let res: Response;
 
     if (type === "update") {
@@ -85,33 +130,9 @@ export default function CoursesBulk({
           const form = document.getElementById(`course-form-${id}`) as HTMLFormElement | null;
           if (!form) return null;
 
-          const originalCourse = courses.find((course) => course.id === id);
-          if (!originalCourse) return null;
-
-          const snapshot: Record<string, string> = {
-            title: originalCourse.title ?? "",
-            slug: originalCourse.slug ?? "",
-            category: originalCourse.category ?? "",
-            level: originalCourse.level ?? "Beginner",
-            price: String(originalCourse.price ?? ""),
-            durationHours: originalCourse.durationHours ? String(originalCourse.durationHours) : "",
-            language: originalCourse.language ?? "",
-            isLive: String(originalCourse.isLive ?? false),
-            instructorName: originalCourse.instructorName ?? "",
-            instructorTitle: originalCourse.instructorTitle ?? "",
-            shortDescription: originalCourse.shortDescription ?? "",
-            description: originalCourse.description ?? "",
-            imageUrl: originalCourse.imageUrl ?? "",
-            previewLectureUrl: originalCourse.previewLectureUrl ?? "",
-          };
+          if (!formHasAnyChanges(form)) return null;
 
           const formData = new FormData(form);
-          const hasChanges = Object.entries(snapshot).some(([name, originalValue]) => {
-            const currentValue = String(formData.get(name) ?? "").trim();
-            return currentValue !== String(originalValue ?? "").trim();
-          });
-
-          if (!hasChanges) return null;
 
           return {
             id,
@@ -152,7 +173,7 @@ export default function CoursesBulk({
         }>;
 
       if (updates.length === 0) {
-        setActionFeedback(type, "No changes detected. Please make at least one update before saving.");
+        setActionFeedback(type, "Please make at least one change before updating this course.", "amber");
         return;
       }
 
@@ -205,44 +226,52 @@ export default function CoursesBulk({
       return;
     }
 
+    if (type === "publish") {
+      const alreadyPublished = ids.filter((id) => courses.find((course) => course.id === id)?.isPublished === true);
+      if (alreadyPublished.length > 0) {
+        setActionFeedback(
+          type,
+          alreadyPublished.length === ids.length ? "Selected courses are already published." : "Some courses are already published.",
+          "amber",
+        );
+        return;
+      }
+    }
+
+    if (type === "unpublish") {
+      const alreadyUnpublished = ids.filter((id) => courses.find((course) => course.id === id)?.isPublished === false);
+      if (alreadyUnpublished.length > 0) {
+        setActionFeedback(
+          type,
+          alreadyUnpublished.length === ids.length ? "Selected courses are already unpublished." : "Some courses are already unpublished.",
+          "amber",
+        );
+        return;
+      }
+    }
+
+    if (type === "delete") {
+      const publishedSelection = ids.filter((id) => courses.find((course) => course.id === id)?.isPublished === true);
+      if (publishedSelection.length > 0) {
+        setActionFeedback(
+          type,
+          publishedSelection.length === ids.length ? "Please unpublish this course before deleting it." : "Some courses are published.",
+          "amber",
+        );
+        return;
+      }
+    }
+
     if (type === "update") {
+      setPendingAction(null);
+
       const hasAnyChanges = ids.some((id) => {
         const form = document.getElementById(`course-form-${id}`) as HTMLFormElement | null;
-        if (!form) return false;
-
-        const originalCourse = courses.find((course) => course.id === id);
-        if (!originalCourse) return false;
-
-        const snapshot: Record<string, string> = {
-          title: originalCourse.title ?? "",
-          slug: originalCourse.slug ?? "",
-          category: originalCourse.category ?? "",
-          level: originalCourse.level ?? "Beginner",
-          price: String(originalCourse.price ?? ""),
-          durationHours: originalCourse.durationHours ? String(originalCourse.durationHours) : "",
-          language: originalCourse.language ?? "",
-          isLive: String(originalCourse.isLive ?? false),
-          instructorName: originalCourse.instructorName ?? "",
-          instructorTitle: originalCourse.instructorTitle ?? "",
-          shortDescription: originalCourse.shortDescription ?? "",
-          description: originalCourse.description ?? "",
-          imageUrl: originalCourse.imageUrl ?? "",
-          previewLectureUrl: originalCourse.previewLectureUrl ?? "",
-        };
-
-        if (form.dataset.dirty === "true") {
-          return true;
-        }
-
-        const formData = new FormData(form);
-        return Object.entries(snapshot).some(([name, originalValue]) => {
-          const currentValue = String(formData.get(name) ?? "").trim();
-          return currentValue !== String(originalValue ?? "").trim();
-        });
+        return formHasAnyChanges(form);
       });
 
       if (!hasAnyChanges) {
-        setActionFeedback(type, "No changes detected. Please make at least one update before saving.", "amber");
+        setActionFeedback(type, "Please make at least one change before updating this course.", "amber");
         return;
       }
     }

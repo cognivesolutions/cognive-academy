@@ -179,6 +179,27 @@ export async function POST(request: Request) {
       return NextResponse.redirect(new URL("/admin?success=Course deleted successfully", request.url), 303);
     }
 
+    if (payload.action === "publish") {
+      if (!payload.id) {
+        return NextResponse.json({ success: false, message: "Course id is required for publish." }, { status: 400 });
+      }
+
+      const existing = await prisma.course.findUnique({ where: { id: payload.id } });
+      if (!existing) {
+        return NextResponse.json({ success: false, message: "Course not found." }, { status: 404 });
+      }
+
+      await prisma.course.update({
+        where: { id: payload.id },
+        data: {
+          isPublished: true,
+          updatedAt: new Date(),
+        },
+      });
+
+      return NextResponse.redirect(new URL("/admin/unpublished?success=Course published successfully.", request.url), 303);
+    }
+
     if (payload.action === "update") {
       if (!payload.id) {
         return NextResponse.json({ success: false, message: "Course id is required for update." }, { status: 400 });

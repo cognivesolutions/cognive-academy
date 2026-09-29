@@ -217,14 +217,14 @@ const DEFAULT_COURSE_THUMBNAIL = "https://images.unsplash.com/photo-150367626072
 
         {!src && (previewUrl || initialSrc) && (
           <div
-            className="ml-2 relative inline-block"
+            className="relative ml-2 -mt-0.5 inline-block"
             onMouseEnter={() => setIsPreviewHover(true)}
             onMouseLeave={() => setIsPreviewHover(false)}
           >
             <img
               src={previewUrl || initialSrc || DEFAULT_COURSE_THUMBNAIL}
               alt="Current course thumbnail"
-              className="h-10 w-16 rounded-md object-cover border border-slate-200"
+              className="h-10 w-16 rounded-md border border-slate-200 object-cover shadow-[0_10px_20px_rgba(15,23,42,0.10)] transition duration-300 ease-out"
               onError={(event) => {
                 const target = event.currentTarget as HTMLImageElement;
                 if (target.src !== DEFAULT_COURSE_THUMBNAIL) {
@@ -252,11 +252,11 @@ const DEFAULT_COURSE_THUMBNAIL = "https://images.unsplash.com/photo-150367626072
             )}
 
             {isPreviewHover && previewUrl && (
-              <div className="absolute z-50 left-1/2 top-0 -translate-x-1/2 -translate-y-full mb-2 w-48 rounded-md border border-slate-200 bg-white p-1 shadow-lg">
+              <div className="absolute z-50 left-1/2 -top-2.5 w-72 -translate-x-1/2 -translate-y-full rounded-2xl border border-white/30 bg-white/55 p-2 shadow-[0_18px_40px_rgba(15,23,42,0.14)] backdrop-blur-sm transition duration-300 ease-out dark:border-slate-700/50 dark:bg-slate-900/55">
                 <img
                   src={previewUrl || DEFAULT_COURSE_THUMBNAIL}
                   alt="preview-large"
-                  className="w-full rounded-md object-cover"
+                  className="w-full rounded-xl object-cover"
                   onError={(event) => {
                     const target = event.currentTarget as HTMLImageElement;
                     if (target.src !== DEFAULT_COURSE_THUMBNAIL) {
