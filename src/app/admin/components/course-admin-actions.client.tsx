@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import ConfirmDialog from "@/components/confirm-dialog";
 
 export default function CourseAdminActions({ courseId }: { courseId: string }) {
+  const router = useRouter();
   const [pendingAction, setPendingAction] = useState<"update" | "delete" | null>(null);
 
   return (
@@ -44,20 +46,37 @@ export default function CourseAdminActions({ courseId }: { courseId: string }) {
             : "This will save the current course details and update the catalog information."
         }
         confirmLabel={pendingAction === "delete" ? "Yes, delete" : "Yes, update"}
-        onConfirm={() => {
+        onConfirm={async () => {
           if (!pendingAction) return;
-          const form = document.getElementById(`course-form-${courseId}`) as HTMLFormElement | null;
-          if (form) {
-            form.querySelectorAll('input[name="action"]').forEach((node) => node.remove());
 
-            const actionInput = document.createElement("input");
-            actionInput.type = "hidden";
-            actionInput.name = "action";
-            actionInput.value = pendingAction;
-            form.appendChild(actionInput);
-            form.submit();
+          const form = document.getElementById(`course-form-${courseId}`) as HTMLFormElement | null;
+          if (!form) {
+            setPendingAction(null);
+            return;
           }
-          setPendingAction(null);
+
+          const formData = new FormData(form);
+          formData.set("action", pendingAction);
+
+          try {
+            const response = await fetch("/api/admin/courses", {
+              method: "POST",
+              body: formData,
+              credentials: "same-origin",
+            });
+
+            if (!response.ok) {
+              const errorText = await response.text().catch(() => "");
+              throw new Error(errorText || `Request failed with status ${response.status}`);
+            }
+
+            router.refresh();
+          } catch (error) {
+            console.error("Course action failed:", error);
+            alert(error instanceof Error ? error.message : "Could not complete this action.");
+          } finally {
+            setPendingAction(null);
+          }
         }}
         onCancel={() => setPendingAction(null)}
       />

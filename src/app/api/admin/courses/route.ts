@@ -91,22 +91,71 @@ export async function POST(request: Request) {
 
     if (contentType.includes("application/json")) {
       const json = await request.json().catch(() => null);
-      if (json && typeof json.action === "string" && Array.isArray(json.ids)) {
-        if (json.action === "bulkPublish") {
+      if (json && typeof json.action === "string") {
+        if (json.action === "bulkPublish" && Array.isArray(json.ids)) {
           await prisma.course.updateMany({ where: { id: { in: json.ids } }, data: { isPublished: true } });
           return NextResponse.json({ success: true });
         }
-        if (json.action === "bulkUnpublish") {
+        if (json.action === "bulkUnpublish" && Array.isArray(json.ids)) {
           await prisma.course.updateMany({ where: { id: { in: json.ids } }, data: { isPublished: false } });
           return NextResponse.json({ success: true });
         }
-        if (json.action === "bulkDelete") {
+        if (json.action === "bulkDelete" && Array.isArray(json.ids)) {
           const courses = await prisma.course.findMany({ where: { id: { in: json.ids } } });
           for (const c of courses) {
             await deleteUploadedFile(c.imageUrl);
           }
           await prisma.course.deleteMany({ where: { id: { in: json.ids } } });
           return NextResponse.json({ success: true });
+        }
+        if (json.action === "bulkUpdate" && Array.isArray(json.updates)) {
+          const prepared = await Promise.all(
+            json.updates.map(async (update: any) => {
+              const existing = await prisma.course.findUnique({ where: { id: update.id } });
+              if (!existing) return null;
+
+              return {
+                update,
+                existing,
+              };
+            }),
+          );
+
+          const valid = prepared.filter((entry): entry is { update: any; existing: any } => entry !== null);
+          if (valid.length === 0) {
+            return NextResponse.json({ success: true, updated: 0 });
+          }
+
+          await prisma.$transaction(
+            valid.map(({ update, existing }) => {
+              const nextTitle = update.title || existing.title;
+              const nextSlug = update.slug || existing.slug || slugify(nextTitle);
+              const nextPreviewUrl = update.previewLectureUrl ?? existing.previewLectureUrl ?? null;
+
+              return prisma.course.update({
+                where: { id: update.id },
+                data: {
+                  title: nextTitle,
+                  slug: nextSlug,
+                  category: update.category || existing.category,
+                  level: update.level || existing.level || "Beginner",
+                  price: Number.isFinite(update.price) ? Number(update.price) : existing.price,
+                  durationHours: Number.isFinite(update.durationHours) && Number(update.durationHours) > 0 ? Number(update.durationHours) : existing.durationHours,
+                  isLive: typeof update.isLive === "boolean" ? update.isLive : existing.isLive,
+                  isPublished: typeof update.isPublished === "boolean" ? update.isPublished : existing.isPublished,
+                  language: update.language === "hi" ? "hi" : "en",
+                  shortDescription: update.shortDescription || existing.shortDescription || nextTitle,
+                  description: update.description || existing.description,
+                  instructorName: update.instructorName || existing.instructorName,
+                  instructorTitle: update.instructorTitle ?? existing.instructorTitle,
+                  imageUrl: update.imageUrl || existing.imageUrl || null,
+                  previewLectureUrl: nextPreviewUrl,
+                },
+              });
+            }),
+          );
+
+          return NextResponse.json({ success: true, updated: valid.length });
         }
       }
     }
@@ -127,7 +176,7 @@ export async function POST(request: Request) {
       await deleteUploadedFile(existing.imageUrl);
       await prisma.course.delete({ where: { id: payload.id } });
 
-      return NextResponse.redirect(new URL("/admin?success=Course deleted successfully", request.url));
+      return NextResponse.redirect(new URL("/admin?success=Course deleted successfully", request.url), 303);
     }
 
     if (payload.action === "update") {
@@ -170,7 +219,7 @@ export async function POST(request: Request) {
         },
       });
 
-      return NextResponse.redirect(new URL("/admin?success=Course updated successfully", request.url));
+      return NextResponse.redirect(new URL("/admin?success=Course updated successfully", request.url), 303);
     }
 
     const rawTitle = payload.title;
@@ -220,11 +269,18 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.redirect(new URL("/admin?success=Course saved successfully", request.url));
+    return NextResponse.redirect(new URL("/admin?success=Course saved successfully", request.url), 303);
   } catch (error) {
-    console.error("Course creation error:", error);
+    console.error("[api/admin/courses] request failed:", {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return NextResponse.json(
-      { success: false, message: "Something went wrong while creating the course." },
+      {
+        success: false,
+        message: error instanceof Error ? error.message : "Something went wrong while creating the course.",
+        stack: error instanceof Error ? error.stack : undefined,
+      },
       { status: 500 },
     );
   }

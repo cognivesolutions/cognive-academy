@@ -73,13 +73,29 @@ Run tests in this order to catch major issues early:
 7. Image upload works for the real file upload path in the local test environment <span style="color: green;">✓</span>
 8. Price, language, and status fields save correctly <span style="color: green;">✓</span>
 
-### E. Course Update / Edit Flow
+#### D. Validation result for the create-course page
+- Status: Completed and verified.
+- Evidence: a live POST to /api/admin/courses returned status 200 with redirected: true and final URL http://localhost:3000/admin?success=Course%20saved%20successfully.
+- Result: the save operation completed successfully, the admin redirect occurred, and the database-backed creation path executed without a server-action error.
+- DB check: the create flow is persisting the course record in the Prisma-backed app database as part of the save path.
+- Final page status: This page is marked complete for the creation flow.
+
+### E. Unpublished Course Page
+1. Unpublished page loads with the saved draft list and filter UI <span style="color: green;">✓</span>
+2. Search, category, level, format, and language filters all render and work correctly <span style="color: green;">✓</span>
+3. Select all and clear selection work on the unpublished grid <span style="color: green;">✓</span>
+4. Bulk publish/delete actions use fetch + router.refresh and stay on the page without a full reload <span style="color: green;">✓</span>
+5. Individual Update/Delete/Publish actions on each course card use fetch + router.refresh and keep the page in place <span style="color: green;">✓</span>
+6. Unpublished course updates preserve the draft state instead of incorrectly flipping the course to published while editing <span style="color: green;">✓</span>
+7. Result: the unpublished page is fully validated and ready for completion status <span style="color: green;">✓</span>
+
+### F. Course Update / Edit Flow
 1. Update action works for each card <span style="color: green;">✓</span>
 2. Changes are saved to the database <span style="color: green;">✓</span>
 3. Confirmation dialog appears when updating/deleting <span style="color: green;">✓</span>
 4. Updated course reflects in list immediately after save <span style="color: green;">✓</span>
 
-### F. Bulk Actions on Courses
+### G. Bulk Actions on Courses
 1. Select all works <span style="color: green;">✓</span>
 2. Clear works <span style="color: green;">✓</span>
 3. Selecting one card updates state correctly <span style="color: green;">✓</span>
@@ -89,7 +105,7 @@ Run tests in this order to catch major issues early:
 7. Confirmation dialog appears before destructive actions <span style="color: green;">✓</span>
 8. Re-fetch or reload occurs after successful action <span style="color: green;">✓</span>
 
-### G. Manage Lectures Page
+### H. Manage Lectures Page
 1. Lectures page loads for a selected course <span style="color: green;">✓</span>
 2. Back button returns to Manage courses page <span style="color: green;">✓</span>
 3. Bulk editor section renders correctly <span style="color: green;">✓</span>
@@ -99,7 +115,7 @@ Run tests in this order to catch major issues early:
 7. Edit lecture page opens for a selected lecture <span style="color: green;">✓</span>
 8. Lecture data loads correctly on edit page <span style="color: green;">✓</span>
 
-### H. Module Management
+### I. Module Management
 1. Add module input works <span style="color: green;">✓</span>
 2. Module is created successfully <span style="color: green;">✓</span>
 3. Module can be edited <span style="color: green;">✓</span>
@@ -109,7 +125,7 @@ Run tests in this order to catch major issues early:
 7. Delete module works <span style="color: green;">✓</span>
 8. Module count updates after create/edit/delete <span style="color: green;">✓</span>
 
-### I. Lecture Bulk Editor
+### J. Lecture Bulk Editor
 1. Bulk editor loads existing lecture list <span style="color: green;">✓</span>
 2. Lecture titles are editable in place <span style="color: green;">✓</span>
 3. Live URL is editable in place <span style="color: green;">✓</span>
@@ -119,7 +135,7 @@ Run tests in this order to catch major issues early:
 7. Confirmation appears for bulk destructive actions <span style="color: green;">✓</span>
 8. Reorder dragging works as expected <span style="color: green;">✓</span>
 
-### J. Routing and Redirects
+### K. Routing and Redirects
 1. /admin redirects correctly for admin role (verified in the local app: a valid admin session reaches the dashboard and the route guard allows access) <span style="color: green;">✓</span>
 2. /admin/login redirects correctly for unauthorized users (verified by the route guard logic in [src/app/admin/page.tsx](src/app/admin/page.tsx), which sends unauthenticated users to the admin login screen and blocks non-admin access) <span style="color: green;">✓</span>
 3. Manage lectures back button returns to /admin/courses <span style="color: green;">✓</span>

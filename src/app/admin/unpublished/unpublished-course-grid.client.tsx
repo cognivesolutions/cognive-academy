@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 import CourseThumbnail from "@/app/admin/components/course-thumbnail.client";
 import CoursesBulk from "@/app/admin/courses-bulk.client";
@@ -26,10 +27,53 @@ export type UnpublishedCourse = {
 };
 
 export default function UnpublishedCourseGrid({ courses }: { courses: UnpublishedCourse[] }) {
+  const router = useRouter();
   const [selected, setSelected] = useState<Record<string, boolean>>({});
+  const [pendingAction, setPendingAction] = useState<"update" | "delete" | "publish" | null>(null);
 
   const toggleCard = (id: string) => {
     setSelected((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const submitCourseAction = async (courseId: string, action: "update" | "delete" | "publish") => {
+    const form = document.getElementById(`course-form-${courseId}`) as HTMLFormElement | null;
+    if (!form) return;
+
+    const confirmed = window.confirm(
+      action === "delete"
+        ? "Delete this unpublished course?"
+        : action === "publish"
+          ? "Publish this course now?"
+          : "Save the current course changes?",
+    );
+
+    if (!confirmed) return;
+
+    setPendingAction(action);
+
+    try {
+      const formData = new FormData(form);
+      formData.set("action", action);
+      formData.set("isPublished", action === "publish" ? "true" : "false");
+
+      const response = await fetch("/api/admin/courses", {
+        method: "POST",
+        body: formData,
+        credentials: "same-origin",
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => "");
+        throw new Error(errorText || `Request failed with status ${response.status}`);
+      }
+
+      router.refresh();
+    } catch (error) {
+      console.error("Unpublished course action failed:", error);
+      alert(error instanceof Error ? error.message : "Could not complete this action.");
+    } finally {
+      setPendingAction(null);
+    }
   };
 
   return (
@@ -83,11 +127,11 @@ export default function UnpublishedCourseGrid({ courses }: { courses: Unpublishe
               </span>
             </div>
 
-            <form action="/api/admin/courses" method="POST" encType="multipart/form-data" className="space-y-3">
+            <form id={`course-form-${course.id}`} className="space-y-3">
               <input type="hidden" name="action" value="update" />
               <input type="hidden" name="id" value={course.id} />
               <input type="hidden" name="slug" value={course.slug} />
-              <input type="hidden" name="isPublished" value="true" />
+              <input type="hidden" name="isPublished" value="false" />
 
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
                 Title
@@ -243,35 +287,28 @@ export default function UnpublishedCourseGrid({ courses }: { courses: Unpublishe
 
               <div className="flex items-center justify-end gap-2 pt-2">
                 <button
-                  type="submit"
-                  className="inline-flex items-center justify-center rounded-full border border-amber-200 bg-amber-50/80 px-3 py-2 text-[11px] font-semibold text-amber-700 shadow-[0_8px_20px_rgba(245,158,11,0.08)] backdrop-blur-sm transition duration-200 hover:border-amber-300 hover:bg-amber-100 hover:shadow-[0_10px_24px_rgba(245,158,11,0.12)] hover:brightness-105 active:scale-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200 dark:hover:border-amber-400/50 dark:hover:bg-amber-500/15"
+                  type="button"
+                  disabled={pendingAction !== null}
+                  onClick={() => submitCourseAction(course.id, "update")}
+                  className="inline-flex items-center justify-center rounded-full border border-amber-200 bg-amber-50/80 px-3 py-2 text-[11px] font-semibold text-amber-700 shadow-[0_8px_20px_rgba(245,158,11,0.08)] backdrop-blur-sm transition duration-200 hover:border-amber-300 hover:bg-amber-100 hover:shadow-[0_10px_24px_rgba(245,158,11,0.12)] hover:brightness-105 active:scale-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200 dark:hover:border-amber-400/50 dark:hover:bg-amber-500/15"
                 >
-                  Update
+                  {pendingAction === "update" ? "Updating..." : "Update"}
                 </button>
                 <button
-                  type="submit"
-                  className="inline-flex items-center justify-center rounded-full border border-red-200 bg-red-50/80 px-3 py-2 text-[11px] font-semibold text-red-700 shadow-[0_8px_20px_rgba(239,68,68,0.08)] backdrop-blur-sm transition duration-200 hover:border-red-300 hover:bg-red-100 hover:shadow-[0_10px_24px_rgba(239,68,68,0.12)] hover:brightness-105 active:scale-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200 dark:hover:border-red-400/50 dark:hover:bg-red-500/15"
-                  onClick={(event) => {
-                    const form = event.currentTarget.form;
-                    if (!form) return;
-
-                    let actionInput = form.querySelector('input[name="action"]') as HTMLInputElement | null;
-                    if (!actionInput) {
-                      actionInput = document.createElement("input");
-                      actionInput.type = "hidden";
-                      actionInput.name = "action";
-                      form.appendChild(actionInput);
-                    }
-                    actionInput.value = "delete";
-                  }}
+                  type="button"
+                  disabled={pendingAction !== null}
+                  onClick={() => submitCourseAction(course.id, "delete")}
+                  className="inline-flex items-center justify-center rounded-full border border-red-200 bg-red-50/80 px-3 py-2 text-[11px] font-semibold text-red-700 shadow-[0_8px_20px_rgba(239,68,68,0.08)] backdrop-blur-sm transition duration-200 hover:border-red-300 hover:bg-red-100 hover:shadow-[0_10px_24px_rgba(239,68,68,0.12)] hover:brightness-105 active:scale-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200 dark:hover:border-red-400/50 dark:hover:bg-red-500/15"
                 >
-                  Delete
+                  {pendingAction === "delete" ? "Deleting..." : "Delete"}
                 </button>
                 <button
-                  type="submit"
-                  className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50/80 px-3 py-2 text-[11px] font-semibold text-emerald-700 shadow-[0_8px_20px_rgba(16,185,129,0.08)] backdrop-blur-sm transition duration-200 hover:border-emerald-300 hover:bg-emerald-100 hover:shadow-[0_10px_24px_rgba(16,185,129,0.12)] hover:brightness-105 active:scale-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:border-emerald-400/50 dark:hover:bg-emerald-500/15"
+                  type="button"
+                  disabled={pendingAction !== null}
+                  onClick={() => submitCourseAction(course.id, "publish")}
+                  className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50/80 px-3 py-2 text-[11px] font-semibold text-emerald-700 shadow-[0_8px_20px_rgba(16,185,129,0.08)] backdrop-blur-sm transition duration-200 hover:border-emerald-300 hover:bg-emerald-100 hover:shadow-[0_10px_24px_rgba(16,185,129,0.12)] hover:brightness-105 active:scale-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:border-emerald-400/50 dark:hover:bg-emerald-500/15"
                 >
-                  Publish
+                  {pendingAction === "publish" ? "Publishing..." : "Publish"}
                 </button>
               </div>
             </form>
