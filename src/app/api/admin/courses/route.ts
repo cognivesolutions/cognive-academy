@@ -269,7 +269,13 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.redirect(new URL("/admin?success=Course saved successfully", request.url), 303);
+    return NextResponse.redirect(
+      new URL(
+        "/admin?success=Course%20saved%20successfully.%20This%20course%20will%20appear%20under%20Unpublished%20until%20you%20publish%20it.",
+        request.url,
+      ),
+      303,
+    );
   } catch (error) {
     console.error("[api/admin/courses] request failed:", {
       message: error instanceof Error ? error.message : String(error),

@@ -14,12 +14,14 @@ function toBlob(canvas: HTMLCanvasElement, mime = "image/jpeg", quality = 0.9): 
   return new Promise((res) => canvas.toBlob(res, mime, quality));
 }
 
+const DEFAULT_COURSE_THUMBNAIL = "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1200&q=80";
+
   export default function ImageCrop({ initialSrc, width, height }: Props) {
-  const [src, setSrc] = useState<string | undefined>(initialSrc);
+  const [src, setSrc] = useState<string | undefined>();
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [baseScale, setBaseScale] = useState(1);
-  const [selectedFileName, setSelectedFileName] = useState("No file chosen");
+  const [selectedFileName, setSelectedFileName] = useState(initialSrc ? "Current thumbnail" : "No file chosen");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -32,6 +34,16 @@ function toBlob(canvas: HTMLCanvasElement, mime = "image/jpeg", quality = 0.9): 
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [draggingState, setDraggingState] = useState<{ down: boolean; sx: number; sy: number } | null>(null);
   const isDragging = Boolean(draggingState?.down);
+
+  useEffect(() => {
+    if (initialSrc) {
+      setPreviewUrl(initialSrc);
+      setSelectedFileName("Current thumbnail");
+    } else {
+      setPreviewUrl(null);
+      setSelectedFileName("No file chosen");
+    }
+  }, [initialSrc]);
 
   const onFile = async (f: File) => {
     const url = URL.createObjectURL(f);
@@ -203,33 +215,55 @@ function toBlob(canvas: HTMLCanvasElement, mime = "image/jpeg", quality = 0.9): 
           Choose file
         </button>
 
-        {previewUrl && (
+        {!src && (previewUrl || initialSrc) && (
           <div
             className="ml-2 relative inline-block"
             onMouseEnter={() => setIsPreviewHover(true)}
             onMouseLeave={() => setIsPreviewHover(false)}
           >
-            <img src={previewUrl} alt="preview" className="h-10 w-16 rounded-md object-cover border border-slate-200" />
-            <button
-              type="button"
-              aria-label="Remove preview"
-              onClick={() => {
-                setPreviewUrl(null);
-                setSelectedFileName("No file chosen");
-                if (fileInputRef.current) {
-                  try {
-                    (fileInputRef.current as HTMLInputElement).value = "";
-                  } catch (e) {}
+            <img
+              src={previewUrl || initialSrc || DEFAULT_COURSE_THUMBNAIL}
+              alt="Current course thumbnail"
+              className="h-10 w-16 rounded-md object-cover border border-slate-200"
+              onError={(event) => {
+                const target = event.currentTarget as HTMLImageElement;
+                if (target.src !== DEFAULT_COURSE_THUMBNAIL) {
+                  target.src = DEFAULT_COURSE_THUMBNAIL;
                 }
               }}
-              className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600/20 backdrop-blur-sm border border-white/20 text-white text-xs shadow-md hover:bg-red-600/30 focus:outline-none focus:ring-2 focus:ring-red-300/40"
-            >
-              ×
-            </button>
+            />
+            {previewUrl && (
+              <button
+                type="button"
+                aria-label="Remove preview"
+                onClick={() => {
+                  setPreviewUrl(null);
+                  setSelectedFileName("No file chosen");
+                  if (fileInputRef.current) {
+                    try {
+                      (fileInputRef.current as HTMLInputElement).value = "";
+                    } catch (e) {}
+                  }
+                }}
+                className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600/20 backdrop-blur-sm border border-white/20 text-white text-xs shadow-md hover:bg-red-600/30 focus:outline-none focus:ring-2 focus:ring-red-300/40"
+              >
+                ×
+              </button>
+            )}
 
-            {isPreviewHover && (
+            {isPreviewHover && previewUrl && (
               <div className="absolute z-50 left-1/2 top-0 -translate-x-1/2 -translate-y-full mb-2 w-48 rounded-md border border-slate-200 bg-white p-1 shadow-lg">
-                <img src={previewUrl} alt="preview-large" className="w-full rounded-md object-cover" />
+                <img
+                  src={previewUrl || DEFAULT_COURSE_THUMBNAIL}
+                  alt="preview-large"
+                  className="w-full rounded-md object-cover"
+                  onError={(event) => {
+                    const target = event.currentTarget as HTMLImageElement;
+                    if (target.src !== DEFAULT_COURSE_THUMBNAIL) {
+                      target.src = DEFAULT_COURSE_THUMBNAIL;
+                    }
+                  }}
+                />
               </div>
             )}
           </div>

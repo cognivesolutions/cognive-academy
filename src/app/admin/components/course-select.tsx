@@ -19,6 +19,8 @@ type CourseSelectProps = {
   hideLabel?: boolean;
   triggerClassName?: string;
   menuClassName?: string;
+  syncUrl?: boolean;
+  onValueChange?: (nextValue: string) => void;
 };
 
 export function CourseSelect({
@@ -32,6 +34,8 @@ export function CourseSelect({
   hideLabel = false,
   triggerClassName = "",
   menuClassName = "",
+  syncUrl = true,
+  onValueChange,
 }: CourseSelectProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -68,6 +72,12 @@ export function CourseSelect({
     setValue(normalizedValue);
     if (hiddenInputRef.current) {
       hiddenInputRef.current.value = normalizedValue;
+    }
+
+    onValueChange?.(normalizedValue);
+
+    if (!syncUrl) {
+      return;
     }
 
     const params = new URLSearchParams(searchParams?.toString() ?? "");

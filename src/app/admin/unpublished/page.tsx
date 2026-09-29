@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { AdminMessage } from "../admin-message.client";
 import { CourseSearchInput } from "../components/course-search-input";
 import { CourseSelect } from "../components/course-select";
 import { PaginationPageSizeSelect } from "../components/pagination-page-size-select";
@@ -203,11 +204,7 @@ export default async function UnpublishedPage({
           </div>
         </div>
 
-        {successMessage && (
-          <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
-            {successMessage}
-          </div>
-        )}
+        <AdminMessage message={successMessage} type="success" />
 
         <section className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.05)] dark:border-slate-700 dark:bg-slate-900/80">
           <div className="mb-5 flex items-center justify-between gap-3 border-b border-slate-200 pb-4 dark:border-slate-700">

@@ -1,11 +1,12 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
 
 import { CourseSelect } from "@/app/admin/components/course-select";
 import ImageCropWrapper from "@/app/admin/components/image-crop-wrapper.client";
 import ImageFileUploader from "@/app/admin/components/image-file-uploader.client";
+import ConfirmDialog from "@/components/confirm-dialog";
 
 function slugify(value: string) {
   return value
@@ -21,8 +22,64 @@ export function CreateCourseForm() {
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [isSlugManual, setIsSlugManual] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const slugValue = useMemo(() => slugify(title), [title]);
+
+  const hasDirtyForm = () => {
+    const form = document.getElementById("create-course-form") as HTMLFormElement | null;
+    if (!form) return false;
+
+    return Array.from(form.elements).some((element) => {
+      if (!(element instanceof HTMLElement)) return false;
+
+      const input = element as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+      const { name, type } = input;
+
+      if (name === "action" || name === "isPublished") return false;
+      if (type === "hidden") return false;
+
+      if (input instanceof HTMLInputElement && input.type === "file") {
+        return (input.files?.length ?? 0) > 0;
+      }
+
+      if (input instanceof HTMLInputElement && (input.type === "checkbox" || input.type === "radio")) {
+        return input.checked;
+      }
+
+      return input.value.trim().length > 0;
+    });
+  };
+
+  useEffect(() => {
+    const handleRequest = () => {
+      const form = document.getElementById("create-course-form") as HTMLFormElement | null;
+      if (!form) return;
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+      setShowConfirmDialog(true);
+    };
+
+    const handleCancelRequest = () => {
+      if (hasDirtyForm()) {
+        setShowCancelDialog(true);
+        return;
+      }
+
+      router.push("/admin");
+    };
+
+    window.addEventListener("course-create-confirm-request", handleRequest);
+    window.addEventListener("course-cancel-confirm-request", handleCancelRequest);
+    return () => {
+      window.removeEventListener("course-create-confirm-request", handleRequest);
+      window.removeEventListener("course-cancel-confirm-request", handleCancelRequest);
+    };
+  }, [router]);
 
   const handleTitleChange = (value: string) => {
     setTitle(value);
@@ -31,14 +88,16 @@ export function CreateCourseForm() {
     }
   };
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function handleSubmit() {
+    const form = document.getElementById("create-course-form") as HTMLFormElement | null;
+    if (!form) return;
 
-    const form = event.currentTarget;
     if (!form.checkValidity()) {
       form.reportValidity();
       return;
     }
+
+    setIsSubmitting(true);
 
     try {
       const formData = new FormData(form);
@@ -49,32 +108,41 @@ export function CreateCourseForm() {
       });
 
       if (!response.ok && response.status !== 303) {
-        // attempt to parse JSON body, otherwise text
         let bodyText: string | null = null;
         try {
           const data = await response.json().catch(() => null);
           bodyText = data?.message || JSON.stringify(data);
-        } catch (e) {
+        } catch {
           try {
             bodyText = await response.text();
-          } catch (e) {
+          } catch {
             bodyText = null;
           }
         }
-        console.error("Create course failed", { status: response.status, body: bodyText });
-        throw new Error(bodyText ? `HTTP ${response.status}: ${bodyText}` : `Failed to save course (status ${response.status})`);
+
+        const message = bodyText ? `HTTP ${response.status}: ${bodyText}` : `Failed to save course (status ${response.status})`;
+        window.dispatchEvent(new CustomEvent("course-create-error", { detail: message }));
+        return;
       }
 
-      const destination = response.redirected && response.url ? response.url : "/admin?success=Course saved successfully";
+      const destination = response.redirected && response.url ? response.url : "/admin?success=Course%20saved%20successfully.%20This%20course%20will%20appear%20under%20Unpublished%20until%20you%20publish%20it.";
       router.push(destination.replace(window.location.origin, ""));
+      form.reset();
+      setTitle("");
+      setSlug("");
+      setIsSlugManual(false);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to save course.";
-      alert(message);
+      window.dispatchEvent(new CustomEvent("course-create-error", { detail: message }));
+    } finally {
+      setIsSubmitting(false);
+      setShowConfirmDialog(false);
     }
   }
 
   return (
-    <form id="create-course-form" onSubmit={handleSubmit} className="space-y-3">
+    <>
+    <form id="create-course-form" className="space-y-3">
       <ImageFileUploader />
       <input type="hidden" name="action" value="create" />
       <input type="hidden" name="isPublished" value="false" />
@@ -262,5 +330,31 @@ export function CreateCourseForm() {
         </label>
       </div>
     </form>
+
+    <ConfirmDialog
+      open={showConfirmDialog}
+      title="Create this course?"
+      description="This will save the course immediately and redirect you to the admin dashboard."
+      confirmLabel={isSubmitting ? "Creating..." : "Yes, create"}
+      cancelLabel="Cancel"
+      onConfirm={() => {
+        void handleSubmit();
+      }}
+      onCancel={() => setShowConfirmDialog(false)}
+    />
+
+    <ConfirmDialog
+      open={showCancelDialog}
+      title="Discard this form?"
+      description="You have started filling out this course. Leaving now will discard your changes."
+      confirmLabel="Yes, discard"
+      cancelLabel="Keep editing"
+      onConfirm={() => {
+        setShowCancelDialog(false);
+        router.push("/admin");
+      }}
+      onCancel={() => setShowCancelDialog(false)}
+    />
+    </>
   );
 }

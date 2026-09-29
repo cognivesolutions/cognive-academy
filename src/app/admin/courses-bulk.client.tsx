@@ -11,7 +11,23 @@ export default function CoursesBulk({
   selected,
   onSelectionChange,
 }: {
-  courses: { id: string; title: string }[];
+  courses: {
+    id: string;
+    title: string;
+    slug?: string;
+    category?: string;
+    level?: string | null;
+    isLive?: boolean;
+    language?: string;
+    price?: number;
+    imageUrl?: string | null;
+    shortDescription?: string | null;
+    description?: string | null;
+    instructorName?: string | null;
+    instructorTitle?: string | null;
+    durationHours?: number | null;
+    previewLectureUrl?: string | null;
+  }[];
   variant?: "default" | "unpublished";
   selected?: Record<string, boolean>;
   onSelectionChange?: (next: Record<string, boolean>) => void;
@@ -69,7 +85,34 @@ export default function CoursesBulk({
           const form = document.getElementById(`course-form-${id}`) as HTMLFormElement | null;
           if (!form) return null;
 
+          const originalCourse = courses.find((course) => course.id === id);
+          if (!originalCourse) return null;
+
+          const snapshot: Record<string, string> = {
+            title: originalCourse.title ?? "",
+            slug: originalCourse.slug ?? "",
+            category: originalCourse.category ?? "",
+            level: originalCourse.level ?? "Beginner",
+            price: String(originalCourse.price ?? ""),
+            durationHours: originalCourse.durationHours ? String(originalCourse.durationHours) : "",
+            language: originalCourse.language ?? "",
+            isLive: String(originalCourse.isLive ?? false),
+            instructorName: originalCourse.instructorName ?? "",
+            instructorTitle: originalCourse.instructorTitle ?? "",
+            shortDescription: originalCourse.shortDescription ?? "",
+            description: originalCourse.description ?? "",
+            imageUrl: originalCourse.imageUrl ?? "",
+            previewLectureUrl: originalCourse.previewLectureUrl ?? "",
+          };
+
           const formData = new FormData(form);
+          const hasChanges = Object.entries(snapshot).some(([name, originalValue]) => {
+            const currentValue = String(formData.get(name) ?? "").trim();
+            return currentValue !== String(originalValue ?? "").trim();
+          });
+
+          if (!hasChanges) return null;
+
           return {
             id,
             title: String(formData.get("title") ?? "").trim(),
@@ -107,6 +150,11 @@ export default function CoursesBulk({
           imageUrl: string;
           previewLectureUrl: string;
         }>;
+
+      if (updates.length === 0) {
+        setActionFeedback(type, "No changes detected. Please make at least one update before saving.");
+        return;
+      }
 
       res = await fetch("/api/admin/courses", {
         method: "POST",
@@ -156,6 +204,49 @@ export default function CoursesBulk({
       setActionFeedback(type, "Select at least one course to continue.");
       return;
     }
+
+    if (type === "update") {
+      const hasAnyChanges = ids.some((id) => {
+        const form = document.getElementById(`course-form-${id}`) as HTMLFormElement | null;
+        if (!form) return false;
+
+        const originalCourse = courses.find((course) => course.id === id);
+        if (!originalCourse) return false;
+
+        const snapshot: Record<string, string> = {
+          title: originalCourse.title ?? "",
+          slug: originalCourse.slug ?? "",
+          category: originalCourse.category ?? "",
+          level: originalCourse.level ?? "Beginner",
+          price: String(originalCourse.price ?? ""),
+          durationHours: originalCourse.durationHours ? String(originalCourse.durationHours) : "",
+          language: originalCourse.language ?? "",
+          isLive: String(originalCourse.isLive ?? false),
+          instructorName: originalCourse.instructorName ?? "",
+          instructorTitle: originalCourse.instructorTitle ?? "",
+          shortDescription: originalCourse.shortDescription ?? "",
+          description: originalCourse.description ?? "",
+          imageUrl: originalCourse.imageUrl ?? "",
+          previewLectureUrl: originalCourse.previewLectureUrl ?? "",
+        };
+
+        if (form.dataset.dirty === "true") {
+          return true;
+        }
+
+        const formData = new FormData(form);
+        return Object.entries(snapshot).some(([name, originalValue]) => {
+          const currentValue = String(formData.get(name) ?? "").trim();
+          return currentValue !== String(originalValue ?? "").trim();
+        });
+      });
+
+      if (!hasAnyChanges) {
+        setActionFeedback(type, "No changes detected. Please make at least one update before saving.", "amber");
+        return;
+      }
+    }
+
     clearFeedback();
     setPendingAction({ type, ids });
   }

@@ -61,7 +61,7 @@ export default function ConfirmDialog({
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800/60 cursor-pointer"
+            className="cursor-pointer rounded-full border border-slate-200/80 bg-white/55 px-4 py-2 text-sm font-medium text-slate-700 shadow-[0_8px_20px_rgba(15,23,42,0.08)] backdrop-blur-xl transition hover:border-slate-300 hover:bg-white/75 dark:border-slate-700/80 dark:bg-slate-800/50 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800/70"
           >
             {cancelLabel}
           </button>
@@ -69,7 +69,7 @@ export default function ConfirmDialog({
           <button
             type="button"
             onClick={onConfirm}
-            className="rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-[0_8px_24px_rgba(99,102,241,0.28)] hover:brightness-105 cursor-pointer"
+            className="cursor-pointer rounded-full border border-violet-200/80 bg-gradient-to-r from-white/80 via-violet-100/80 to-indigo-100/80 px-4 py-2 text-sm font-semibold text-violet-700 shadow-[0_10px_26px_rgba(139,92,246,0.22)] backdrop-blur-xl ring-1 ring-violet-100/80 transition hover:border-violet-300 hover:shadow-[0_12px_30px_rgba(139,92,246,0.28)] dark:border-violet-400/40 dark:from-violet-500/20 dark:via-indigo-500/20 dark:to-sky-500/20 dark:text-violet-100 dark:ring-violet-500/20"
           >
             {confirmLabel}
           </button>
