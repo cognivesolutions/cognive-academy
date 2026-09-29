@@ -173,7 +173,7 @@ function UnpublishedCourseCard({
             ? "Course deleted successfully."
             : "Course published successfully.";
 
-      if (action === "delete" || action === "publish") {
+      if (action === "delete" || action === "publish" || action === "update") {
         setWarning(null);
         setFeedback(null);
         setPendingConfirmAction(null);

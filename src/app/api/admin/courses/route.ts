@@ -240,7 +240,7 @@ export async function POST(request: Request) {
         },
       });
 
-      return NextResponse.redirect(new URL("/admin?success=Course updated successfully", request.url), 303);
+      return NextResponse.redirect(new URL("/admin/unpublished?success=Course%20updated%20successfully.", request.url), 303);
     }
 
     const rawTitle = payload.title;

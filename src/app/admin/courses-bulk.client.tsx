@@ -281,6 +281,7 @@ export default function CoursesBulk({
   }
 
   const isUnpublishedMode = variant === "unpublished";
+  const selectedCount = Object.values(currentSelected).filter(Boolean).length;
 
   return (
     <>
@@ -301,7 +302,10 @@ export default function CoursesBulk({
       ) : null}
 
       <div className="mb-4 flex items-center justify-between gap-3 rounded-[18px] border border-slate-200 bg-slate-50/80 p-2.5 shadow-[0_8px_20px_rgba(15,23,42,0.02)] dark:border-slate-700 dark:bg-slate-800/80">
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2.5">
+          <div className="inline-flex min-w-[74px] items-center justify-center rounded-full border border-emerald-200/80 bg-[linear-gradient(135deg,rgba(16,185,129,0.22),rgba(255,255,255,0.72),rgba(16,185,129,0.18))] px-2.5 py-1.5 text-[11px] font-semibold text-emerald-800 shadow-[0_10px_22px_rgba(16,185,129,0.12)] backdrop-blur-md dark:border-emerald-500/30 dark:bg-[linear-gradient(135deg,rgba(16,185,129,0.18),rgba(15,23,42,0.7),rgba(16,185,129,0.12))] dark:text-emerald-200">
+            {selectedCount} selected
+          </div>
           <button
             onClick={selectAll}
             className="inline-flex items-center justify-center rounded-full border border-indigo-200 bg-indigo-50/80 px-3 py-1.5 text-[11px] font-semibold text-indigo-700 shadow-[0_8px_20px_rgba(99,102,241,0.08)] backdrop-blur-sm transition duration-200 hover:border-indigo-300 hover:bg-indigo-100 hover:shadow-[0_10px_24px_rgba(99,102,241,0.12)] hover:brightness-105 active:scale-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200 dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15"
