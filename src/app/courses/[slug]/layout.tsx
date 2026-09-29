@@ -5,15 +5,17 @@ import BackButton from "../../../components/back-button";
 import CourseTabs from "../../../components/course-tabs";
 
 type Props = {
-  params: { slug: string };
+  params: Promise<{ slug: string }> | { slug: string };
   children: React.ReactNode;
 };
 
-// Use a local `Props` type instead of relying on Next's internal LayoutProps.
-// Export a non-async default wrapper to satisfy Next's expected layout component
-// type, and perform async data fetching in an inner server component.
 async function CourseLayoutServer({ params, children }: Props) {
-  const { slug } = params;
+  const resolvedParams = await Promise.resolve(params);
+  const slug = resolvedParams?.slug;
+
+  if (!slug) {
+    return notFound();
+  }
 
   const course = await prisma.course.findUnique({ where: { slug } });
   if (!course) return notFound();
@@ -34,8 +36,6 @@ async function CourseLayoutServer({ params, children }: Props) {
   );
 }
 
-export default function CourseLayout(props: any) {
-  // Accept `props: any` here and cast when forwarding to the async server
-  // component to avoid Next's validator type mismatch across versions.
-  return <CourseLayoutServer {...(props as Props)} />;
+export default async function CourseLayout(props: Props) {
+  return <CourseLayoutServer {...props} />;
 }

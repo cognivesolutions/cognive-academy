@@ -12,11 +12,14 @@ export default function RecordedSection({ courses }: { courses: Course[] }) {
   const english = useMemo(() => courses.filter((c) => (c.language || c.lang || c.locale) === "en"), [courses]);
   const hindi = useMemo(() => courses.filter((c) => (c.language || c.lang || c.locale) === "hi"), [courses]);
 
-  const fallbackEnglish = courses.slice(0, 5);
-  const fallbackHindi = courses.slice(5, 9).length ? courses.slice(5, 9) : courses.slice(0, 4);
+  const maxEnglish = 8;
+  const maxHindi = 6;
 
-  const enToShow = english.length ? english.slice(0, 5) : fallbackEnglish;
-  const hiToShow = hindi.length ? hindi.slice(0, 4) : fallbackHindi.slice(0, 4);
+  const fallbackEnglish = courses.slice(0, maxEnglish);
+  const fallbackHindi = courses.slice(0, maxHindi);
+
+  const enToShow = english.length ? english.slice(0, maxEnglish) : fallbackEnglish;
+  const hiToShow = hindi.length ? hindi.slice(0, maxHindi) : fallbackHindi;
 
   const current = lang === "en" ? enToShow : hiToShow;
 

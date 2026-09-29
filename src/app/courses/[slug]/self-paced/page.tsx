@@ -1,10 +1,16 @@
 import React from "react";
+import { notFound } from "next/navigation";
 import prisma from "../../../../lib/prisma";
 
-type Props = { params: { slug: string } };
+type Props = { params: Promise<{ slug: string }> | { slug: string } };
 
 export default async function SelfPacedPage({ params }: Props) {
-  const { slug } = params;
+  const resolvedParams = await Promise.resolve(params);
+  const slug = resolvedParams?.slug;
+
+  if (!slug) {
+    return notFound();
+  }
 
   const course = await prisma.course.findUnique({
     where: { slug },

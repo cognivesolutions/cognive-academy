@@ -272,7 +272,7 @@ export default async function CoursesPage({
           </span>
         </div>
 
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="mb-6 flex flex-col gap-3">
           <div className="flex flex-wrap gap-2">
             {categoryFilters.map((category) => {
               const isActive = activeCategory === category;
@@ -293,7 +293,7 @@ export default async function CoursesPage({
             })}
           </div>
 
-          <div className="flex items-center justify-end">
+          <div className="flex justify-end">
             <div className="inline-flex items-center gap-2 rounded-full bg-slate-100/85 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] backdrop-blur-sm dark:bg-slate-900/70 dark:shadow-[inset_0_1px_0_rgba(148,163,184,0.08)]">
               {[
                 { label: "English", value: "en" },

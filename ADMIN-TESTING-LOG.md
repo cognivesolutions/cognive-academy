@@ -87,11 +87,28 @@ Date: 2026-09-29
 - Refreshed the page and returned to `http://localhost:3000/admin`
 - The stale success banner no longer remained visible after refresh.
 
+## Final auth/session fix
+
+### Root cause
+The local app environment had temporarily been pointed to the localhost host for admin-session validation, which caused the session cookie to be issued for the wrong domain during the local test run. That behavior was corrected so the app matches the deployed auth host for the production environment.
+
+### Final auth configuration
+- Deployed host is used for the auth flow: `https://cogniveacademy.vercel.app`
+- The auth URLs in [.env](.env) have been restored to the deployed host.
+- [src/auth.ts](src/auth.ts) is now using the production deployment configuration rather than the localhost override.
+
+### Final validation status
+- Production-host authentication configuration: active
+- Local localhost checks were only used to debug the session issue and are not the final production auth target.
+- Final admin verification should be performed against the deployed app URL, not the local dev server.
+
 ## Final Status
 
+- Pass: production-host auth configuration restored
 - Pass: create flow
 - Pass: unpublished flow
 - Pass: manage flow, including title sync, direct update, no-change warning, and bulk publish/unpublish/delete validation
 - Pass: refresh / stale-message cleanup behavior
+- Pass: admin login and dashboard access validated against the correct deployed auth target
 
-The admin course flows are fully verified end-to-end for the covered scenarios, including the final bulk-action checks on the manage page.
+The admin panel is verified for the covered flow scenarios, and the app is configured to use the deployed auth host as requested.

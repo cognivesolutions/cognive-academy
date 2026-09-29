@@ -108,7 +108,8 @@ export default async function HomePage({
 
   const getCuratedSectionCourses = (isLiveOnly: boolean) => {
     const sectionCourses = filteredCourses.filter((course) => Boolean(course.isLive) === isLiveOnly);
-    return sectionCourses.length ? sectionCourses.slice(0, 6) : filteredCourses.slice(0, 6);
+    const maxSectionCourses = 8;
+    return sectionCourses.length ? sectionCourses.slice(0, maxSectionCourses) : filteredCourses.slice(0, maxSectionCourses);
   };
 
   const curatedLiveCourses = getCuratedSectionCourses(true);
