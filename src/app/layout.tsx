@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Script from "next/script";
 import { SessionProvider } from "next-auth/react";
 import "./globals.css";
 import Header from "../components/header";
 import Footer from "../components/footer";
+import RazorpayScript from "../components/razorpay-script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,11 +37,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <Script
-        src="https://checkout.razorpay.com/v1/checkout.js"
-        strategy="beforeInteractive"
-      />
       <body className="min-h-full flex flex-col">
+        <RazorpayScript />
         <a href="#main" className="skip-link sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-white focus:px-3 focus:py-2 focus:rounded">Skip to content</a>
         <SessionProvider>
           {/* Header placed here so nav/footer are visible on every page */}
