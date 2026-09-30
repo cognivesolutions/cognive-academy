@@ -46,7 +46,7 @@ export async function GET(request: Request) {
             },
           });
         } else {
-          const amountInRupees = Number((payment.amount ?? 0) / 100);
+          const amountInRupees = Number(payment.amount ?? 0) / 100;
           const createdOrder = await prisma.order.create({
             data: {
               userId,
