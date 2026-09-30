@@ -8,12 +8,16 @@ import { usePathname } from "next/navigation";
 type CourseChild = { label: string; href: string };
 type CourseMenuItem = { label: string; href?: string; children?: CourseChild[] };
 
+const slugifyCategory = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
+const buildCourseCategoryHref = (category: string, type: "live" | "recorded") => `/courses/category/${slugifyCategory(category)}?type=${type}`;
+
 const coursesMenu: CourseMenuItem[] = [
-  { label: "Software Development", children: [{ label: "Live", href: "/courses/software-development/live" }, { label: "Self Paced", href: "/courses/software-development/recorded" }] },
-  { label: "AI Engineering", children: [{ label: "Live", href: "/courses/ai-engineering/live" }, { label: "Self Paced", href: "/courses/ai-engineering/recorded" }] },
-  { label: "Data Engineering", children: [{ label: "Live", href: "/courses/data-engineering/live" }, { label: "Self Paced", href: "/courses/data-engineering/recorded" }] },
-  { label: "Data Analytics", children: [{ label: "Live", href: "/courses/data-analytics/live" }, { label: "Self Paced", href: "/courses/data-analytics/recorded" }] },
-  { label: "Data Structures and Algorithms (DSA)", children: [{ label: "Live", href: "/courses/data-structures-algorithms/live" }, { label: "Self Paced", href: "/courses/data-structures-algorithms/recorded" }] },
+  { label: "Software Development", href: buildCourseCategoryHref("Software Development", "live"), children: [{ label: "Live", href: buildCourseCategoryHref("Software Development", "live") }, { label: "Self Paced", href: buildCourseCategoryHref("Software Development", "recorded") }] },
+  { label: "AI Engineering", href: buildCourseCategoryHref("AI Engineering", "live"), children: [{ label: "Live", href: buildCourseCategoryHref("AI Engineering", "live") }, { label: "Self Paced", href: buildCourseCategoryHref("AI Engineering", "recorded") }] },
+  { label: "Data Engineering", href: buildCourseCategoryHref("Data Engineering", "live"), children: [{ label: "Live", href: buildCourseCategoryHref("Data Engineering", "live") }, { label: "Self Paced", href: buildCourseCategoryHref("Data Engineering", "recorded") }] },
+  { label: "Data Analytics", href: buildCourseCategoryHref("Data Analytics", "live"), children: [{ label: "Live", href: buildCourseCategoryHref("Data Analytics", "live") }, { label: "Self Paced", href: buildCourseCategoryHref("Data Analytics", "recorded") }] },
+  { label: "Data Structures and Algorithms (DSA)", href: buildCourseCategoryHref("Data Structures and Algorithms (DSA)", "live"), children: [{ label: "Live", href: buildCourseCategoryHref("Data Structures and Algorithms (DSA)", "live") }, { label: "Self Paced", href: buildCourseCategoryHref("Data Structures and Algorithms (DSA)", "recorded") }] },
 ];
 
 const resourcesMenu = [
@@ -288,16 +292,13 @@ export function SiteNav() {
                       {item.label === "Courses" && hoveredCourse && hoveredItemRect && (function renderRightPopover() {
                         const active = hoveredCourse;
                         if (!active || !hoveredItemRect) return null;
-                          // prefer explicit href-based slug if available (keeps nav linked to real DB slugs)
-                          const hrefBase = hoveredItemHref ? hoveredItemHref.split("/")[2] : null;
-                          const toSlug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-                          const base = hrefBase ?? toSlug(active);
+
+                        const liveHref = buildCourseCategoryHref(active, "live");
+                        const recordedHref = buildCourseCategoryHref(active, "recorded");
 
                         const style: React.CSSProperties = {
                           position: "absolute",
-                          // anchor the right popover to the left menu's right edge (no gap)
                           left: Math.round(((leftMenuRect?.right ?? hoveredItemRect.right) ?? 0) + window.scrollX),
-                          // align vertically with the hovered item; nudge further down
                           top: Math.round((hoveredItemRect.top ?? 0) + 8 + window.scrollY),
                           minWidth: 160,
                           zIndex: 120,
@@ -326,10 +327,10 @@ export function SiteNav() {
                           >
                             <ul className="space-y-2" onKeyDown={(e) => { if (e.key === 'Escape') setOpenMenu(null); }}>
                               <li>
-                                <Link href={`/courses/${base}/live`} role="menuitem" tabIndex={0} onMouseEnter={() => setHoveredCourse(active)} onFocus={() => setHoveredCourse(active)} className="block w-full rounded-lg px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 hover:text-indigo-700 hover:font-bold focus:font-bold dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-indigo-300 transition-colors duration-150 cursor-pointer">Live Courses</Link>
+                                <Link href={liveHref} role="menuitem" tabIndex={0} onMouseEnter={() => setHoveredCourse(active)} onFocus={() => setHoveredCourse(active)} className="block w-full rounded-lg px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 hover:text-indigo-700 hover:font-bold focus:font-bold dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-indigo-300 transition-colors duration-150 cursor-pointer">Live Courses</Link>
                               </li>
                               <li>
-                                <Link href={`/courses/${base}/self-paced`} role="menuitem" tabIndex={0} onMouseEnter={() => setHoveredCourse(active)} onFocus={() => setHoveredCourse(active)} className="block w-full rounded-lg px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 hover:text-indigo-700 hover:font-bold focus:font-bold dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-indigo-300 transition-colors duration-150 cursor-pointer">Self Paced Courses</Link>
+                                <Link href={recordedHref} role="menuitem" tabIndex={0} onMouseEnter={() => setHoveredCourse(active)} onFocus={() => setHoveredCourse(active)} className="block w-full rounded-lg px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 hover:text-indigo-700 hover:font-bold focus:font-bold dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-indigo-300 transition-colors duration-150 cursor-pointer">Self Paced Courses</Link>
                               </li>
                             </ul>
                           </div>,

@@ -4,6 +4,8 @@ import bcrypt from "bcryptjs";
 
 import { prisma } from "@/lib/prisma";
 
+const authSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ?? "development-auth-secret";
+
 const BOOTSTRAP_USERS = {
   admin: {
     email: "admin@cognive.academy",
@@ -47,6 +49,7 @@ async function ensureBootstrapUser(email: string, requestedRole?: string) {
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  secret: authSecret,
   trustHost: true,
   pages: {
     signIn: "/login",

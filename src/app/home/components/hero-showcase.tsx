@@ -25,15 +25,17 @@ export default function HeroShowcase() {
   return (
     <div className="relative mx-auto flex w-full max-w-[640px] items-center justify-center py-8">
       <div className="relative h-[360px] w-[640px]">
+        <div className="absolute left-1/2 top-1/2 h-[320px] w-[320px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-500/10 blur-3xl animate-[ambientPulse_6s_ease-in-out_infinite] dark:bg-indigo-500/15" />
+
         <div className="absolute left-0 top-1/2 -translate-y-1/2 flex w-full items-center justify-center md:translate-x-[-60px]">
-          <div className="relative flex h-[220px] w-[220px] items-center justify-center overflow-hidden rounded-full border border-white/20 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.58),_transparent_22%),linear-gradient(135deg,_#4338CA_0%,_#7C3AED_38%,_#4F46E5_70%,_#2563EB_100%)] text-white shadow-[0_0_34px_rgba(124,58,237,0.42),0_18px_42px_rgba(67,56,202,0.3)] transition-all duration-300 dark:border-indigo-200/10 dark:bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.12),_transparent_26%),linear-gradient(135deg,_#1E1B4B_0%,_#6D28D9_38%,_#3B82F6_100%)] dark:shadow-[0_0_46px_rgba(124,58,237,0.3),0_20px_46px_rgba(15,23,42,0.56)]">
+          <div className="relative flex h-[220px] w-[220px] items-center justify-center overflow-hidden rounded-full border border-white/20 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.58),_transparent_22%),linear-gradient(135deg,_#4338CA_0%,_#7C3AED_38%,_#4F46E5_70%,_#2563EB_100%)] text-white shadow-[0_0_34px_rgba(124,58,237,0.42),0_18px_42px_rgba(67,56,202,0.3)] transition-all duration-300 animate-[floatSlow_8s_ease-in-out_infinite] dark:border-indigo-200/10 dark:bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.12),_transparent_26%),linear-gradient(135deg,_#1E1B4B_0%,_#6D28D9_38%,_#3B82F6_100%)] dark:shadow-[0_0_46px_rgba(124,58,237,0.3),0_20px_46px_rgba(15,23,42,0.56)]">
             <div className="absolute inset-0 rounded-full bg-white/5 backdrop-blur-[1px]" />
             <div className="relative text-center text-2xl font-extrabold leading-none">Skills & Tracks</div>
           </div>
         </div>
 
-        <div className="absolute left-0 top-0 w-full h-full flex items-center justify-center md:translate-x-[-60px]">
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[360px] h-[360px]">
+        <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center md:translate-x-[-60px]">
+          <div className="absolute left-1/2 top-1/2 h-[360px] w-[360px] -translate-x-1/2 -translate-y-1/2">
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 animate-[spin_20s_linear_infinite] motion-reduce:animate-none" style={{ width: 0, height: 0 }}>
               {visibleBadges.map((b, i) => {
                 const deg = (i / visibleBadges.length) * 360 - 90;

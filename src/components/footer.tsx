@@ -56,11 +56,11 @@ export default function Footer() {
           <nav aria-label="Courses links">
             <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Courses</h3>
             <ul className="mt-5 space-y-3 text-sm text-slate-300">
-              <li><Link href="/courses/software-development" className="transition-colors hover:text-indigo-300 hover:font-semibold">Software Development</Link></li>
-              <li><Link href="/courses/ai-engineering" className="transition-colors hover:text-indigo-300 hover:font-semibold">AI Engineering</Link></li>
-              <li><Link href="/courses/data-analyst" className="transition-colors hover:text-indigo-300 hover:font-semibold">Data Analyst</Link></li>
-              <li><Link href="/courses/data-engineering" className="transition-colors hover:text-indigo-300 hover:font-semibold">Data Engineering</Link></li>
-              <li><Link href="/courses/data-structures-algorithms" className="transition-colors hover:text-indigo-300 hover:font-semibold">Data Structures and Algorithms (DSA)</Link></li>
+              <li><Link href="/courses/category/software-development?type=live" className="transition-colors hover:text-indigo-300 hover:font-semibold">Software Development</Link></li>
+              <li><Link href="/courses/category/ai-engineering?type=live" className="transition-colors hover:text-indigo-300 hover:font-semibold">AI Engineering</Link></li>
+              <li><Link href="/courses/category/data-analytics?type=live" className="transition-colors hover:text-indigo-300 hover:font-semibold">Data Analytics</Link></li>
+              <li><Link href="/courses/category/data-engineering?type=live" className="transition-colors hover:text-indigo-300 hover:font-semibold">Data Engineering</Link></li>
+              <li><Link href="/courses/category/data-structures-and-algorithms-dsa?type=live" className="transition-colors hover:text-indigo-300 hover:font-semibold">Data Structures and Algorithms (DSA)</Link></li>
             </ul>
           </nav>
 

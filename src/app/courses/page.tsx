@@ -40,7 +40,9 @@ export default async function CoursesPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>> | Record<string, string | string[] | undefined>;
 }) {
   const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
-  const activeType = typeof resolvedSearchParams.type === "string" ? resolvedSearchParams.type.toLowerCase() : "all";
+  const activeType = typeof resolvedSearchParams.type === "string"
+    ? (resolvedSearchParams.type.toLowerCase() === "recorded" ? "recorded" : resolvedSearchParams.type.toLowerCase() === "live" ? "live" : "all")
+    : "all";
   const activeCategory = typeof resolvedSearchParams.category === "string" ? resolvedSearchParams.category : "All";
   const rawQuery = typeof resolvedSearchParams.q === "string" ? resolvedSearchParams.q.trim() : "";
   const activeLang = typeof resolvedSearchParams.lang === "string" ? resolvedSearchParams.lang.toLowerCase() : "en";
@@ -245,7 +247,7 @@ export default async function CoursesPage({
 
           <div className="mb-5 flex flex-col gap-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap gap-2">
+              <div className="flex items-center gap-2">
                 {[
                   { label: "All courses", value: "all" },
                   { label: "Live", value: "live" },
@@ -257,10 +259,10 @@ export default async function CoursesPage({
                       key={tab.value}
                       href={buildCourseHref({ type: tab.value, page: "1" })}
                       scroll={false}
-                      className={`inline-flex items-center rounded-full border px-4 py-2 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 ${
+                      className={`inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 ease-out ${
                         isActive
-                          ? "border-indigo-200 bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 text-white shadow-[0_12px_24px_rgba(99,102,241,0.28)] ring-2 ring-indigo-200/50 dark:border-indigo-500/40 dark:ring-indigo-500/35"
-                          : "border-slate-200 bg-white text-slate-700 hover:border-indigo-200 hover:text-indigo-700 hover:shadow-[0_12px_24px_rgba(99,102,241,0.12)] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-500/40 dark:hover:text-indigo-200 dark:hover:shadow-[0_12px_24px_rgba(99,102,241,0.12)]"
+                          ? "bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 text-white shadow-[0_12px_24px_rgba(99,102,241,0.28)] ring-2 ring-indigo-200/50 dark:ring-indigo-500/35"
+                          : "bg-white/70 text-slate-600 hover:text-slate-900 hover:bg-white dark:bg-slate-900/60 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800/80"
                       }`}
                     >
                       {tab.label}
@@ -286,7 +288,7 @@ export default async function CoursesPage({
                       scroll={false}
                       className={`inline-flex items-center rounded-full border px-3.5 py-2 text-sm font-medium transition-all duration-200 hover:-translate-y-0.5 ${
                         isActive
-                          ? "border-indigo-200 bg-indigo-50 text-indigo-700 shadow-[0_10px_18px_rgba(79,70,229,0.12)] ring-2 ring-indigo-200/50 dark:border-indigo-500/40 dark:bg-slate-800 dark:text-indigo-200 dark:ring-indigo-500/25"
+                          ? "border-indigo-200 bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 text-white shadow-[0_12px_24px_rgba(99,102,241,0.28)] ring-2 ring-indigo-200/50 dark:ring-indigo-500/35"
                           : "border-slate-200 bg-white/70 text-slate-600 hover:border-indigo-200 hover:text-indigo-700 hover:shadow-[0_10px_18px_rgba(79,70,229,0.08)] dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:border-indigo-500/40 dark:hover:text-indigo-200 dark:hover:shadow-[0_10px_18px_rgba(99,102,241,0.12)]"
                       }`}
                     >
@@ -295,32 +297,32 @@ export default async function CoursesPage({
                   );
                 })}
               </div>
+            </div>
 
-              <div className="flex justify-end">
-                <div className="inline-flex items-center gap-2 rounded-full bg-slate-100/85 p-1 backdrop-blur-sm dark:bg-slate-900/70">
-                  {[
-                    { label: "English", value: "en" },
-                    { label: "Hindi", value: "hi" },
-                  ].map((option) => {
-                    const isActive = activeLang === option.value;
-                    return (
-                      <Link
-                        key={option.value}
-                        href={buildCourseHref({ lang: option.value, page: "1" })}
-                        scroll={false}
-                        className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-200 ease-out ${
-                          isActive
-                            ? "bg-white/80 text-slate-900 shadow-[0_8px_22px_rgba(15,23,42,0.12)] ring-1 ring-slate-200/80 backdrop-blur-md dark:bg-slate-800/80 dark:text-white dark:shadow-[0_10px_26px_rgba(15,23,42,0.42)] dark:ring-slate-700/90"
-                            : "text-slate-600 hover:-translate-y-0.5 hover:bg-white/70 hover:text-slate-900 hover:shadow-[0_6px_18px_rgba(15,23,42,0.08)] hover:ring-1 hover:ring-slate-200/70 dark:text-slate-300 dark:hover:bg-slate-800/70 dark:hover:text-white dark:hover:shadow-[0_8px_22px_rgba(15,23,42,0.3)] dark:hover:ring-slate-700/70"
-                        }`}
-                        aria-pressed={isActive}
-                        aria-label={`Show ${option.label} courses`}
-                      >
-                        {option.label}
-                      </Link>
-                    );
-                  })}
-                </div>
+            <div className="flex justify-end">
+              <div className="inline-flex items-center gap-2 rounded-full bg-slate-100/85 p-1 backdrop-blur-sm dark:bg-slate-900/70">
+                {[
+                  { label: "English", value: "en" },
+                  { label: "Hindi", value: "hi" },
+                ].map((option) => {
+                  const isActive = activeLang === option.value;
+                  return (
+                    <Link
+                      key={option.value}
+                      href={buildCourseHref({ lang: option.value, page: "1" })}
+                      scroll={false}
+                      className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-200 ease-out ${
+                        isActive
+                          ? "bg-white/80 text-slate-900 shadow-[0_8px_22px_rgba(15,23,42,0.12)] ring-1 ring-slate-200/80 backdrop-blur-md dark:bg-slate-800/80 dark:text-white dark:shadow-[0_10px_26px_rgba(15,23,42,0.42)] dark:ring-slate-700/90"
+                          : "text-slate-600 hover:-translate-y-0.5 hover:bg-white/70 hover:text-slate-900 hover:shadow-[0_6px_18px_rgba(15,23,42,0.08)] hover:ring-1 hover:ring-slate-200/70 dark:text-slate-300 dark:hover:bg-slate-800/70 dark:hover:text-white dark:hover:shadow-[0_8px_22px_rgba(15,23,42,0.3)] dark:hover:ring-slate-700/70"
+                      }`}
+                      aria-pressed={isActive}
+                      aria-label={`Show ${option.label} courses`}
+                    >
+                      {option.label}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           </div>

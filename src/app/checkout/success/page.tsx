@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 function CheckoutSuccessContent() {
@@ -9,6 +9,35 @@ function CheckoutSuccessContent() {
   const paymentId = searchParams.get("payment_id");
   const courseSlug = searchParams.get("course_slug") ?? searchParams.get("course") ?? "";
   const continueLearningHref = courseSlug ? `/courses/${courseSlug}` : "/courses";
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setIsReady(true);
+    }, 2500);
+
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  if (!isReady) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-50 px-6 py-12 transition-colors duration-300 dark:bg-slate-950">
+        <div className="w-full max-w-2xl rounded-[32px] border border-emerald-200 bg-white p-8 shadow-[0_30px_80px_rgba(16,185,129,0.12)] transition-colors duration-300 sm:p-10 dark:border-emerald-500/30 dark:bg-slate-900/90 dark:shadow-[0_30px_80px_rgba(16,185,129,0.18)]">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 text-4xl shadow-inner shadow-emerald-200 dark:bg-emerald-500/15 dark:shadow-emerald-900/40">
+            ✓
+          </div>
+
+          <div className="mt-6 text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.26em] text-emerald-600 dark:text-emerald-300">Payment confirmed</p>
+            <h1 className="mt-4 text-4xl font-black tracking-tight text-slate-900 dark:text-white">Finalizing your enrollment...</h1>
+            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">
+              We are preparing your access details. This will finish in a moment.
+            </p>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-6 py-12 transition-colors duration-300 dark:bg-slate-950">
@@ -65,7 +94,7 @@ export default function CheckoutSuccessPage() {
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 text-4xl shadow-inner shadow-emerald-200 dark:bg-emerald-500/15 dark:shadow-emerald-900/40">
             ✓
           </div>
-          <h1 className="mt-6 text-center text-4xl font-black tracking-tight text-slate-900 dark:text-white">You’re all set.</h1>
+          <h1 className="mt-6 text-center text-4xl font-black tracking-tight text-slate-900 dark:text-white">Finalizing your enrollment...</h1>
           <p className="mt-4 text-center text-lg text-slate-600 dark:text-slate-300">Loading payment details...</p>
         </div>
       </main>
