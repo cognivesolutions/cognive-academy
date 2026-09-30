@@ -77,10 +77,29 @@ export default function CheckoutButton({
         name: "Cognive Academy",
         description: course.title,
         order_id: order.id,
-        handler: function handleSuccess(response: { razorpay_payment_id?: string }) {
-          const paymentId = response.razorpay_payment_id ?? "";
-          const route = paymentId
-            ? `/api/checkout/callback?payment_id=${encodeURIComponent(paymentId)}`
+        handler: function handleSuccess(response: {
+          razorpay_payment_id?: string;
+          razorpay_order_id?: string;
+          razorpay_signature?: string;
+        }) {
+          const params = new URLSearchParams();
+
+          if (response.razorpay_payment_id) {
+            params.set("payment_id", response.razorpay_payment_id);
+          }
+
+          if (response.razorpay_order_id) {
+            params.set("order_id", response.razorpay_order_id);
+          }
+
+          if (response.razorpay_signature) {
+            params.set("signature", response.razorpay_signature);
+          }
+
+          params.set("course_slug", course.slug);
+
+          const route = params.size > 0
+            ? `/api/checkout/callback?${params.toString()}`
             : "/dashboard";
 
           window.location.href = route;

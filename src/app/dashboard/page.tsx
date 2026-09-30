@@ -119,6 +119,13 @@ export default async function DashboardPage() {
               <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
                 {enrollments.slice(0, 4).map((enrollment) => {
                   const progress = enrollment.accessGranted ? 72 : 0;
+                  const isLiveCourse = Boolean(enrollment.course?.isLive);
+                  const courseHref = enrollment.course?.slug
+                    ? isLiveCourse
+                      ? `/courses/${enrollment.course.slug}/live`
+                      : `/courses/${enrollment.course.slug}`
+                    : "/courses";
+
                   return (
                     <div key={enrollment.id} className="group rounded-[24px] border border-slate-200 bg-[linear-gradient(180deg,_rgba(248,250,252,0.96),_rgba(241,245,249,0.9))] p-4 shadow-[0_10px_24px_rgba(15,23,42,0.03)] transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-200 hover:bg-indigo-50/30 hover:shadow-[0_16px_28px_rgba(79,70,229,0.08)] dark:border-slate-700 dark:bg-[linear-gradient(180deg,_rgba(15,23,42,0.92),_rgba(30,41,59,0.8))] dark:hover:border-indigo-500/40 dark:hover:bg-slate-800">
                       <div className="flex items-start justify-between gap-3">
@@ -147,12 +154,12 @@ export default async function DashboardPage() {
                         </div>
                       </div>
 
-                      <button
-                        type="button"
+                      <Link
+                        href={courseHref}
                         className="mt-5 inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
                       >
                         {enrollment.accessGranted ? "Resume" : "View details"}
-                      </button>
+                      </Link>
                     </div>
                   );
                 })}

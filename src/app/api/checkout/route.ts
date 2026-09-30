@@ -118,6 +118,17 @@ export async function POST(request: Request) {
     const safeAmount = Number(amount ?? course.price ?? 0);
     const amountInPaise = Math.round(safeAmount * 100);
 
+    const orderRecord = await prisma.order.create({
+      data: {
+        userId,
+        courseId: course.id,
+        amount: safeAmount,
+        currency,
+        status: "PENDING",
+        paymentProvider: "RAZORPAY",
+      },
+    });
+
     const razorpayOrder = await razorpay.orders.create({
       amount: amountInPaise,
       currency,
@@ -126,6 +137,17 @@ export async function POST(request: Request) {
         courseId: course.id,
         courseTitle: course.title,
         userId,
+      },
+    });
+
+    await prisma.order.update({
+      where: { id: orderRecord.id },
+      data: {
+        razorpayOrderId: razorpayOrder.id,
+        metadata: JSON.stringify({
+          receipt: razorpayOrder.receipt,
+          amountInPaise,
+        }),
       },
     });
 

@@ -193,7 +193,7 @@ export default async function CourseDetailPage({
                 <div className="mt-5">
                   {isEnrolled ? (
                     <a
-                      href={`/courses/${course.slug}/live`}
+                      href={course.isLive ? `/courses/${course.slug}/live` : `/courses/${course.slug}`}
                       className="inline-flex w-full items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-5 py-3.5 text-base font-semibold text-white shadow-[0_16px_36px_rgba(16,185,129,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_20px_42px_rgba(16,185,129,0.32)]"
                     >
                       Continue learning

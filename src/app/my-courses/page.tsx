@@ -184,55 +184,59 @@ export default async function MyCoursesPage({
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {filteredCourses.map((item) => (
-                <article key={item.id} className="group flex h-full flex-col rounded-[26px] border border-slate-200 bg-[linear-gradient(180deg,_rgba(248,250,252,0.9),_rgba(241,245,249,0.96))] p-4 shadow-[0_12px_24px_rgba(15,23,42,0.03)] transition-all duration-300 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-[0_18px_36px_rgba(99,102,241,0.08)] dark:border-slate-700 dark:bg-[linear-gradient(180deg,_rgba(15,23,42,0.92),_rgba(30,41,59,0.8))] dark:hover:border-indigo-500/40">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="inline-flex rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
-                      {item.type}
+              {filteredCourses.map((item) => {
+                const openCourseHref = item.course.isLive ? `/courses/${item.course.slug}/live` : `/courses/${item.course.slug}`;
+
+                return (
+                  <article key={item.id} className="group flex h-full flex-col rounded-[26px] border border-slate-200 bg-[linear-gradient(180deg,_rgba(248,250,252,0.9),_rgba(241,245,249,0.96))] p-4 shadow-[0_12px_24px_rgba(15,23,42,0.03)] transition-all duration-300 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-[0_18px_36px_rgba(99,102,241,0.08)] dark:border-slate-700 dark:bg-[linear-gradient(180deg,_rgba(15,23,42,0.92),_rgba(30,41,59,0.8))] dark:hover:border-indigo-500/40">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="inline-flex rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
+                        {item.type}
+                      </div>
+                      <span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                        {item.progress}%
+                      </span>
                     </div>
-                    <span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-                      {item.progress}%
-                    </span>
-                  </div>
 
-                  <div className="mt-4 flex-1">
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">{item.course.title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                      {item.course.shortDescription ?? "Continue your learning plan and build real-world outcomes."}
-                    </p>
-                  </div>
-
-                  <div className="mt-4">
-                    <div className="mb-2 flex items-center justify-between text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                      <span>Progress</span>
-                      <span>{item.progress}%</span>
+                    <div className="mt-4 flex-1">
+                      <h3 className="text-xl font-bold text-slate-900 dark:text-white">{item.course.title}</h3>
+                      <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                        {item.course.shortDescription ?? "Continue your learning plan and build real-world outcomes."}
+                      </p>
                     </div>
-                    <div className="h-2.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-                      <div className="h-full rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500" style={{ width: `${item.progress}%` }} />
+
+                    <div className="mt-4">
+                      <div className="mb-2 flex items-center justify-between text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                        <span>Progress</span>
+                        <span>{item.progress}%</span>
+                      </div>
+                      <div className="h-2.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                        <div className="h-full rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500" style={{ width: `${item.progress}%` }} />
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="mt-4 flex items-center justify-between gap-3 text-sm text-slate-600 dark:text-slate-300">
-                    <span>{item.course.level}</span>
-                    <span>{item.course.category}</span>
-                  </div>
+                    <div className="mt-4 flex items-center justify-between gap-3 text-sm text-slate-600 dark:text-slate-300">
+                      <span>{item.course.level}</span>
+                      <span>{item.course.category}</span>
+                    </div>
 
-                  <div className="mt-5 flex gap-3">
-                    <Link
-                      href={`/courses/${item.course.slug}`}
-                      className="inline-flex flex-1 items-center justify-center rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
-                    >
-                      Open course
-                    </Link>
-                    <Link
-                      href={`/courses/${item.course.slug}#curriculum`}
-                      className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-indigo-500/40 dark:hover:text-indigo-200"
-                    >
-                      Syllabus
-                    </Link>
-                  </div>
-                </article>
-              ))}
+                    <div className="mt-5 flex gap-3">
+                      <Link
+                        href={openCourseHref}
+                        className="inline-flex flex-1 items-center justify-center rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
+                      >
+                        Open course
+                      </Link>
+                      <Link
+                        href={`/courses/${item.course.slug}#curriculum`}
+                        className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-indigo-500/40 dark:hover:text-indigo-200"
+                      >
+                        Syllabus
+                      </Link>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           )}
         </section>
