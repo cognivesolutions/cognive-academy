@@ -197,7 +197,7 @@ export default async function HomePage({
       <div id="courses">
         {/* Live Classroom Courses section */}
       <section id="live-courses" className="scroll-mt-28 mx-auto max-w-6xl px-6 py-12">
-        <div className="mb-8">
+        <div className="mb-5">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Live Classroom</p>
           <h2 className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">Join Live Classroom Courses</h2>
         </div>
@@ -208,7 +208,7 @@ export default async function HomePage({
 
       {/* Recorded / Self-Paced Courses Section */}
       <section id="recorded-courses" className="scroll-mt-28 mx-auto max-w-6xl px-6 py-12">
-        <div className="mb-8">
+        <div className="mb-5">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Recorded</p>
           <h2 className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">Recorded & Self-Paced Courses</h2>
         </div>

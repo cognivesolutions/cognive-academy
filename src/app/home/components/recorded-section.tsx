@@ -24,7 +24,7 @@ export default function RecordedSection({ courses }: { courses: Course[] }) {
   const current = lang === "en" ? enToShow : hiToShow;
 
   return (
-    <div>
+    <div className="rounded-[30px] border border-slate-200 bg-[linear-gradient(180deg,_rgba(255,255,255,0.72),_rgba(248,250,252,0.9))] p-4 shadow-[0_18px_40px_rgba(15,23,42,0.04)] backdrop-blur-sm dark:border-slate-700 dark:bg-[linear-gradient(180deg,_rgba(15,23,42,0.82),_rgba(17,24,39,0.9))] dark:shadow-[0_18px_40px_rgba(15,23,42,0.28)]">
       <div className="mb-6 flex items-center justify-end">
         <CoursesSwitcher
           leftLabel={"English"}
