@@ -306,7 +306,7 @@ const courseCatalog = [
     isPublished: true,
     isLive: true,
     language: "en",
-    imageUrl: "https://images.unsplash.com/photo-1558494949cc3f4d17a2d2d1b7d8a7ff5?auto=format&fit=crop&w=1200&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1200&q=80",
     instructorName: "Vishwajeet Singh",
     instructorTitle: "Data Platform Instructor",
     previewLectureUrl: "https://www.youtube.com/watch?v=yeY2mA7C7z4",
