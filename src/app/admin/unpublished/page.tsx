@@ -7,6 +7,7 @@ import { AdminMessage } from "../admin-message.client";
 import { CourseSearchInput } from "../components/course-search-input";
 import { CourseSelect } from "../components/course-select";
 import { PaginationPageSizeSelect } from "../components/pagination-page-size-select";
+import { PaginationDots } from "@/components/pagination-dots";
 import UnpublishedCourseGrid from "./unpublished-course-grid.client";
 
 export default async function UnpublishedPage({
@@ -36,6 +37,20 @@ export default async function UnpublishedPage({
   const rawPageSize = Array.isArray(resolvedSearchParams.pageSize) ? resolvedSearchParams.pageSize[0] : resolvedSearchParams.pageSize ?? "10";
   const isAllPageSize = rawPageSize === "all" || rawPageSize === "";
   const pageSize = isAllPageSize ? Number.MAX_SAFE_INTEGER : Math.max(Number(rawPageSize) || 10, 1);
+
+  const buildPageHref = (targetPage: number) => {
+    const params = new URLSearchParams({
+      page: String(targetPage),
+      pageSize: isAllPageSize ? "all" : String(pageSize),
+      q: q || "",
+      category: categoryParam || "",
+      level: levelParam || "",
+      language: languageParam || "",
+      format: formatParam ?? "",
+    });
+
+    return `?${params.toString()}`;
+  };
 
   const where: any = { isPublished: false };
   if (q) {
@@ -355,27 +370,14 @@ export default async function UnpublishedPage({
                     {Math.min((page - 1) * pageSize + 1, total)}-{Math.min(page * pageSize, total)} of {total}
                   </span>
 
-                  <div className="flex items-center gap-0.5">
-                    <Link
-                      href={`?page=${Math.max(page - 1, 1)}&pageSize=${isAllPageSize ? "all" : pageSize}&q=${encodeURIComponent(q || "")}&category=${encodeURIComponent(categoryParam || "")}&level=${encodeURIComponent(levelParam || "")}&language=${encodeURIComponent(languageParam || "")}&format=${encodeURIComponent(formatParam ?? "")}`}
-                      aria-label="Previous page"
-                      className={`inline-flex h-7 w-7 items-center justify-center rounded-full border text-sm transition ${page === 1 ? "pointer-events-none border-slate-200 bg-slate-100 text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500" : "border-slate-200 bg-white text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.04)] hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:text-white"}`}
-                    >
-                      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-3 w-3">
-                        <path d="M12.5 5.5L7.5 10l5 4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </Link>
-
-                    <Link
-                      href={`?page=${Math.min(page + 1, totalPages)}&pageSize=${isAllPageSize ? "all" : pageSize}&q=${encodeURIComponent(q || "")}&category=${encodeURIComponent(categoryParam || "")}&level=${encodeURIComponent(levelParam || "")}&language=${encodeURIComponent(languageParam || "")}&format=${encodeURIComponent(formatParam ?? "")}`}
-                      aria-label="Next page"
-                      className={`inline-flex h-7 w-7 items-center justify-center rounded-full border text-sm transition ${page >= totalPages ? "pointer-events-none border-slate-200 bg-slate-100 text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500" : "border-slate-200 bg-white text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.04)] hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:text-white"}`}
-                    >
-                      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-3 w-3">
-                        <path d="M7.5 14.5L12.5 10l-5-4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </Link>
-                  </div>
+                  <PaginationDots
+                    currentPage={Math.max(0, page - 1)}
+                    totalPages={Math.max(1, totalPages)}
+                    showSinglePage={true}
+                    pageHrefs={Array.from({ length: totalPages }, (_, index) => buildPageHref(index + 1))}
+                    previousHref={page > 1 ? buildPageHref(page - 1) : undefined}
+                    nextHref={page < totalPages ? buildPageHref(page + 1) : undefined}
+                  />
                 </div>
               </div>
             </>

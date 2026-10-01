@@ -5,6 +5,7 @@ import { AnimatedValue } from "@/components/animated-stat-card";
 import { BackToTopButton } from "@/components/back-to-top";
 import { CourseSearchField } from "./course-search-field";
 import { CoursesCarousel } from "./courses-carousel";
+import { getCourseMetricCards } from "@/lib/course-metrics";
 
 const formatCategory = (value?: string | null) => {
   const raw = value?.trim();
@@ -93,6 +94,15 @@ export default async function CoursesPage({
       durationHours: true,
       isLive: true,
       language: true,
+      modules: {
+        select: {
+          lectures: {
+            select: {
+              durationSeconds: true,
+            },
+          },
+        },
+      },
     },
   });
 

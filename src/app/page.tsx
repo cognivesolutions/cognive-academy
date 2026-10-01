@@ -48,6 +48,15 @@ export default async function HomePage({
       isLive: true,
       language: true,
       createdAt: true,
+      modules: {
+        select: {
+          lectures: {
+            select: {
+              durationSeconds: true,
+            },
+          },
+        },
+      },
     },
   });
 

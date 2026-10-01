@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 type CourseChild = { label: string; href: string };
 type CourseMenuItem = { label: string; href?: string; children?: CourseChild[] };
@@ -13,11 +13,11 @@ const slugifyCategory = (value: string) => value.toLowerCase().replace(/[^a-z0-9
 const buildCourseCategoryHref = (category: string, type: "live" | "recorded") => `/courses/category/${slugifyCategory(category)}?type=${type}`;
 
 const coursesMenu: CourseMenuItem[] = [
-  { label: "Software Development", href: buildCourseCategoryHref("Software Development", "live"), children: [{ label: "Live", href: buildCourseCategoryHref("Software Development", "live") }, { label: "Self Paced", href: buildCourseCategoryHref("Software Development", "recorded") }] },
-  { label: "AI Engineering", href: buildCourseCategoryHref("AI Engineering", "live"), children: [{ label: "Live", href: buildCourseCategoryHref("AI Engineering", "live") }, { label: "Self Paced", href: buildCourseCategoryHref("AI Engineering", "recorded") }] },
-  { label: "Data Engineering", href: buildCourseCategoryHref("Data Engineering", "live"), children: [{ label: "Live", href: buildCourseCategoryHref("Data Engineering", "live") }, { label: "Self Paced", href: buildCourseCategoryHref("Data Engineering", "recorded") }] },
-  { label: "Data Analytics", href: buildCourseCategoryHref("Data Analytics", "live"), children: [{ label: "Live", href: buildCourseCategoryHref("Data Analytics", "live") }, { label: "Self Paced", href: buildCourseCategoryHref("Data Analytics", "recorded") }] },
-  { label: "Data Structures and Algorithms (DSA)", href: buildCourseCategoryHref("Data Structures and Algorithms (DSA)", "live"), children: [{ label: "Live", href: buildCourseCategoryHref("Data Structures and Algorithms (DSA)", "live") }, { label: "Self Paced", href: buildCourseCategoryHref("Data Structures and Algorithms (DSA)", "recorded") }] },
+  { label: "Software Development", href: buildCourseCategoryHref("Software Development", "live"), children: [{ label: "Live", href: buildCourseCategoryHref("Software Development", "live") }, { label: "Recorded", href: buildCourseCategoryHref("Software Development", "recorded") }] },
+  { label: "AI Engineering", href: buildCourseCategoryHref("AI Engineering", "live"), children: [{ label: "Live", href: buildCourseCategoryHref("AI Engineering", "live") }, { label: "Recorded", href: buildCourseCategoryHref("AI Engineering", "recorded") }] },
+  { label: "Data Engineering", href: buildCourseCategoryHref("Data Engineering", "live"), children: [{ label: "Live", href: buildCourseCategoryHref("Data Engineering", "live") }, { label: "Recorded", href: buildCourseCategoryHref("Data Engineering", "recorded") }] },
+  { label: "Data Analytics", href: buildCourseCategoryHref("Data Analytics", "live"), children: [{ label: "Live", href: buildCourseCategoryHref("Data Analytics", "live") }, { label: "Recorded", href: buildCourseCategoryHref("Data Analytics", "recorded") }] },
+  { label: "Data Structures and Algorithms (DSA)", href: buildCourseCategoryHref("Data Structures and Algorithms (DSA)", "live"), children: [{ label: "Live", href: buildCourseCategoryHref("Data Structures and Algorithms (DSA)", "live") }, { label: "Recorded", href: buildCourseCategoryHref("Data Structures and Algorithms (DSA)", "recorded") }] },
 ];
 
 const resourcesMenu = [
@@ -47,11 +47,14 @@ const navItems: NavItem[] = [
 
 export function SiteNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [hoveredCourse, setHoveredCourse] = useState<string | null>(null);
   const closeTimeoutRef = useRef<number | null>(null);
   const navRef = useRef<HTMLDivElement | null>(null);
   const leftMenuRef = useRef<HTMLDivElement | null>(null);
+  const leftMenuDropdownRef = useRef<HTMLDivElement | null>(null);
+  const portalMenuRef = useRef<HTMLDivElement | null>(null);
   const [leftMenuRect, setLeftMenuRect] = useState<DOMRect | null>(null);
   const [hoveredItemRect, setHoveredItemRect] = useState<DOMRect | null>(null);
   const [hoveredItemHref, setHoveredItemHref] = useState<string | null>(null);
@@ -82,6 +85,19 @@ export function SiteNav() {
       window.removeEventListener("scroll", updateRect, true);
     };
   }, [openMenu]);
+
+  const scheduleMenuClose = () => {
+    if (closeTimeoutRef.current) {
+      window.clearTimeout(closeTimeoutRef.current);
+    }
+
+    closeTimeoutRef.current = window.setTimeout(() => {
+      if (!popoverHoverRef.current) {
+        setOpenMenu(null);
+      }
+      closeTimeoutRef.current = null;
+    }, 250);
+  };
 
   const routeActiveLabel = useMemo(() => {
     if (!pathname) return null;
@@ -115,7 +131,14 @@ export function SiteNav() {
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
-      if (navRef.current && !navRef.current.contains(event.target as Node)) {
+      const target = event.target as Node | null;
+      if (!target) return;
+
+      const insideNav = navRef.current?.contains(target);
+      const insideLeftMenu = leftMenuDropdownRef.current?.contains(target);
+      const insidePortalMenu = portalMenuRef.current?.contains(target);
+
+      if (!insideNav && !insideLeftMenu && !insidePortalMenu) {
         setOpenMenu(null);
       }
     }
@@ -131,8 +154,21 @@ export function SiteNav() {
     if (openMenu !== "Courses") {
       setHoveredCourse(null);
       setHoveredItemRect(null);
+      return;
     }
-  }, [openMenu]);
+
+    if (!hoveredCourse && coursesMenu.length > 0) {
+      setHoveredCourse(coursesMenu[0].label);
+      const firstTarget = menuFirstRefs.current["Courses"];
+      if (firstTarget) {
+        try {
+          setHoveredItemRect(firstTarget.getBoundingClientRect());
+        } catch {
+          setHoveredItemRect(null);
+        }
+      }
+    }
+  }, [openMenu, hoveredCourse]);
 
   // When a menu opens, focus its first item for keyboard users
   useEffect(() => {
@@ -161,15 +197,24 @@ export function SiteNav() {
                     window.clearTimeout(closeTimeoutRef.current);
                     closeTimeoutRef.current = null;
                   }
+                  popoverHoverRef.current = true;
                   setOpenMenu(item.label);
                 }}
-                onMouseLeave={() => {
-                  closeTimeoutRef.current = window.setTimeout(() => {
-                    if (!popoverHoverRef.current) {
-                      setOpenMenu(null);
-                    }
-                    closeTimeoutRef.current = null;
-                  }, 250);
+                onMouseLeave={(event) => {
+                  const relatedTarget = event.relatedTarget;
+                  const isNode = relatedTarget instanceof Node;
+                  const isStillInsideDropdown = Boolean(
+                    isNode && (
+                      leftMenuDropdownRef.current?.contains(relatedTarget) ||
+                      portalMenuRef.current?.contains(relatedTarget)
+                    )
+                  );
+
+                  popoverHoverRef.current = isStillInsideDropdown;
+
+                  if (!isStillInsideDropdown) {
+                    scheduleMenuClose();
+                  }
                 }}
               >
                 <div className="flex items-center justify-center gap-1 rounded-full px-3 py-2 transition focus-within:text-indigo-700 dark:focus-within:text-indigo-300">
@@ -180,6 +225,7 @@ export function SiteNav() {
                         ? "text-indigo-700 dark:text-indigo-300"
                         : "text-slate-700 hover:text-slate-800 dark:text-slate-200 dark:hover:text-slate-100"
                     }`}
+                    onClick={() => item.label === "Courses" && setHoveredCourse(coursesMenu[0]?.label ?? null)}
                   >
                     <span className="inline-flex translate-y-0.5 items-center gap-1.5">
                       <span
@@ -200,6 +246,9 @@ export function SiteNav() {
                     aria-expanded={isOpen}
                     aria-label={`Open ${item.label} menu`}
                     onClick={() => {
+                      if (!isOpen && item.label === "Courses") {
+                        setHoveredCourse(coursesMenu[0]?.label ?? null);
+                      }
                       setOpenMenu(isOpen ? null : item.label);
                     }}
                     onKeyDown={(e) => {
@@ -225,22 +274,31 @@ export function SiteNav() {
                   <div
                     role="menu"
                     aria-label={item.label}
+                    ref={leftMenuDropdownRef}
                     className="absolute left-0 top-full z-50 mt-3 flex items-start gap-0 pointer-events-auto"
                     onMouseEnter={() => {
                       if (closeTimeoutRef.current) {
                         window.clearTimeout(closeTimeoutRef.current);
                         closeTimeoutRef.current = null;
                       }
-                      popoverHoverRef.current = false;
+                      popoverHoverRef.current = true;
                       setOpenMenu(item.label);
                     }}
-                    onMouseLeave={() => {
-                      closeTimeoutRef.current = window.setTimeout(() => {
-                        if (!popoverHoverRef.current) {
-                          setOpenMenu(null);
-                        }
-                        closeTimeoutRef.current = null;
-                      }, 250);
+                    onMouseLeave={(event) => {
+                      const relatedTarget = event.relatedTarget;
+                      const isNode = relatedTarget instanceof Node;
+                      const isStillInsideDropdown = Boolean(
+                        isNode && (
+                          leftMenuDropdownRef.current?.contains(relatedTarget) ||
+                          portalMenuRef.current?.contains(relatedTarget)
+                        )
+                      );
+
+                      popoverHoverRef.current = isStillInsideDropdown;
+
+                      if (!isStillInsideDropdown) {
+                        scheduleMenuClose();
+                      }
                     }}
                     onKeyDown={(e) => {
                       if (e.key === "Escape") {
@@ -256,6 +314,11 @@ export function SiteNav() {
                             href={subItem.href ?? '#'}
                             role="menuitem"
                             tabIndex={0}
+                            ref={(node) => {
+                              if (item.label === "Courses" && idx === 0) {
+                                menuFirstRefs.current["Courses"] = node;
+                              }
+                            }}
                             onMouseEnter={(e) => {
                               setHoveredCourse(subItem.label);
                               setHoveredItemHref(subItem.href ?? null);
@@ -276,11 +339,15 @@ export function SiteNav() {
                                 setHoveredItemRect(null);
                               }
                             }}
-                            onClick={() => setOpenMenu(null)}
-                            className={`block w-full text-left rounded-lg px-3 py-2.5 text-sm transition cursor-pointer ${
+                            onClick={(event) => {
+                              event.preventDefault();
+                              setOpenMenu(null);
+                              router.push(subItem.href ?? "/courses");
+                            }}
+                            className={`block w-full text-left rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer ${
                               hoveredCourse === subItem.label
-                                ? "bg-slate-100 text-indigo-700 font-bold dark:bg-slate-800/60 dark:text-indigo-300"
-                                : "text-slate-600 hover:bg-white/70 hover:text-indigo-700 hover:font-bold focus:font-bold dark:text-slate-200"
+                                ? "bg-indigo-50 text-indigo-700 shadow-[inset_0_0_0_1px_rgba(99,102,241,0.05)] ring-1 ring-indigo-100 dark:bg-slate-800/80 dark:text-indigo-300 dark:ring-indigo-500/20"
+                                : "text-slate-600 hover:bg-slate-100 hover:text-indigo-700 hover:font-bold focus:font-bold dark:text-slate-200 dark:hover:bg-slate-800/60"
                             }`}
                           >
                             {subItem.label}
@@ -300,12 +367,13 @@ export function SiteNav() {
                           position: "absolute",
                           left: Math.round(((leftMenuRect?.right ?? hoveredItemRect.right) ?? 0) + window.scrollX),
                           top: Math.round((hoveredItemRect.top ?? 0) + 8 + window.scrollY),
-                          minWidth: 160,
+                          minWidth: 180,
                           zIndex: 120,
                         };
 
                         return createPortal(
                           <div
+                            ref={portalMenuRef}
                             role="menu"
                             aria-label={`${active} course options`}
                             onMouseEnter={() => {
@@ -315,22 +383,57 @@ export function SiteNav() {
                                 closeTimeoutRef.current = null;
                               }
                             }}
-                            onMouseLeave={() => {
-                              popoverHoverRef.current = false;
-                              closeTimeoutRef.current = window.setTimeout(() => {
-                                setOpenMenu(null);
-                                closeTimeoutRef.current = null;
-                              }, 250);
+                            onMouseLeave={(event) => {
+                              const relatedTarget = event.relatedTarget;
+                              const isNode = relatedTarget instanceof Node;
+                              const isStillInsideDropdown = Boolean(
+                                isNode && (
+                                  leftMenuDropdownRef.current?.contains(relatedTarget) ||
+                                  portalMenuRef.current?.contains(relatedTarget)
+                                )
+                              );
+
+                              popoverHoverRef.current = isStillInsideDropdown;
+
+                              if (!isStillInsideDropdown) {
+                                scheduleMenuClose();
+                              }
                             }}
                             style={style}
-                            className="rounded-2xl border border-white bg-white p-3 shadow-[0_14px_36px_rgba(15,23,42,0.16),0_0_0_1px_rgba(255,255,255,0.38)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_14px_36px_rgba(2,6,23,0.7),0_0_0_1px_rgba(148,163,184,0.12)]"
+                            className="rounded-2xl border border-slate-200 bg-white/95 p-2.5 shadow-[0_20px_48px_rgba(15,23,42,0.16)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/95 dark:shadow-[0_20px_48px_rgba(2,6,23,0.7)]"
                           >
-                            <ul className="space-y-2" onKeyDown={(e) => { if (e.key === 'Escape') setOpenMenu(null); }}>
+                            <ul className="space-y-1.5" onKeyDown={(e) => { if (e.key === 'Escape') setOpenMenu(null); }}>
                               <li>
-                                <Link href={liveHref} role="menuitem" tabIndex={0} onMouseEnter={() => setHoveredCourse(active)} onFocus={() => setHoveredCourse(active)} className="block w-full rounded-lg px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 hover:text-indigo-700 hover:font-bold focus:font-bold dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-indigo-300 transition-colors duration-150 cursor-pointer">Live Courses</Link>
+                                <button
+                                  type="button"
+                                  role="menuitem"
+                                  tabIndex={0}
+                                  onClick={() => {
+                                    setOpenMenu(null);
+                                    router.push(liveHref);
+                                  }}
+                                  onMouseEnter={() => setHoveredCourse(active)}
+                                  onFocus={() => setHoveredCourse(active)}
+                                  className="block w-full rounded-xl px-3 py-2.5 text-left text-sm font-medium text-slate-600 transition-all duration-150 hover:bg-indigo-50 hover:text-indigo-700 hover:font-bold focus:font-bold dark:text-slate-300 dark:hover:bg-slate-800/70 dark:hover:text-indigo-300"
+                                >
+                                  Live Courses
+                                </button>
                               </li>
                               <li>
-                                <Link href={recordedHref} role="menuitem" tabIndex={0} onMouseEnter={() => setHoveredCourse(active)} onFocus={() => setHoveredCourse(active)} className="block w-full rounded-lg px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 hover:text-indigo-700 hover:font-bold focus:font-bold dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-indigo-300 transition-colors duration-150 cursor-pointer">Self Paced Courses</Link>
+                                <button
+                                  type="button"
+                                  role="menuitem"
+                                  tabIndex={0}
+                                  onClick={() => {
+                                    setOpenMenu(null);
+                                    router.push(recordedHref);
+                                  }}
+                                  onMouseEnter={() => setHoveredCourse(active)}
+                                  onFocus={() => setHoveredCourse(active)}
+                                  className="block w-full rounded-xl px-3 py-2.5 text-left text-sm font-medium text-slate-600 transition-all duration-150 hover:bg-indigo-50 hover:text-indigo-700 hover:font-bold focus:font-bold dark:text-slate-300 dark:hover:bg-slate-800/70 dark:hover:text-indigo-300"
+                                >
+                                  Recorded Courses
+                                </button>
                               </li>
                             </ul>
                           </div>,

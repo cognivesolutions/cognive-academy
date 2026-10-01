@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { loadRazorpayScript } from "./razorpay-script";
 
 declare global {
   interface Window {
@@ -64,6 +65,7 @@ export default function CheckoutButton({
       }
 
       const { order, keyId } = data;
+      await loadRazorpayScript();
       const RazorpayCtor = window.Razorpay;
 
       if (!RazorpayCtor) {

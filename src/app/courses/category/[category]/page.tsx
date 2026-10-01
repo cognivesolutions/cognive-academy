@@ -75,6 +75,11 @@ export default async function CategoryCoursePage({
   const categorySlug = decodeURIComponent(resolvedParams.category ?? "");
   const requestedType = resolvedSearchParams.type === "recorded" ? "recorded" : "live";
   const requestedLang = resolvedSearchParams.lang === "hi" ? "hi" : "en";
+  const requestedPage = (() => {
+    const rawValue = typeof resolvedSearchParams.page === "string" ? resolvedSearchParams.page : "1";
+    const parsed = Number(rawValue);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+  })();
 
   const courses = await prisma.course.findMany({
     where: { isPublished: true },
@@ -96,6 +101,15 @@ export default async function CategoryCoursePage({
       isLive: true,
       language: true,
       createdAt: true,
+      modules: {
+        select: {
+          lectures: {
+            select: {
+              durationSeconds: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -130,6 +144,14 @@ export default async function CategoryCoursePage({
 
   const liveCourses = categoryCourses.filter((course) => Boolean(course.isLive));
   const recordedCourses = categoryCourses.filter((course) => !course.isLive);
+
+  const visibleCourses = (requestedType === "recorded" ? recordedCourses : liveCourses).filter((course) => {
+    const language = normalizeLanguage((course as any).language ?? (course as any).lang ?? (course as any).locale);
+    return requestedLang === "hi" ? language === "hi" : language === "en";
+  });
+  const pageSize = 6;
+  const totalPages = Math.max(1, Math.ceil(visibleCourses.length / pageSize));
+  const safePage = Math.min(Math.max(1, requestedPage), totalPages);
 
   const heroStats = [
     { label: "Courses", value: String(categoryCourses.length) },
@@ -184,6 +206,9 @@ export default async function CategoryCoursePage({
         <CategoryResultControls
           liveCourses={liveCourses}
           recordedCourses={recordedCourses}
+          pageSize={pageSize}
+          currentPage={safePage}
+          totalPages={totalPages}
         />
       </div>
     </main>
