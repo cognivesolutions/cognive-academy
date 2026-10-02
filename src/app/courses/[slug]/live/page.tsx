@@ -51,11 +51,14 @@ export default async function LivePage({ params }: Props) {
         <div className="mb-6 rounded-[28px] border border-slate-700 bg-[linear-gradient(135deg,rgba(15,23,42,0.96),rgba(30,41,59,0.9),rgba(49,46,129,0.7))] p-5 shadow-[0_18px_40px_rgba(15,23,42,0.35)]">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-indigo-300">Live learning</p>
+            <p className="inline-flex items-center justify-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+              <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-emerald-500 dark:bg-emerald-400" aria-hidden="true" />
+              Live learning
+            </p>
             <h2 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">Live sessions for {course.title}</h2>
           </div>
-          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-300">
-            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="inline-flex items-center justify-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+            <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-emerald-500 dark:bg-emerald-400" />
             {liveLectures.length} scheduled
           </span>
         </div>

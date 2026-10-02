@@ -49,7 +49,19 @@ export default async function CourseDetailPage({
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:py-12">
         <div className="overflow-hidden rounded-[36px] border border-slate-200 bg-white/85 p-5 shadow-[0_20px_70px_rgba(15,23,42,0.08)] backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/80 sm:p-6 lg:p-8">
           <div className="mb-3 flex items-center justify-end gap-3">
-            <span className="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200">
+            <span
+              className={`inline-flex items-center justify-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${
+                course.isLive
+                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
+                  : "bg-slate-100 text-slate-700 dark:bg-slate-700/80 dark:text-slate-200"
+              }`}
+            >
+              <span
+                className={`h-2 w-2 shrink-0 rounded-full ${
+                  course.isLive ? "animate-pulse bg-emerald-500 dark:bg-emerald-400" : "bg-slate-400"
+                }`}
+                aria-hidden="true"
+              />
               {course.isLive ? "Live learning" : "Recorded learning"}
             </span>
           </div>
@@ -155,32 +167,36 @@ export default async function CourseDetailPage({
             </section>
 
             <aside className="lg:pt-10">
-              <div className="sticky top-8 overflow-hidden rounded-[30px] border border-slate-200 bg-[linear-gradient(180deg,_rgba(255,255,255,0.96),_rgba(248,250,252,0.98))] p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)] transition-all duration-300 ease-out hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_30px_90px_rgba(15,23,42,0.12)] hover:ring-1 hover:ring-indigo-100/80 dark:border-slate-700 dark:bg-[linear-gradient(180deg,_rgba(15,23,42,0.96),_rgba(17,24,39,0.98))] dark:shadow-[0_22px_60px_rgba(2,6,23,0.35)] dark:hover:border-slate-600 dark:hover:ring-indigo-500/20">
+              <div className="sticky top-8 overflow-hidden rounded-[30px] border border-slate-200 bg-[linear-gradient(180deg,_rgba(255,255,255,0.96),_rgba(248,250,252,0.98))] p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)] transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_32px_100px_rgba(79,70,229,0.12)] hover:ring-1 hover:ring-indigo-100/80 dark:border-slate-700 dark:bg-[linear-gradient(180deg,_rgba(15,23,42,0.96),_rgba(17,24,39,0.98))] dark:shadow-[0_22px_60px_rgba(2,6,23,0.35)] dark:hover:border-indigo-500/20 dark:hover:ring-indigo-500/10">
                 <div className="mb-4 flex items-center justify-between gap-2">
-                  <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
-                    Limited access
-                  </span>
-                  <span className="rounded-full bg-slate-900 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white dark:bg-slate-100 dark:text-slate-900">
+                  <span className="inline-flex items-center rounded-full border border-amber-300 bg-gradient-to-r from-amber-200 via-yellow-100 to-orange-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-amber-900 shadow-[0_8px_18px_rgba(245,158,11,0.18)] dark:border-amber-500/40 dark:from-amber-500/20 dark:via-yellow-500/15 dark:to-orange-500/20 dark:text-amber-100">
                     Best value
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-amber-900 shadow-[0_8px_18px_rgba(245,158,11,0.22)] dark:border-amber-500/50 dark:from-amber-500/80 dark:via-yellow-500/80 dark:to-orange-500/80 dark:text-yellow-50">
+                    <span aria-hidden="true">★</span>
+                    Limited offer
                   </span>
                 </div>
 
-                <div className="text-sm font-medium text-slate-500 dark:text-slate-400">Course price</div>
+                <div className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Course price</div>
                 <div className="mt-2 flex items-end gap-3">
-                  <span className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">₹{price.toLocaleString("en-IN")}</span>
-                  <span className="pb-1 text-lg text-slate-400 line-through">₹{(price * 1.35).toLocaleString("en-IN")}</span>
+                  <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 bg-clip-text text-4xl font-black tracking-tight text-transparent dark:from-indigo-300 dark:via-violet-300 dark:to-sky-300">₹{price.toLocaleString("en-IN")}</span>
+                  <span className="pb-1 text-lg text-slate-400 line-through decoration-slate-400/80">₹{(price * 1.35).toLocaleString("en-IN")}</span>
                 </div>
 
                 <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                  Learn from real-world product, architecture, and experimentation patterns with lifetime access and mentor support.
+                  Learn from real-world product, architecture, and placement-focused mentorship with course-based access built for career growth.
                 </p>
 
                 <div className="mt-5 space-y-2.5">
                   {[
-                    "Lifetime access",
-                    "Recorded + live learning support",
-                    "Downloadable resources",
-                    "Mentor Q&A support",
+                    "Live mentorship + private doubt support",
+                    "Project-driven learning with practical support",
+                    "Course access for the selected learning path",
+                    "Resume + LinkedIn profile making support",
+                    "Career-ready guidance from day one",
+                    "Interview prep + placement support",
+                    "Certificate of completion",
                   ].map((item) => (
                     <div key={item} className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white/70 px-3 py-2 text-sm font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">
                       <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-[10px] text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">✓</span>
@@ -208,6 +224,7 @@ export default async function CourseDetailPage({
                       }}
                       userId={session?.user?.id ?? ""}
                       isAuthenticated={Boolean(session?.user?.id)}
+                      buttonLabel="Enroll now"
                     />
                   )}
                 </div>
