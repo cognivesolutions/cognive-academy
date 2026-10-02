@@ -25,8 +25,52 @@ export function CreateCourseForm() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [badgeSelection, setBadgeSelection] = useState<Record<string, boolean>>({
+    isNew: false,
+    isPromotional: false,
+    isBestValue: false,
+    featured: false,
+  });
 
   const slugValue = useMemo(() => slugify(title), [title]);
+
+  const badgeOptions = [
+    {
+      name: "isNew",
+      label: "New",
+      icon: "✦",
+      description: "Freshly added learning track",
+      accent: "emerald",
+    },
+    {
+      name: "isPromotional",
+      label: "Limited Offer",
+      icon: "⏳",
+      description: "Time-sensitive promo pricing",
+      accent: "amber",
+    },
+    {
+      name: "isBestValue",
+      label: "Best Value",
+      icon: "★",
+      description: "Top value recommendation",
+      accent: "violet",
+    },
+    {
+      name: "featured",
+      label: "Featured",
+      icon: "✦",
+      description: "Hero course spotlight",
+      accent: "gold",
+    },
+  ] as const;
+
+  const toggleBadge = (name: string) => {
+    setBadgeSelection((previous) => ({
+      ...previous,
+      [name]: !previous[name],
+    }));
+  };
 
   const hasDirtyForm = () => {
     const form = document.getElementById("create-course-form") as HTMLFormElement | null;
@@ -148,6 +192,70 @@ export function CreateCourseForm() {
       <input type="hidden" name="isPublished" value="false" />
 
       <div className="grid gap-2 md:grid-cols-2 md:gap-3">
+        <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-slate-50 p-3 shadow-[0_12px_24px_rgba(15,23,42,0.04)] dark:border-slate-700 dark:bg-slate-800">
+          <div className="mb-2.5 flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Featured badges</p>
+              <h3 className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">Course spotlight</h3>
+            </div>
+            <span className="rounded-full border border-amber-200/80 bg-gradient-to-r from-amber-100/80 via-yellow-50/80 to-amber-200/70 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-amber-700 shadow-[0_0_0_1px_rgba(251,191,36,0.12)] backdrop-blur-sm dark:border-amber-400/30 dark:from-amber-500/15 dark:via-yellow-400/10 dark:to-amber-500/15 dark:text-amber-200">Optional</span>
+          </div>
+
+          <div className="grid gap-2 md:grid-cols-4">
+            {badgeOptions.map(({ name, label, icon, description, accent }) => (
+              <div key={name} className="relative">
+                <input
+                  id={name}
+                  type="checkbox"
+                  name={name}
+                  value="true"
+                  checked={badgeSelection[name]}
+                  onChange={() => toggleBadge(name)}
+                  className="sr-only"
+                />
+
+                <label
+                  htmlFor={name}
+                  className={`group relative flex cursor-pointer flex-col rounded-2xl border p-3 text-left transition-all duration-200 ${
+                    badgeSelection[name]
+                      ? "border-emerald-300 bg-gradient-to-br from-emerald-50 via-emerald-50 to-green-100 text-emerald-900 shadow-[0_18px_30px_rgba(16,185,129,0.16)] dark:border-emerald-500/40 dark:from-emerald-500/15 dark:via-emerald-500/10 dark:to-emerald-500/15 dark:text-emerald-100"
+                      : "border-slate-200 bg-white text-slate-800 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.18em] ${
+                      accent === "amber"
+                        ? "border-amber-300 bg-gradient-to-r from-amber-100 via-yellow-50 to-amber-200 text-amber-800 shadow-[0_0_0_1px_rgba(251,191,36,0.12)] dark:border-amber-400/40 dark:from-amber-500/20 dark:via-yellow-500/10 dark:to-amber-500/20 dark:text-amber-200"
+                        : accent === "violet"
+                          ? "border-violet-200 bg-violet-100 text-violet-700 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-200"
+                          : accent === "gold"
+                            ? "border-amber-200 bg-gradient-to-r from-yellow-100 via-amber-50 to-orange-100 text-amber-800 shadow-[0_0_0_1px_rgba(251,191,36,0.12)] dark:border-amber-400/40 dark:from-amber-500/15 dark:via-yellow-500/10 dark:to-orange-500/15 dark:text-amber-200"
+                            : "border-emerald-200 bg-emerald-100 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200"
+                    }`}>
+                      <span aria-hidden="true" className="text-[10px]">{icon}</span>
+                      {label}
+                    </span>
+
+                    <span className={`relative flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-200 ${
+                      badgeSelection[name]
+                        ? "border-emerald-500 bg-emerald-500 shadow-[0_0_0_3px_rgba(16,185,129,0.15)] dark:border-emerald-400 dark:bg-emerald-400"
+                        : "border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-900"
+                    }`}>
+                      {badgeSelection[name] ? (
+                        <svg viewBox="0 0 20 20" fill="none" className="h-2.5 w-2.5 text-white" aria-hidden="true">
+                          <path d="M5.5 10.5L8.5 13.5L14.5 7.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      ) : null}
+                    </span>
+                  </div>
+
+                  <p className="mt-2 text-[11px] leading-5 text-slate-600 dark:text-slate-300">{description}</p>
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
           <span className="inline-flex items-center gap-1">
             Course title
@@ -208,6 +316,27 @@ export function CreateCourseForm() {
             { value: "Advanced", label: "Advanced" },
           ]}
         />
+
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
+          Promo code
+          <input
+            name="promoCode"
+            placeholder="e.g. SPRING30"
+            className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+          />
+        </label>
+
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
+          Offer price (INR)
+          <input
+            name="offerPrice"
+            type="number"
+            min="0"
+            step="1"
+            placeholder="e.g. 3499"
+            className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 pr-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 [&::-webkit-outer-spin-button]:opacity-100 [&::-webkit-inner-spin-button]:opacity-100 [&::-webkit-outer-spin-button]:h-5 [&::-webkit-inner-spin-button]:h-5"
+          />
+        </label>
 
         <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
           <span className="inline-flex items-center gap-1">

@@ -14,7 +14,10 @@ type CheckoutCourse = {
   slug: string;
   title: string;
   price: number;
+  offerPrice?: number | null;
+  isPromotional?: boolean | null;
   currency: string;
+  promoCode?: string | null;
 };
 
 export default function CheckoutButton({
@@ -29,6 +32,12 @@ export default function CheckoutButton({
   buttonLabel?: string;
 }) {
   const [loading, setLoading] = useState(false);
+  const [promoCodeInput, setPromoCodeInput] = useState("");
+  const [promoApplied, setPromoApplied] = useState(false);
+  const [promoError, setPromoError] = useState<string | null>(null);
+
+  const canUsePromo = Boolean(course.isPromotional && course.promoCode);
+  const finalAmount = promoApplied && course.offerPrice ? course.offerPrice : course.price;
 
   if (!isAuthenticated) {
     const loginUrl = `/login?callbackUrl=${encodeURIComponent(`/courses/${course.slug}`)}`;
@@ -55,8 +64,9 @@ export default function CheckoutButton({
         body: JSON.stringify({
           courseId: course.id,
           userId,
-          amount: course.price,
+          amount: finalAmount,
           currency: course.currency,
+          promoCode: promoApplied ? course.promoCode ?? "" : "",
         }),
       });
 
@@ -122,14 +132,73 @@ export default function CheckoutButton({
     }
   }
 
+  const handleApplyPromoCode = () => {
+    if (!canUsePromo) {
+      setPromoError("This course does not have an active promo code.");
+      return;
+    }
+
+    const normalizedInput = promoCodeInput.trim().toUpperCase();
+    const normalizedCourseCode = (course.promoCode ?? "").trim().toUpperCase();
+
+    if (!normalizedInput) {
+      setPromoError("Enter a promo code to continue.");
+      return;
+    }
+
+    if (normalizedInput !== normalizedCourseCode) {
+      setPromoError("That promo code is invalid for this course.");
+      setPromoApplied(false);
+      return;
+    }
+
+    setPromoError(null);
+    setPromoApplied(true);
+  };
+
   return (
-    <button
-      type="button"
-      onClick={handleCheckout}
-      disabled={loading}
-      className="mt-6 w-full rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 px-5 py-3.5 text-base font-semibold text-white shadow-[0_18px_40px_rgba(79,70,229,0.35)] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:brightness-110 hover:shadow-[0_24px_54px_rgba(79,70,229,0.42)] disabled:cursor-not-allowed disabled:opacity-70"
-    >
-      {loading ? "Preparing checkout..." : buttonLabel}
-    </button>
+    <>
+      {canUsePromo ? (
+        <div className="mt-5 space-y-2">
+          <div className="flex gap-2">
+            <input
+              value={promoCodeInput}
+              onChange={(event) => setPromoCodeInput(event.target.value)}
+              placeholder="Enter promo code"
+              className="w-full rounded-full border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none ring-0 placeholder:text-slate-400 focus:border-indigo-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
+            />
+            <button
+              type="button"
+              onClick={handleApplyPromoCode}
+              className="rounded-full bg-slate-900 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-white transition hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
+            >
+              Apply
+            </button>
+          </div>
+          {promoApplied ? (
+            <p className="text-xs font-medium text-emerald-600 dark:text-emerald-300">
+              Promo applied: {course.promoCode}
+            </p>
+          ) : null}
+          {promoError ? (
+            <p className="text-xs font-medium text-red-600 dark:text-red-300">{promoError}</p>
+          ) : null}
+          {promoApplied ? (
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+              Offer price: ₹{(course.offerPrice ?? course.price).toLocaleString("en-IN")}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
+      <button
+        type="button"
+        onClick={handleCheckout}
+        disabled={loading}
+        className="mt-6 w-full rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 px-5 py-3.5 text-base font-semibold text-white shadow-[0_18px_40px_rgba(79,70,229,0.35)] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:brightness-110 hover:shadow-[0_24px_54px_rgba(79,70,229,0.42)] disabled:cursor-not-allowed disabled:opacity-70"
+      >
+        {loading ? "Preparing checkout..." : buttonLabel}
+      </button>
+    </>
   );
 }

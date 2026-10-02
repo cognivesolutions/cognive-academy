@@ -40,6 +40,11 @@ model Course {
   level            String
   durationHours    Int?
   price            Float
+  offerPrice       Float?
+  isPromotional    Boolean        @default(false)
+  isBestValue      Boolean        @default(false)
+  isNew            Boolean        @default(false)
+  promoCode        String?
   currency         String         @default("INR")
   featured         Boolean        @default(false)
   isPublished      Boolean        @default(true)

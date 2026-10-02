@@ -84,7 +84,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, received: true });
     }
 
-    const { courseId, userId, amount, currency = "INR" } = payload ?? {};
+    const { courseId, userId, amount, currency = "INR", promoCode } = payload ?? {};
 
     if (!courseId) {
       return NextResponse.json({ success: false, message: "courseId is required" }, { status: 400 });
@@ -107,6 +107,9 @@ export async function POST(request: Request) {
         id: true,
         title: true,
         price: true,
+        offerPrice: true,
+        isPromotional: true,
+        promoCode: true,
         currency: true,
       },
     });
@@ -115,7 +118,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: "Course not found" }, { status: 404 });
     }
 
-    const safeAmount = Number(amount ?? course.price ?? 0);
+    const basePrice = Number(course.price ?? 0);
+    const normalizedPromoCode = typeof promoCode === "string" ? promoCode.trim().toUpperCase() : "";
+    const enrollmentPrice = course.isPromotional && course.offerPrice !== null ? Number(course.offerPrice) : basePrice;
+
+    if (course.isPromotional && course.promoCode && normalizedPromoCode && course.promoCode.toUpperCase() !== normalizedPromoCode) {
+      return NextResponse.json({ success: false, message: "Invalid promo code" }, { status: 400 });
+    }
+
+    const effectiveAmount = normalizedPromoCode && course.promoCode && course.promoCode.toUpperCase() === normalizedPromoCode
+      ? Math.min(basePrice, course.offerPrice !== null ? Number(course.offerPrice) : basePrice)
+      : enrollmentPrice;
+
+    const safeAmount = Number(amount ?? effectiveAmount ?? basePrice ?? 0);
     const amountInPaise = Math.round(safeAmount * 100);
 
     const orderRecord = await prisma.order.create({

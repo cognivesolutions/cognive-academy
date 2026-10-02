@@ -41,7 +41,20 @@ export default async function CourseDetailPage({
         },
       }))
     : false;
-  const price = Number(course.price);
+
+  const courseData = course as any;
+
+  const basePrice = Number(courseData.price ?? 0);
+  const promotionalOfferPrice =
+    courseData.offerPrice !== null && courseData.offerPrice !== undefined ? Number(courseData.offerPrice) : null;
+  const showPromotionalOffer = Boolean(
+    courseData.isPromotional && promotionalOfferPrice !== null && promotionalOfferPrice > 0 && promotionalOfferPrice < basePrice,
+  );
+  const displayPrice = Number(showPromotionalOffer && promotionalOfferPrice !== null ? promotionalOfferPrice : basePrice);
+  const badgeLabels = [
+    course.isBestValue ? { label: "Best value", tone: "amber" } : null,
+    showPromotionalOffer ? { label: "Limited offer", tone: "danger" } : null,
+  ].filter(Boolean) as Array<{ label: string; tone: string }>;
   const summaryMetrics = getCourseMetricCards(course);
 
   return (
@@ -78,6 +91,24 @@ export default async function CourseDetailPage({
               </div>
 
               <div>
+                {badgeLabels.length > 0 ? (
+                  <div className="mb-4 flex flex-wrap items-center gap-2">
+                    {badgeLabels.map((badge) => (
+                      <span
+                        key={badge.label}
+                        className={
+                          badge.tone === "info"
+                            ? "inline-flex items-center rounded-full border border-sky-300/60 bg-sky-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-sky-800 dark:border-sky-400/40 dark:bg-sky-500/10 dark:text-sky-200"
+                            : badge.tone === "amber"
+                              ? "inline-flex items-center rounded-full border border-amber-300/50 bg-amber-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-amber-800 dark:border-amber-400/40 dark:bg-amber-500/10 dark:text-amber-200"
+                              : "inline-flex items-center rounded-full border border-rose-300/50 bg-rose-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-rose-800 dark:border-rose-400/30 dark:bg-rose-500/10 dark:text-rose-200"
+                        }
+                      >
+                        {badge.label}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
                 <h1 className="text-4xl font-black tracking-[-0.06em] text-slate-900 dark:text-white sm:text-5xl">{course.title}</h1>
                 <p className="mt-2 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">{course.description}</p>
               </div>
@@ -168,21 +199,30 @@ export default async function CourseDetailPage({
 
             <aside className="lg:pt-10">
               <div className="sticky top-8 overflow-hidden rounded-[30px] border border-slate-200 bg-[linear-gradient(180deg,_rgba(255,255,255,0.96),_rgba(248,250,252,0.98))] p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)] transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_32px_100px_rgba(79,70,229,0.12)] hover:ring-1 hover:ring-indigo-100/80 dark:border-slate-700 dark:bg-[linear-gradient(180deg,_rgba(15,23,42,0.96),_rgba(17,24,39,0.98))] dark:shadow-[0_22px_60px_rgba(2,6,23,0.35)] dark:hover:border-indigo-500/20 dark:hover:ring-indigo-500/10">
-                <div className="mb-4 flex items-center justify-between gap-2">
-                  <span className="inline-flex items-center rounded-full border border-amber-300 bg-gradient-to-r from-amber-200 via-yellow-100 to-orange-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-amber-900 shadow-[0_8px_18px_rgba(245,158,11,0.18)] dark:border-amber-500/40 dark:from-amber-500/20 dark:via-yellow-500/15 dark:to-orange-500/20 dark:text-amber-100">
-                    Best value
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-amber-900 shadow-[0_8px_18px_rgba(245,158,11,0.22)] dark:border-amber-500/50 dark:from-amber-500/80 dark:via-yellow-500/80 dark:to-orange-500/80 dark:text-yellow-50">
-                    <span aria-hidden="true">★</span>
-                    Limited offer
-                  </span>
-                </div>
+                {showPromotionalOffer ? (
+                  <div className="mb-4 flex items-center justify-between gap-2">
+                    <span className="inline-flex items-center rounded-full border border-amber-300 bg-gradient-to-r from-amber-200 via-yellow-100 to-orange-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-amber-900 shadow-[0_8px_18px_rgba(245,158,11,0.18)] dark:border-amber-500/40 dark:from-amber-500/20 dark:via-yellow-500/15 dark:to-orange-500/20 dark:text-amber-100">
+                      Best value
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-amber-900 shadow-[0_8px_18px_rgba(245,158,11,0.22)] dark:border-amber-500/50 dark:from-amber-500/80 dark:via-yellow-500/80 dark:to-orange-500/80 dark:text-yellow-50">
+                      <span aria-hidden="true">★</span>
+                      Limited offer
+                    </span>
+                  </div>
+                ) : null}
 
                 <div className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Course price</div>
                 <div className="mt-2 flex items-end gap-3">
-                  <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 bg-clip-text text-4xl font-black tracking-tight text-transparent dark:from-indigo-300 dark:via-violet-300 dark:to-sky-300">₹{price.toLocaleString("en-IN")}</span>
-                  <span className="pb-1 text-lg text-slate-400 line-through decoration-slate-400/80">₹{(price * 1.35).toLocaleString("en-IN")}</span>
+                  <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 bg-clip-text text-4xl font-black tracking-tight text-transparent dark:from-indigo-300 dark:via-violet-300 dark:to-sky-300">₹{displayPrice.toLocaleString("en-IN")}</span>
+                  {showPromotionalOffer ? (
+                    <span className="pb-1 text-lg text-slate-400 line-through decoration-slate-400/80">₹{basePrice.toLocaleString("en-IN")}</span>
+                  ) : null}
                 </div>
+                {courseData.isPromotional && courseData.promoCode ? (
+                  <p className="mt-2 text-xs font-medium uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                    Use code {String(courseData.promoCode)}
+                  </p>
+                ) : null}
 
                 <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
                   Learn from real-world product, architecture, and placement-focused mentorship with course-based access built for career growth.
@@ -208,7 +248,7 @@ export default async function CourseDetailPage({
                 <div className="mt-5">
                   {isEnrolled ? (
                     <a
-                      href={course.isLive ? `/courses/${course.slug}/live` : `/courses/${course.slug}`}
+                      href={courseData.isLive ? `/courses/${courseData.slug}/live` : `/courses/${courseData.slug}`}
                       className="inline-flex w-full items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-5 py-3.5 text-base font-semibold text-white shadow-[0_16px_36px_rgba(16,185,129,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_20px_42px_rgba(16,185,129,0.32)]"
                     >
                       Continue learning
@@ -216,11 +256,14 @@ export default async function CourseDetailPage({
                   ) : (
                     <CheckoutButton
                       course={{
-                        id: course.id,
-                        slug: course.slug,
-                        title: course.title,
-                        price,
-                        currency: course.currency,
+                        id: courseData.id,
+                        slug: courseData.slug,
+                        title: courseData.title,
+                        price: Number(basePrice),
+                        offerPrice: promotionalOfferPrice ?? null,
+                        isPromotional: Boolean(courseData.isPromotional),
+                        currency: courseData.currency,
+                        promoCode: courseData.promoCode ?? "",
                       }}
                       userId={session?.user?.id ?? ""}
                       isAuthenticated={Boolean(session?.user?.id)}

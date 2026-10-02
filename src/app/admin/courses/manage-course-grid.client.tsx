@@ -25,6 +25,12 @@ export type ManageCourse = {
   category: string;
   level?: string | null;
   price: number;
+  offerPrice?: number | null;
+  isPromotional?: boolean | null;
+  isBestValue?: boolean | null;
+  isNew?: boolean | null;
+  featured?: boolean | null;
+  promoCode?: string | null;
   imageUrl?: string | null;
   isLive: boolean;
   isPublished?: boolean;
@@ -43,10 +49,39 @@ function ManageCourseCard({ course, isSelected, onToggle }: { course: ManageCour
   const [slugValue, setSlugValue] = useState(course.slug);
   const [isSlugManual, setIsSlugManual] = useState(false);
   const [warning, setWarning] = useState<string | null>(null);
+  const [badgeWarning, setBadgeWarning] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ message: string; tone: "amber" | "red" | "green" } | null>(null);
   const [isDirty, setIsDirty] = useState(false);
   const [pendingAction, setPendingAction] = useState<"update" | "delete" | "publish" | "unpublish" | null>(null);
   const [pendingConfirmAction, setPendingConfirmAction] = useState<"update" | "delete" | "publish" | "unpublish" | null>(null);
+  const getCourseBadgeValue = (name: string) => {
+    const value = (course as unknown as Record<string, unknown>)[name];
+    return Boolean(value);
+  };
+
+  const getResolvedBadgeValue = (name: string) => {
+    if (Object.prototype.hasOwnProperty.call(badgeSelection, name)) {
+      return Boolean(badgeSelection[name]);
+    }
+
+    return getCourseBadgeValue(name);
+  };
+
+  const [badgeSelection, setBadgeSelection] = useState<Record<string, boolean>>({
+    isNew: getCourseBadgeValue("isNew"),
+    isPromotional: getCourseBadgeValue("isPromotional"),
+    isBestValue: getCourseBadgeValue("isBestValue"),
+    featured: getCourseBadgeValue("featured"),
+  });
+
+  useEffect(() => {
+    setBadgeSelection({
+      isNew: getCourseBadgeValue("isNew"),
+      isPromotional: getCourseBadgeValue("isPromotional"),
+      isBestValue: getCourseBadgeValue("isBestValue"),
+      featured: getCourseBadgeValue("featured"),
+    });
+  }, [course.id, course.isNew, course.isPromotional, course.isBestValue, course.featured]);
 
   useEffect(() => {
     if (!warning) return;
@@ -60,7 +95,87 @@ function ManageCourseCard({ course, isSelected, onToggle }: { course: ManageCour
     return () => window.clearTimeout(timeout);
   }, [feedback]);
 
+  useEffect(() => {
+    if (!badgeWarning) return;
+    const timeout = window.setTimeout(() => setBadgeWarning(null), 2500);
+    return () => window.clearTimeout(timeout);
+  }, [badgeWarning]);
+
   const slugPreview = useMemo(() => slugify(titleValue), [titleValue]);
+
+  const hasBadgeChanges = () => {
+    const originalValues = {
+      isNew: getCourseBadgeValue("isNew"),
+      isPromotional: getCourseBadgeValue("isPromotional"),
+      isBestValue: getCourseBadgeValue("isBestValue"),
+      featured: getCourseBadgeValue("featured"),
+    };
+
+    return Object.entries(originalValues).some(([key, value]) => getResolvedBadgeValue(key) !== value);
+  };
+
+  const persistBadgeUpdate = async (name: string, nextValue: boolean) => {
+    const form = document.getElementById(`course-form-${course.id}`) as HTMLFormElement | null;
+    if (!form) return;
+
+    const nextBadgeSelection = {
+      ...badgeSelection,
+      [name]: nextValue,
+    };
+
+    setBadgeWarning(null);
+
+    try {
+      const formData = new FormData(form);
+      formData.set("action", "update");
+      formData.set("isPublished", String(course.isPublished ?? false));
+      formData.set("isNew", String(Boolean(nextBadgeSelection.isNew)));
+      formData.set("isPromotional", String(Boolean(nextBadgeSelection.isPromotional)));
+      formData.set("isBestValue", String(Boolean(nextBadgeSelection.isBestValue)));
+      formData.set("featured", String(Boolean(nextBadgeSelection.featured)));
+
+      const response = await fetch("/api/admin/courses", {
+        method: "POST",
+        body: formData,
+        credentials: "same-origin",
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => "");
+        throw new Error(errorText || `Request failed with status ${response.status}`);
+      }
+
+      setFeedback({ message: "Badge updated successfully.", tone: "green" });
+      setIsDirty(false);
+      form.dataset.dirty = "false";
+      router.refresh();
+    } catch (error) {
+      console.error("Badge update failed:", error);
+      setFeedback({
+        message: error instanceof Error ? error.message : "Could not save badge update.",
+        tone: "red",
+      });
+      setBadgeSelection((previous) => ({
+        ...previous,
+        [name]: !nextValue,
+      }));
+    }
+  };
+
+  const toggleBadge = (name: string) => {
+    const nextValue = !getResolvedBadgeValue(name);
+    setBadgeSelection((previous) => ({
+      ...previous,
+      [name]: nextValue,
+    }));
+
+    if (course.isPublished) {
+      void persistBadgeUpdate(name, nextValue);
+      return;
+    }
+
+    markDirty();
+  };
 
   const markDirty = () => {
     setIsDirty(true);
@@ -83,6 +198,12 @@ function ManageCourseCard({ course, isSelected, onToggle }: { course: ManageCour
       category: course.category,
       level: course.level ?? "Beginner",
       price: String(course.price ?? ""),
+      offerPrice: course.offerPrice !== null && course.offerPrice !== undefined ? String(course.offerPrice) : "",
+      isPromotional: String(Boolean(course.isPromotional)),
+      isBestValue: String(Boolean(course.isBestValue)),
+      isNew: String(Boolean(course.isNew)),
+      featured: String(Boolean(course.featured)),
+      promoCode: course.promoCode ?? "",
       durationHours: course.durationHours ? String(course.durationHours) : "",
       language: course.language,
       isLive: String(course.isLive),
@@ -133,11 +254,13 @@ function ManageCourseCard({ course, isSelected, onToggle }: { course: ManageCour
 
     if (action === "update" && !hasFormChanges()) {
       setWarning("Please make at least one change before updating this course.");
+      setBadgeWarning(null);
       setPendingConfirmAction(null);
       return;
     }
 
     setWarning(null);
+    setBadgeWarning(null);
     setPendingAction(action);
     setPendingConfirmAction(null);
 
@@ -198,13 +321,30 @@ function ManageCourseCard({ course, isSelected, onToggle }: { course: ManageCour
           </div>
         </div>
 
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={() => onToggle(course.id)}
-          className="h-5 w-5 cursor-pointer rounded-md border border-slate-300 bg-slate-50/90 accent-emerald-500 shadow-[0_1px_4px_rgba(15,23,42,0.06)] transition-all duration-200 hover:border-emerald-300 hover:shadow-[0_1px_6px_rgba(16,185,129,0.12)] checked:border-emerald-500 checked:bg-emerald-500 dark:border-slate-600 dark:bg-slate-900/80 dark:checked:border-emerald-400 dark:checked:bg-emerald-500"
-          aria-label={`Select ${course.title}`}
-        />
+        <div className="relative flex items-center justify-center">
+          <input
+            id={`course-select-${course.id}`}
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => onToggle(course.id)}
+            className="peer sr-only"
+            aria-label={`Select ${course.title}`}
+          />
+          <label
+            htmlFor={`course-select-${course.id}`}
+            className={`relative flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-2 transition-all duration-200 ${
+              isSelected
+                ? "border-emerald-500 bg-emerald-500 shadow-[0_0_0_3px_rgba(16,185,129,0.15)] dark:border-emerald-400 dark:bg-emerald-400"
+                : "border-slate-300 bg-white hover:border-emerald-300 hover:shadow-[0_1px_6px_rgba(16,185,129,0.12)] dark:border-slate-600 dark:bg-slate-900/80 dark:hover:border-emerald-400"
+            }`}
+          >
+            {isSelected ? (
+              <svg viewBox="0 0 20 20" fill="none" className="h-3.5 w-3.5 text-white" aria-hidden="true">
+                <path d="M5.5 10.5L8.5 13.5L14.5 7.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            ) : null}
+          </label>
+        </div>
       </div>
 
       <div className="mb-3 overflow-hidden rounded-[16px] bg-slate-100 ring-1 ring-slate-200 transition-all duration-300 dark:bg-slate-800 dark:ring-slate-700">
@@ -236,6 +376,10 @@ function ManageCourseCard({ course, isSelected, onToggle }: { course: ManageCour
       <form id={`course-form-${course.id}`} action="/api/admin/courses" method="POST" encType="multipart/form-data" className="space-y-3">
         <input type="hidden" name="action" value="update" />
         <input type="hidden" name="id" value={course.id} />
+        <input type="hidden" name="isNew" value={String(Boolean(getResolvedBadgeValue("isNew")))} />
+        <input type="hidden" name="isPromotional" value={String(Boolean(getResolvedBadgeValue("isPromotional")))} />
+        <input type="hidden" name="isBestValue" value={String(Boolean(getResolvedBadgeValue("isBestValue")))} />
+        <input type="hidden" name="featured" value={String(Boolean(getResolvedBadgeValue("featured")))} />
 
         <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
           <span className="inline-flex items-center gap-1">
@@ -314,6 +458,32 @@ function ManageCourseCard({ course, isSelected, onToggle }: { course: ManageCour
           </label>
 
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
+            Offer price (INR)
+            <input
+              name="offerPrice"
+              type="number"
+              min="0"
+              defaultValue={course.offerPrice ?? ""}
+              onChange={markDirty}
+              placeholder="e.g. 3499"
+              className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 pr-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 [&::-webkit-outer-spin-button]:opacity-100 [&::-webkit-inner-spin-button]:opacity-100 [&::-webkit-outer-spin-button]:h-5 [&::-webkit-inner-spin-button]:h-5"
+            />
+          </label>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
+            Promo code
+            <input
+              name="promoCode"
+              defaultValue={course.promoCode ?? ""}
+              onChange={markDirty}
+              placeholder="e.g. SPRING30"
+              className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+            />
+          </label>
+
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
             Duration (hours)
             <input
               name="durationHours"
@@ -325,6 +495,112 @@ function ManageCourseCard({ course, isSelected, onToggle }: { course: ManageCour
               className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 pr-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 [&::-webkit-outer-spin-button]:opacity-100 [&::-webkit-inner-spin-button]:opacity-100 [&::-webkit-outer-spin-button]:h-5 [&::-webkit-inner-spin-button]:h-5"
             />
           </label>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-2 dark:border-slate-700 dark:bg-slate-800/80">
+            <div>
+              <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Featured badges</p>
+              <span className="text-[11px] font-medium text-slate-700 dark:text-slate-200">Course spotlight</span>
+            </div>
+            <span className="rounded-full border border-amber-200/80 bg-gradient-to-r from-amber-100/80 via-yellow-50/80 to-amber-200/70 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-amber-700 shadow-[0_0_0_1px_rgba(251,191,36,0.12)] backdrop-blur-sm dark:border-amber-400/30 dark:from-amber-500/15 dark:via-yellow-400/10 dark:to-amber-500/15 dark:text-amber-200">Optional</span>
+          </div>
+
+          {badgeWarning ? (
+            <div className="rounded-xl border border-amber-200 bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 px-2.5 py-2 text-[10px] font-medium text-amber-800 shadow-[0_8px_18px_rgba(251,191,36,0.12)] dark:border-amber-500/30 dark:from-amber-500/10 dark:via-yellow-500/10 dark:to-orange-500/10 dark:text-amber-200">
+              {badgeWarning}
+            </div>
+          ) : null}
+
+          <div className="grid gap-2 grid-cols-2">
+            {[
+              {
+                name: "isNew",
+                label: "New",
+                icon: "✦",
+                description: "Fresh course",
+                accent: "emerald",
+              },
+              {
+                name: "isPromotional",
+                label: "Limited Offer",
+                icon: "⏳",
+                description: "Promo pricing",
+                accent: "amber",
+              },
+              {
+                name: "isBestValue",
+                label: "Best Value",
+                icon: "★",
+                description: "Strong value pick",
+                accent: "violet",
+              },
+              {
+                name: "featured",
+                label: "Featured",
+                icon: "✦",
+                description: "Hero course spotlight",
+                accent: "gold",
+              },
+            ].map(({ name, label, icon, description, accent }) => {
+              const inputId = `${course.id}-${name}`;
+              const isSelected = getResolvedBadgeValue(name);
+
+              let pillClassName = "border-emerald-200 bg-emerald-100 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200";
+
+              if (accent === "amber") {
+                pillClassName = "border-amber-300 bg-gradient-to-r from-amber-100 via-yellow-50 to-amber-200 text-amber-800 shadow-[0_0_0_1px_rgba(251,191,36,0.12)] dark:border-amber-400/40 dark:from-amber-500/20 dark:via-yellow-500/10 dark:to-amber-500/20 dark:text-amber-200";
+              } else if (accent === "violet") {
+                pillClassName = "border-violet-200 bg-violet-100 text-violet-700 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-200";
+              } else if (accent === "gold") {
+                pillClassName = "border-amber-200 bg-gradient-to-r from-yellow-100 via-amber-50 to-orange-100 text-amber-800 shadow-[0_0_0_1px_rgba(251,191,36,0.12)] dark:border-amber-400/40 dark:from-amber-500/15 dark:via-yellow-500/10 dark:to-orange-500/15 dark:text-amber-200";
+              }
+
+              const indicatorClassName = isSelected
+                ? "border-emerald-500 bg-emerald-500 shadow-[0_0_0_3px_rgba(16,185,129,0.15)] dark:border-emerald-400 dark:bg-emerald-400"
+                : "border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-900";
+
+              const cardClassName = isSelected
+                ? "border-emerald-300 bg-gradient-to-br from-emerald-50 via-emerald-50 to-green-100 text-emerald-900 shadow-[0_18px_30px_rgba(16,185,129,0.16)] dark:border-emerald-500/40 dark:from-emerald-500/15 dark:via-emerald-500/10 dark:to-emerald-500/15 dark:text-emerald-100"
+                : "border-slate-200 bg-white text-slate-800 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200";
+
+              return (
+                <div key={name} className="relative">
+                  <input
+                    id={inputId}
+                    type="checkbox"
+                    value="true"
+                    checked={isSelected}
+                    onChange={() => toggleBadge(name)}
+                    className="sr-only"
+                    data-badge-name={name}
+                  />
+
+                  <label
+                    htmlFor={inputId}
+                    className={`relative flex cursor-pointer flex-col rounded-2xl border p-3 text-left transition-all duration-200 ${cardClassName}`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <span className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.18em] ${pillClassName}`}>
+                        <span aria-hidden="true" className="text-[10px]">{icon}</span>
+                        {label}
+                      </span>
+
+                      <span className={`relative flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-200 ${indicatorClassName}`}>
+                        {isSelected ? (
+                          <svg viewBox="0 0 20 20" fill="none" className="h-2.5 w-2.5 text-white" aria-hidden="true">
+                            <path d="M5.5 10.5L8.5 13.5L14.5 7.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        ) : null}
+                      </span>
+                    </div>
+
+                    <p className="mt-2 text-[11px] leading-5 text-slate-600 dark:text-slate-300">{description}</p>
+                  </label>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">

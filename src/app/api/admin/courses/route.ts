@@ -49,6 +49,9 @@ async function saveUploadedImage(file: File | null, fallbackUrl?: string | null)
 
 function parseForm(formData: FormData) {
   const rawIsPublished = formData.get("isPublished");
+  const rawOfferPrice = formData.get("offerPrice");
+  const parsedOfferPrice = rawOfferPrice === null || rawOfferPrice === "" ? null : Number(rawOfferPrice);
+  const promoCodeValue = String(formData.get("promoCode") ?? "").trim();
 
   return {
     action: String(formData.get("action") ?? "create"),
@@ -58,6 +61,12 @@ function parseForm(formData: FormData) {
     category: String(formData.get("category") ?? "").trim(),
     level: String(formData.get("level") ?? "Beginner").trim(),
     price: Number(formData.get("price") ?? 0),
+    offerPrice: Number.isFinite(parsedOfferPrice) ? Number(parsedOfferPrice) : null,
+    isPromotional: String(formData.get("isPromotional") ?? "false") === "true",
+    isBestValue: String(formData.get("isBestValue") ?? "false") === "true",
+    isNew: String(formData.get("isNew") ?? "false") === "true",
+    featured: String(formData.get("featured") ?? "false") === "true",
+    promoCode: promoCodeValue ? promoCodeValue.toUpperCase() : null,
     durationHours: Number(formData.get("durationHours") ?? 0),
     language: String(formData.get("language") ?? "en").trim().toLowerCase(),
     isLive: String(formData.get("isLive") ?? "false") === "true",
@@ -132,6 +141,11 @@ export async function POST(request: Request) {
               const nextSlug = update.slug || existing.slug || slugify(nextTitle);
               const nextPreviewUrl = update.previewLectureUrl ?? existing.previewLectureUrl ?? null;
 
+              const normalizedPromoCode = typeof update.promoCode === "string" ? update.promoCode.trim().toUpperCase() || null : existing.promoCode;
+              const normalizedOfferPrice = typeof update.offerPrice === "number" && Number.isFinite(update.offerPrice)
+                ? Number(update.offerPrice)
+                : existing.offerPrice ?? null;
+
               return prisma.course.update({
                 where: { id: update.id },
                 data: {
@@ -140,6 +154,12 @@ export async function POST(request: Request) {
                   category: update.category || existing.category,
                   level: update.level || existing.level || "Beginner",
                   price: Number.isFinite(update.price) ? Number(update.price) : existing.price,
+                  offerPrice: normalizedOfferPrice,
+                  isPromotional: typeof update.isPromotional === "boolean" ? update.isPromotional : existing.isPromotional,
+                  isBestValue: typeof update.isBestValue === "boolean" ? update.isBestValue : existing.isBestValue,
+                  isNew: typeof update.isNew === "boolean" ? update.isNew : existing.isNew,
+                  featured: typeof update.featured === "boolean" ? update.featured : existing.featured,
+                  promoCode: normalizedPromoCode,
                   durationHours: Number.isFinite(update.durationHours) && Number(update.durationHours) > 0 ? Number(update.durationHours) : existing.durationHours,
                   isLive: typeof update.isLive === "boolean" ? update.isLive : existing.isLive,
                   isPublished: typeof update.isPublished === "boolean" ? update.isPublished : existing.isPublished,
@@ -227,6 +247,12 @@ export async function POST(request: Request) {
           category: payload.category || existing.category,
           level: payload.level || existing.level,
           price: Number.isFinite(payload.price) ? payload.price : existing.price,
+          offerPrice: payload.offerPrice !== null && Number.isFinite(payload.offerPrice) ? payload.offerPrice : existing.offerPrice ?? null,
+          isPromotional: typeof payload.isPromotional === "boolean" ? payload.isPromotional : existing.isPromotional,
+          isBestValue: typeof payload.isBestValue === "boolean" ? payload.isBestValue : existing.isBestValue,
+          isNew: typeof payload.isNew === "boolean" ? payload.isNew : existing.isNew,
+          featured: typeof payload.featured === "boolean" ? payload.featured : existing.featured,
+          promoCode: payload.promoCode ?? existing.promoCode ?? null,
           durationHours: Number.isFinite(payload.durationHours) && payload.durationHours > 0 ? payload.durationHours : existing.durationHours,
           isLive: payload.isLive,
           isPublished: typeof payload.isPublished === "boolean" ? payload.isPublished : existing.isPublished,
@@ -240,7 +266,7 @@ export async function POST(request: Request) {
         },
       });
 
-      return NextResponse.redirect(new URL("/admin/unpublished?success=Course%20updated%20successfully.", request.url), 303);
+      return NextResponse.redirect(new URL("/admin/courses?success=Course%20updated%20successfully.", request.url), 303);
     }
 
     const rawTitle = payload.title;
@@ -275,9 +301,14 @@ export async function POST(request: Request) {
         category,
         level: payload.level || "Beginner",
         price: Number.isFinite(payload.price) ? payload.price : 0,
+        offerPrice: payload.offerPrice !== null && Number.isFinite(payload.offerPrice) ? payload.offerPrice : null,
+        isPromotional: payload.isPromotional,
+        isBestValue: payload.isBestValue,
+        isNew: payload.isNew,
+        featured: payload.featured,
+        promoCode: payload.promoCode ?? null,
         durationHours: Number.isFinite(payload.durationHours) && payload.durationHours > 0 ? payload.durationHours : null,
         currency: "INR",
-        featured: false,
         isPublished: typeof payload.isPublished === "boolean" ? payload.isPublished : false,
         isLive: payload.isLive,
         language: payload.language === "hi" ? "hi" : "en",
@@ -365,6 +396,10 @@ export async function GET(request: Request) {
       imageUrl: true,
       shortDescription: true,
       isPublished: true,
+      isPromotional: true,
+      isBestValue: true,
+      isNew: true,
+      featured: true,
     },
   };
 

@@ -17,6 +17,7 @@ type CourseSummary = {
   price: number | string | null;
   currency: string | null;
   featured: boolean | null;
+  isNew: boolean | null;
   imageUrl: string | null;
   instructorName: string | null;
   durationHours: number | null;
@@ -160,6 +161,7 @@ export default function CategoryResultControls({
                     level: course.level,
                     price: course.price,
                     featured: course.featured,
+                    isNew: course.isNew,
                     imageUrl: course.imageUrl,
                     isLive: course.isLive,
                     language: course.language,

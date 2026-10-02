@@ -88,6 +88,7 @@ export default async function CoursesPage({
       price: true,
       currency: true,
       featured: true,
+      isNew: true,
       imageUrl: true,
       instructorName: true,
       previewLectureUrl: true,

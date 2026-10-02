@@ -13,6 +13,9 @@ export type CourseCardData = {
   category?: string | null;
   level?: string | null;
   price?: number | string | null;
+  isPromotional?: boolean | null;
+  isBestValue?: boolean | null;
+  isNew?: boolean | null;
   featured?: boolean | null;
   imageUrl?: string | null;
   coverImage?: string | null;
@@ -81,6 +84,12 @@ export function CourseCard({
   const DEFAULT_IMG = "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1200&q=80";
   const imgSrc = course.coverImage ?? course.imageUrl ?? DEFAULT_IMG;
   const resolvedStatus = statusLabel ?? (statusTone === "live" ? "Live" : "Recorded");
+  const badgeLabels = [
+    course.isPromotional ? { label: "Limited offer", tone: "danger" } : null,
+    course.isBestValue ? { label: "Best value", tone: "amber" } : null,
+    showFeaturedBadge && course.featured ? { label: "Featured", tone: "featured" } : null,
+  ].filter(Boolean) as Array<{ label: string; tone: string }>;
+  const showNewStarBadge = Boolean(course.isNew);
 
   return (
     <article
@@ -114,11 +123,33 @@ export function CourseCard({
             </div>
           ) : null}
 
-          {showFeaturedBadge && course.featured ? (
-            <div className="absolute right-2.5 top-2.5">
-              <span className="rounded-full border border-amber-300/40 bg-amber-100 px-2 py-1 text-[8px] font-bold uppercase tracking-[0.16em] text-amber-800 shadow-sm dark:border-amber-300/30 dark:bg-amber-500/10 dark:text-amber-200">
-                Featured
-              </span>
+          {showNewStarBadge ? (
+            <span
+              aria-label="New course"
+              title="New"
+              className="pointer-events-none absolute left-0 top-0 z-30 flex h-10 w-28 items-center justify-center border border-red-300/70 bg-gradient-to-r from-red-600 via-red-500 to-red-400 text-[9px] font-black uppercase tracking-[0.22em] text-white shadow-[0_12px_22px_rgba(239,68,68,0.28)] [clip-path:polygon(12%_0%,100%_0%,88%_100%,0%_100%)]"
+              style={{ transform: "translate(-18px, -2px) rotate(-45deg)" }}
+            >
+              NEW
+            </span>
+          ) : null}
+
+          {badgeLabels.length > 0 ? (
+            <div className="absolute right-2.5 top-2.5 z-10 flex max-w-[60%] flex-wrap justify-end gap-1.5">
+              {badgeLabels.map((badge) => (
+                <span
+                  key={badge.label}
+                  className={
+                    badge.tone === "amber"
+                      ? "rounded-full border border-amber-300/40 bg-amber-100 px-2 py-1 text-[8px] font-bold uppercase tracking-[0.16em] text-amber-800 shadow-sm dark:border-amber-300/30 dark:bg-amber-500/10 dark:text-amber-200"
+                      : badge.tone === "featured"
+                        ? "rounded-full border border-amber-300/60 bg-gradient-to-r from-yellow-100 via-amber-50 to-orange-100 px-2 py-1 text-[8px] font-bold uppercase tracking-[0.16em] text-amber-800 shadow-[0_0_0_1px_rgba(251,191,36,0.12)] dark:border-amber-400/30 dark:from-amber-500/15 dark:via-yellow-500/10 dark:to-orange-500/15 dark:text-amber-200"
+                        : "rounded-full border border-rose-300/50 bg-rose-100 px-2 py-1 text-[8px] font-bold uppercase tracking-[0.16em] text-rose-800 shadow-sm dark:border-rose-400/30 dark:bg-rose-500/10 dark:text-rose-200"
+                  }
+                >
+                  {badge.label}
+                </span>
+              ))}
             </div>
           ) : null}
         </div>
@@ -146,11 +177,11 @@ export function CourseCard({
           <h2 className="mt-2 min-h-[56px] text-[1.7rem] font-black leading-[1.08] tracking-[-0.04em] text-slate-900 dark:text-slate-50">
             {course.title}
           </h2>
-          <p className="mt-1 min-h-[62px] flex-1 text-[0.9rem] leading-5 text-slate-600 dark:text-slate-300">
+          <p className="mt-1 min-h-[62px] flex-1 pb-3 text-[0.9rem] leading-5 text-slate-600 dark:text-slate-300">
             {course.shortDescription ?? course.description}
           </p>
 
-          <div className="-mt-1 grid grid-cols-2 gap-1.5 text-[10px] leading-none text-slate-700 dark:text-slate-200">
+          <div className="mt-0 grid grid-cols-2 gap-1.5 text-[10px] leading-none text-slate-700 dark:text-slate-200">
             {getCourseMetricCards(course).map((metric) => (
               <span
                 key={`${course.id}-${metric.label}`}

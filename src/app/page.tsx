@@ -39,6 +39,7 @@ export default async function HomePage({
       price: true,
       currency: true,
       featured: true,
+      isNew: true,
       imageUrl: true,
       instructorName: true,
       instructorTitle: true,
