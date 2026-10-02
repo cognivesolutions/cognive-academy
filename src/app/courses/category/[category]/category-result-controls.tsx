@@ -163,6 +163,8 @@ export default function CategoryResultControls({
                     imageUrl: course.imageUrl,
                     isLive: course.isLive,
                     language: course.language,
+                    durationHours: course.durationHours,
+                    modules: course.modules,
                   }}
                   statusLabel={course.isLive ? "Live" : "Recorded"}
                   statusTone={course.isLive ? "live" : "recorded"}

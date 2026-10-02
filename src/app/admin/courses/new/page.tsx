@@ -13,7 +13,7 @@ export default async function NewCoursePage() {
   const session = await auth();
 
   if (!session?.user?.id) {
-    redirect("/admin/login");
+    redirect(`/admin/login?callbackUrl=${encodeURIComponent("/admin/courses/new")}`);
   }
 
   if (session.user.role !== "ADMIN") {

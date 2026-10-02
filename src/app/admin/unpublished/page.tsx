@@ -20,7 +20,7 @@ export default async function UnpublishedPage({
   const session = await auth();
 
   if (!session?.user?.id) {
-    redirect("/admin/login");
+    redirect(`/admin/login?callbackUrl=${encodeURIComponent("/admin/unpublished")}`);
   }
 
   if (session.user.role !== "ADMIN") {

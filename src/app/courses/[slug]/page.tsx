@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import BackButton from "@/components/back-button";
+import { getCourseMetricCards } from "@/lib/course-metrics";
 import CheckoutButton from "@/components/checkout-button";
 import CoursePreviewDialog from "@/components/course-preview-dialog";
 
@@ -42,20 +42,20 @@ export default async function CourseDetailPage({
       }))
     : false;
   const price = Number(course.price);
+  const summaryMetrics = getCourseMetricCards(course);
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.12),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(14,165,233,0.12),_transparent_26%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_32%,_#f8fafc_100%)] text-slate-900 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(14,165,233,0.12),_transparent_28%),linear-gradient(180deg,_#020817_0%,_#0f172a_38%,_#111827_100%)] dark:text-slate-50">
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:py-12">
         <div className="overflow-hidden rounded-[36px] border border-slate-200 bg-white/85 p-5 shadow-[0_20px_70px_rgba(15,23,42,0.08)] backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/80 sm:p-6 lg:p-8">
-          <div className="mb-5 flex items-center justify-between gap-3">
-            <BackButton href="/courses" />
+          <div className="mb-3 flex items-center justify-end gap-3">
             <span className="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200">
               {course.isLive ? "Live learning" : "Recorded learning"}
             </span>
           </div>
 
           <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-            <section className="space-y-8">
+            <section className="space-y-6">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="inline-flex rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-200">
                   {course.category} course
@@ -67,18 +67,17 @@ export default async function CourseDetailPage({
 
               <div>
                 <h1 className="text-4xl font-black tracking-[-0.06em] text-slate-900 dark:text-white sm:text-5xl">{course.title}</h1>
-                <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">{course.description}</p>
+                <p className="mt-2 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">{course.description}</p>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-3">
-                {[
-                  { label: "Duration", value: `${course.durationHours ?? 0} hours` },
-                  { label: "Modules", value: `${course.modules.length} modules` },
-                  { label: "Access", value: "Lifetime" },
-                ].map((item) => (
-                  <div key={item.label} className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3 dark:border-slate-700 dark:bg-slate-800/50">
+              <div className="grid gap-3 sm:grid-cols-2">
+                {summaryMetrics.map((item) => (
+                  <div
+                    key={item.label}
+                    className="group rounded-2xl border border-slate-200 bg-slate-50/80 p-3 shadow-[0_10px_26px_rgba(15,23,42,0.04)] transition-all duration-250 ease-out hover:-translate-y-1 hover:border-slate-300 hover:bg-white hover:shadow-[0_18px_30px_rgba(15,23,42,0.09)] dark:border-slate-700 dark:bg-slate-800/50 dark:shadow-[0_10px_22px_rgba(2,6,23,0.18)] dark:hover:border-slate-600 dark:hover:bg-slate-800/80"
+                  >
                     <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{item.label}</div>
-                    <div className="mt-2 text-sm font-semibold text-slate-900 dark:text-white">{item.value}</div>
+                    <div className="mt-2 text-sm font-semibold text-slate-900 transition-colors duration-200 group-hover:text-slate-700 dark:text-white dark:group-hover:text-slate-100">{item.value}</div>
                   </div>
                 ))}
               </div>
@@ -156,7 +155,7 @@ export default async function CourseDetailPage({
             </section>
 
             <aside className="lg:pt-10">
-              <div className="sticky top-8 overflow-hidden rounded-[30px] border border-indigo-200/60 bg-[linear-gradient(180deg,_rgba(255,255,255,0.96),_rgba(239,246,255,0.98))] p-5 shadow-[0_24px_70px_rgba(79,70,229,0.15)] ring-1 ring-white/60 dark:border-indigo-500/20 dark:bg-[linear-gradient(180deg,_rgba(15,23,42,0.96),_rgba(17,24,39,0.98))] dark:shadow-[0_22px_60px_rgba(2,6,23,0.35)]">
+              <div className="sticky top-8 overflow-hidden rounded-[30px] border border-slate-200 bg-[linear-gradient(180deg,_rgba(255,255,255,0.96),_rgba(248,250,252,0.98))] p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)] transition-all duration-300 ease-out hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_30px_90px_rgba(15,23,42,0.12)] hover:ring-1 hover:ring-indigo-100/80 dark:border-slate-700 dark:bg-[linear-gradient(180deg,_rgba(15,23,42,0.96),_rgba(17,24,39,0.98))] dark:shadow-[0_22px_60px_rgba(2,6,23,0.35)] dark:hover:border-slate-600 dark:hover:ring-indigo-500/20">
                 <div className="mb-4 flex items-center justify-between gap-2">
                   <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
                     Limited access

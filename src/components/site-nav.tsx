@@ -147,9 +147,8 @@ export function SiteNav() {
     return () => document.removeEventListener("mousedown", handlePointerDown);
   }, []);
 
-  // When the Courses menu opens, default the hovered course to the first item so
-  // Clear hoveredCourse when menu closes. Do NOT default to the first item —
-  // we only want the right popover to show after the user hovers/focuses an item.
+  // Keep the Courses hover state empty until the user actually hovers or focuses
+  // a submenu item. Auto-selecting the first item causes the unwanted white border.
   useEffect(() => {
     if (openMenu !== "Courses") {
       setHoveredCourse(null);
@@ -157,18 +156,9 @@ export function SiteNav() {
       return;
     }
 
-    if (!hoveredCourse && coursesMenu.length > 0) {
-      setHoveredCourse(coursesMenu[0].label);
-      const firstTarget = menuFirstRefs.current["Courses"];
-      if (firstTarget) {
-        try {
-          setHoveredItemRect(firstTarget.getBoundingClientRect());
-        } catch {
-          setHoveredItemRect(null);
-        }
-      }
-    }
-  }, [openMenu, hoveredCourse]);
+    setHoveredCourse(null);
+    setHoveredItemRect(null);
+  }, [openMenu]);
 
   // When a menu opens, focus its first item for keyboard users
   useEffect(() => {
@@ -225,7 +215,12 @@ export function SiteNav() {
                         ? "text-indigo-700 dark:text-indigo-300"
                         : "text-slate-700 hover:text-slate-800 dark:text-slate-200 dark:hover:text-slate-100"
                     }`}
-                    onClick={() => item.label === "Courses" && setHoveredCourse(coursesMenu[0]?.label ?? null)}
+                    onClick={() => {
+                      if (item.label === "Courses") {
+                        setHoveredCourse(null);
+                        setHoveredItemRect(null);
+                      }
+                    }}
                   >
                     <span className="inline-flex translate-y-0.5 items-center gap-1.5">
                       <span
@@ -246,8 +241,9 @@ export function SiteNav() {
                     aria-expanded={isOpen}
                     aria-label={`Open ${item.label} menu`}
                     onClick={() => {
-                      if (!isOpen && item.label === "Courses") {
-                        setHoveredCourse(coursesMenu[0]?.label ?? null);
+                      if (item.label === "Courses") {
+                        setHoveredCourse(null);
+                        setHoveredItemRect(null);
                       }
                       setOpenMenu(isOpen ? null : item.label);
                     }}

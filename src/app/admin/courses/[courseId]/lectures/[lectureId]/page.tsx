@@ -11,7 +11,11 @@ type Props = { params: { courseId: string; lectureId: string } };
 
 export default async function LectureEditPage({ params }: Props) {
   const session = await auth();
-  if (!session?.user?.id || session.user.role !== "ADMIN") redirect("/admin/login");
+  if (!session?.user?.id) {
+    const callbackUrl = `/admin/courses/${params?.courseId}/lectures/${params?.lectureId}`;
+    redirect(`/admin/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+  }
+  if (session.user.role !== "ADMIN") redirect("/");
 
   const lectureId = params?.lectureId;
   const courseId = params?.courseId;

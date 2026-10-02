@@ -19,6 +19,9 @@ export type CourseCardData = {
   isLive?: boolean | null;
   instructorName?: string | null;
   durationHours?: number | null;
+  weeks?: number | null;
+  projectCount?: number | null;
+  sessionCount?: number | null;
   language?: string | null;
   modules?: Array<{
     lectures?: Array<{
@@ -83,11 +86,11 @@ export function CourseCard({
     <article
       key={course.id}
       role="listitem"
-      className={`group relative flex h-full min-h-[500px] flex-shrink-0 snap-center flex-col overflow-hidden rounded-[18px] border border-slate-200 bg-white p-2.5 shadow-[0_18px_42px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-1 hover:border-indigo-300 hover:shadow-[0_18px_34px_rgba(59,130,246,0.08),0_12px_24px_rgba(15,23,42,0.12)] hover:ring-1 hover:ring-indigo-400/10 dark:border-slate-700/75 dark:bg-[linear-gradient(180deg,_rgba(10,15,28,0.96),_rgba(13,19,33,0.96))] dark:shadow-[0_18px_42px_rgba(2,6,23,0.28)] dark:hover:border-indigo-400/25 ${cardClassName}`}
-      style={{ flex: "0 0 calc((100% - 2rem) / 3)" }}
+      className={`group relative flex h-full min-h-[500px] flex-shrink-0 snap-center flex-col rounded-[18px] border border-slate-200 bg-white p-2.5 shadow-[0_18px_42px_rgba(15,23,42,0.08),0_8px_18px_rgba(59,130,246,0.05)] transition-all duration-300 hover:-translate-y-2 hover:border-indigo-300 hover:shadow-[0_30px_72px_rgba(59,130,246,0.15),0_18px_36px_rgba(15,23,42,0.12)] hover:ring-1 hover:ring-blue-200/60 dark:border-slate-700/75 dark:bg-[linear-gradient(180deg,_rgba(10,15,28,0.96),_rgba(13,19,33,0.96))] dark:shadow-[0_20px_48px_rgba(2,6,23,0.28),0_8px_22px_rgba(59,130,246,0.10)] dark:hover:border-indigo-400/25 ${cardClassName}`}
+      style={{ flex: "0 0 calc((100% - 2rem) / 3)", overflow: "visible" }}
     >
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-indigo-500/0 via-indigo-400/0 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_10%,rgba(129,140,248,0.06),transparent_30%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      <div className="pointer-events-none absolute inset-0 rounded-[18px] bg-[radial-gradient(circle_at_50%_10%,rgba(96,165,250,0.16),transparent_30%)] opacity-0 blur-[2px] transition-all duration-300 group-hover:opacity-100" />
 
       <div className="relative flex h-full flex-col">
         <div className="relative mb-2 overflow-hidden rounded-[15px] border border-slate-200 bg-slate-100 transition-all duration-300 group-hover:border-indigo-300 dark:border-slate-700/70 dark:bg-slate-800/80 dark:group-hover:border-indigo-400/35">
@@ -159,7 +162,7 @@ export function CourseCard({
                 <span className="font-black leading-none text-slate-900 dark:text-slate-50" style={{ fontSize: "11px", lineHeight: 1 }}>
                   {metric.value}
                 </span>
-                <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-300">
+                <span className="text-[9px] font-semibold tracking-[0.08em] text-slate-500 dark:text-slate-300">
                   {metric.label}
                 </span>
               </span>

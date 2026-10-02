@@ -17,7 +17,11 @@ type Props = {
 
 export default async function LecturesPage({ params, searchParams }: Props) {
   const session = await auth();
-  if (!session?.user?.id || session.user.role !== "ADMIN") redirect("/admin/login");
+  if (!session?.user?.id) {
+    const callbackUrl = `/admin/courses/${(await Promise.resolve(params ?? {} as any))?.courseId ?? ""}/lectures`;
+    redirect(`/admin/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+  }
+  if (session.user.role !== "ADMIN") redirect("/");
   // `params` and `searchParams` can be Promises in some Next.js runtimes — resolve them safely
   const resolvedParams = await Promise.resolve(params ?? {} as any);
   const resolvedSearchParams = await Promise.resolve(searchParams ?? {} as any);
