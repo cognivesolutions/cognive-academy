@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { CreateCourseActionButton } from "./create-course-action.client";
+
+export const dynamic = "force-dynamic";
 import { CreateCourseCancelButton } from "./create-course-cancel-action.client";
 import { CreateCourseErrorNotice } from "./create-course-error.client";
 import { CreateCourseForm } from "./create-course-form.client";

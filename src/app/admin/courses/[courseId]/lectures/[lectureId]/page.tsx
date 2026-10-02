@@ -5,6 +5,8 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import BackButton from "@/components/back-button";
 
+export const dynamic = "force-dynamic";
+
 type Props = { params: { courseId: string; lectureId: string } };
 
 export default async function LectureEditPage({ params }: Props) {

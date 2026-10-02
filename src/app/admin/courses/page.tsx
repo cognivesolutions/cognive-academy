@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { AdminMessage } from "../admin-message.client";
+
+export const dynamic = "force-dynamic";
 import { CourseSearchInput } from "../components/course-search-input";
 import { CourseSelect } from "../components/course-select";
 import { PaginationPageSizeSelect } from "../components/pagination-page-size-select";

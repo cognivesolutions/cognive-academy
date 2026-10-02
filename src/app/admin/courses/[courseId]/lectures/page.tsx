@@ -4,6 +4,8 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { CourseSelect } from "@/app/admin/components/course-select";
+
+export const dynamic = "force-dynamic";
 import BackButton from "@/components/back-button";
 import BulkEditor from "..\/bulk-editor.client";
 import ModuleManagement from "..\/modules.client";
