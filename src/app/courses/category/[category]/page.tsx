@@ -68,7 +68,7 @@ export default async function CategoryCoursePage({
   searchParams,
 }: {
   params: Promise<{ category: string }> | { category: string };
-  searchParams?: Promise<{ type?: string; lang?: string }> | { type?: string; lang?: string };
+  searchParams?: Promise<{ type?: string; lang?: string; page?: string }> | { type?: string; lang?: string; page?: string };
 }) {
   const resolvedParams = await Promise.resolve(params);
   const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
