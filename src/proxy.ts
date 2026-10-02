@@ -10,7 +10,7 @@ const protectedPaths = [
 ];
 
 export async function proxy(request: Request) {
-  const session = await auth(request as any);
+  const session = await auth();
   const url = new URL(request.url);
   const pathname = url.pathname;
   const search = url.search;
