@@ -13,6 +13,7 @@ export type CourseCardData = {
   category?: string | null;
   level?: string | null;
   price?: number | string | null;
+  offerPrice?: number | string | null;
   isPromotional?: boolean | null;
   isBestValue?: boolean | null;
   isNew?: boolean | null;
@@ -84,11 +85,23 @@ export function CourseCard({
   const DEFAULT_IMG = "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1200&q=80";
   const imgSrc = course.coverImage ?? course.imageUrl ?? DEFAULT_IMG;
   const resolvedStatus = statusLabel ?? (statusTone === "live" ? "Live" : "Recorded");
-  const badgeLabels = [
-    course.isPromotional ? { label: "Limited offer", tone: "danger" } : null,
-    course.isBestValue ? { label: "Best value", tone: "amber" } : null,
-    showFeaturedBadge && course.featured ? { label: "Featured", tone: "featured" } : null,
-  ].filter(Boolean) as Array<{ label: string; tone: string }>;
+  const numericPrice = Number(course.price ?? 0);
+  const numericOfferPrice = course.offerPrice !== null && course.offerPrice !== undefined
+    ? Number(course.offerPrice)
+    : null;
+  const showPromotionalOffer = Boolean(
+    course.isPromotional && numericOfferPrice !== null && numericOfferPrice > 0 && numericOfferPrice < numericPrice,
+  );
+  const displayPrice = Number(showPromotionalOffer && numericOfferPrice !== null ? numericOfferPrice : numericPrice);
+  const discountPercent = showPromotionalOffer && numericPrice > displayPrice
+    ? Math.round(((numericPrice - displayPrice) / numericPrice) * 100)
+    : 0;
+  const formatPrice = (value: number) => new Intl.NumberFormat("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+  const limitedOfferBadge = showPromotionalOffer ? { label: "Limited offer", tone: "limited-offer" } : null;
+  const featuredBadge = showFeaturedBadge && course.featured ? { label: "Featured", tone: "featured" } : null;
   const showNewStarBadge = Boolean(course.isNew);
 
   return (
@@ -124,32 +137,52 @@ export function CourseCard({
           ) : null}
 
           {showNewStarBadge ? (
-            <span
-              aria-label="New course"
-              title="New"
-              className="pointer-events-none absolute left-0 top-0 z-30 flex h-10 w-28 items-center justify-center border border-red-300/70 bg-gradient-to-r from-red-600 via-red-500 to-red-400 text-[9px] font-black uppercase tracking-[0.22em] text-white shadow-[0_12px_22px_rgba(239,68,68,0.28)] [clip-path:polygon(12%_0%,100%_0%,88%_100%,0%_100%)]"
-              style={{ transform: "translate(-18px, -2px) rotate(-45deg)" }}
-            >
-              NEW
-            </span>
+            <div className="pointer-events-none absolute left-2 top-5 z-30">
+              <div className="relative flex items-center">
+                <span
+                  aria-label="New course"
+                  title="New"
+                  className="relative block h-9 w-28 overflow-hidden border border-red-50/90 bg-gradient-to-r from-red-700 via-red-500 to-orange-400 shadow-[0_14px_24px_rgba(239,68,68,0.35)]"
+                  style={{
+                    clipPath: "polygon(0 0, 82% 0, 100% 50%, 82% 100%, 0 100%, 10% 50%)",
+                    transform: "translate(-8px, 5px) rotate(-45deg)",
+                  }}
+                >
+                  <span className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.7),transparent_28%,rgba(255,255,255,0.12))]" />
+                  <span className="absolute inset-y-0 left-0 w-[2px] bg-white/80" />
+                  <span className="absolute inset-x-0 top-0 h-[2px] bg-white/50" />
+                  <span className="relative flex h-full items-center justify-center text-[20px] font-black uppercase tracking-[0.32em] text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]">
+                    NEW
+                  </span>
+                </span>
+              </div>
+            </div>
           ) : null}
 
-          {badgeLabels.length > 0 ? (
-            <div className="absolute right-2.5 top-2.5 z-10 flex max-w-[60%] flex-wrap justify-end gap-1.5">
-              {badgeLabels.map((badge) => (
+          {featuredBadge ? (
+            <div className="absolute right-2.5 top-2.5 z-10">
+              <span className="rounded-full border border-amber-300/60 bg-gradient-to-r from-yellow-100 via-amber-50 to-orange-100 px-2 py-1 text-[8px] font-bold uppercase tracking-[0.16em] text-amber-800 shadow-[0_0_0_1px_rgba(251,191,36,0.12)] dark:border-amber-400/30 dark:from-amber-500/15 dark:via-yellow-500/10 dark:to-orange-500/15 dark:text-amber-200">
+                {featuredBadge.label}
+              </span>
+            </div>
+          ) : null}
+
+          {limitedOfferBadge ? (
+            <div className="absolute bottom-2.5 right-2.5 z-10">
+              <span className="group relative inline-flex items-center gap-1 overflow-hidden rounded-full border border-amber-300/70 bg-gradient-to-r from-amber-200/70 via-yellow-100/60 to-orange-100/60 px-2 py-1 text-[8px] font-bold uppercase tracking-[0.16em] text-amber-900 shadow-[0_4px_12px_rgba(245,158,11,0.12)] dark:border-amber-500/30 dark:from-amber-500/20 dark:via-yellow-500/15 dark:to-orange-500/15 dark:text-yellow-50">
                 <span
-                  key={badge.label}
-                  className={
-                    badge.tone === "amber"
-                      ? "rounded-full border border-amber-300/40 bg-amber-100 px-2 py-1 text-[8px] font-bold uppercase tracking-[0.16em] text-amber-800 shadow-sm dark:border-amber-300/30 dark:bg-amber-500/10 dark:text-amber-200"
-                      : badge.tone === "featured"
-                        ? "rounded-full border border-amber-300/60 bg-gradient-to-r from-yellow-100 via-amber-50 to-orange-100 px-2 py-1 text-[8px] font-bold uppercase tracking-[0.16em] text-amber-800 shadow-[0_0_0_1px_rgba(251,191,36,0.12)] dark:border-amber-400/30 dark:from-amber-500/15 dark:via-yellow-500/10 dark:to-orange-500/15 dark:text-amber-200"
-                        : "rounded-full border border-rose-300/50 bg-rose-100 px-2 py-1 text-[8px] font-bold uppercase tracking-[0.16em] text-rose-800 shadow-sm dark:border-rose-400/30 dark:bg-rose-500/10 dark:text-rose-200"
-                  }
-                >
-                  {badge.label}
+                  className="pointer-events-none absolute inset-0 opacity-70 animate-[chipShimmer_4s_linear_infinite]"
+                  style={{
+                    backgroundImage:
+                      "linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.55) 24%, rgba(255,255,255,0.14) 38%, transparent 54%)",
+                    backgroundSize: "240% 100%",
+                  }}
+                />
+                <span className="relative z-10 inline-flex items-center gap-1">
+                  <span aria-hidden="true">★</span>
+                  {limitedOfferBadge.label}
                 </span>
-              ))}
+              </span>
             </div>
           ) : null}
         </div>
@@ -171,7 +204,9 @@ export function CourseCard({
               {resolvedStatus}
             </span>
 
-            <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">{course.level || "Beginner"}</span>
+            <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-800/80 dark:text-slate-200">
+              {course.level || "Beginner"}
+            </span>
           </div>
 
           <h2 className="mt-2 min-h-[56px] text-[1.7rem] font-black leading-[1.08] tracking-[-0.04em] text-slate-900 dark:text-slate-50">
@@ -201,19 +236,33 @@ export function CourseCard({
           </div>
 
           {showPrice || action ? (
-            <div className="mt-auto pt-2.5">
+            <div className="mt-auto pt-2">
               <div className="rounded-[14px] border border-slate-200 bg-[linear-gradient(135deg,rgba(255,255,255,0.96),rgba(248,250,252,0.9))] p-2.5 dark:border-slate-700/80 dark:bg-[linear-gradient(135deg,rgba(15,23,42,0.8),rgba(30,41,59,0.72))]">
                 <div className="flex items-center justify-between gap-2">
                   {showPrice ? (
-                    <div>
-                      <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Price</div>
-                      <div className="mt-1 text-2xl font-black text-slate-900 dark:text-slate-50">
-                        ₹{Number(course.price).toLocaleString("en-IN")}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-1.5">
+                        <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Price</div>
+                        {showPromotionalOffer ? (
+                          <span className="mt-0.5 inline-flex items-center rounded-full border border-emerald-200/80 bg-gradient-to-r from-emerald-300/80 via-green-300/80 to-lime-200/80 px-1.5 py-0.5 text-[7px] font-black uppercase tracking-[0.12em] text-emerald-950 shadow-[0_8px_16px_rgba(16,185,129,0.18)] backdrop-blur-sm dark:border-emerald-400/30 dark:from-emerald-500/30 dark:via-green-500/25 dark:to-lime-400/20 dark:text-emerald-50">
+                            Save {discountPercent}%
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="-mt-0.5 flex flex-wrap items-center gap-1.5">
+                        <span className="text-xl font-black tracking-[-0.04em] text-slate-900 dark:text-slate-50 sm:text-2xl">
+                          ₹{formatPrice(displayPrice)}
+                        </span>
+                        {showPromotionalOffer ? (
+                          <span className="text-xs text-slate-400 line-through decoration-slate-400/80">
+                            ₹{formatPrice(numericPrice)}
+                          </span>
+                        ) : null}
                       </div>
                     </div>
                   ) : null}
 
-                  {action ? <div className="ml-auto">{action}</div> : null}
+                  {action ? <div className="ml-auto shrink-0">{action}</div> : null}
                 </div>
               </div>
             </div>

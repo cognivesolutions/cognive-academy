@@ -60,6 +60,7 @@ export function SiteNav() {
   const [hoveredItemHref, setHoveredItemHref] = useState<string | null>(null);
   const popoverHoverRef = useRef<boolean>(false);
   const menuFirstRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
+  const openByKeyboardRef = useRef<boolean>(false);
 
   // Track the left menu DOMRect so the right popover can be positioned outside
   useEffect(() => {
@@ -86,7 +87,7 @@ export function SiteNav() {
     };
   }, [openMenu]);
 
-  const scheduleMenuClose = () => {
+  const scheduleMenuClose = (delay = 260) => {
     if (closeTimeoutRef.current) {
       window.clearTimeout(closeTimeoutRef.current);
     }
@@ -96,7 +97,49 @@ export function SiteNav() {
         setOpenMenu(null);
       }
       closeTimeoutRef.current = null;
-    }, 250);
+    }, delay);
+  };
+
+  const cancelMenuClose = () => {
+    if (closeTimeoutRef.current) {
+      window.clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+  };
+
+  const resetDropdownHoverState = (label: string) => {
+    if (label !== "Courses") {
+      setHoveredCourse(null);
+      setHoveredItemRect(null);
+      setHoveredItemHref(null);
+      return;
+    }
+
+    setHoveredCourse(null);
+    setHoveredItemRect(null);
+    setHoveredItemHref(null);
+  };
+
+  const isWithinMenuCluster = (node: Node | null, clusterRoot: HTMLElement | null = null) =>
+    Boolean(
+      node && (
+        clusterRoot?.contains(node) ||
+        leftMenuDropdownRef.current?.contains(node) ||
+        portalMenuRef.current?.contains(node)
+      ),
+    );
+
+  const isPointerInsideMenuCluster = (event: React.MouseEvent | MouseEvent | null) => {
+    if (!event || typeof document === "undefined") return false;
+
+    const target = document.elementFromPoint(event.clientX, event.clientY);
+    if (!target) return false;
+
+    return Boolean(
+      navRef.current?.contains(target) ||
+      leftMenuDropdownRef.current?.contains(target) ||
+      portalMenuRef.current?.contains(target),
+    );
   };
 
   const routeActiveLabel = useMemo(() => {
@@ -147,6 +190,32 @@ export function SiteNav() {
     return () => document.removeEventListener("mousedown", handlePointerDown);
   }, []);
 
+  useEffect(() => {
+    if (!openMenu) return;
+
+    function handlePointerMove(event: MouseEvent) {
+      const target = document.elementFromPoint(event.clientX, event.clientY);
+      const insideCluster =
+        !!target && (
+          navRef.current?.contains(target) ||
+          leftMenuDropdownRef.current?.contains(target) ||
+          portalMenuRef.current?.contains(target)
+        );
+
+      if (insideCluster) {
+        cancelMenuClose();
+        popoverHoverRef.current = true;
+        return;
+      }
+
+      popoverHoverRef.current = false;
+      scheduleMenuClose(160);
+    }
+
+    document.addEventListener("mousemove", handlePointerMove);
+    return () => document.removeEventListener("mousemove", handlePointerMove);
+  }, [openMenu]);
+
   // Keep the Courses hover state empty until the user actually hovers or focuses
   // a submenu item. Auto-selecting the first item causes the unwanted white border.
   useEffect(() => {
@@ -160,14 +229,17 @@ export function SiteNav() {
     setHoveredItemRect(null);
   }, [openMenu]);
 
-  // When a menu opens, focus its first item for keyboard users
+  // Only focus the first item when the menu is opened via keyboard interaction.
+  // A mouse hover should not trigger a synthetic focus that opens the nested pane.
   useEffect(() => {
-    if (!openMenu) return;
+    if (!openMenu || !openByKeyboardRef.current) return;
+
     const first = menuFirstRefs.current[openMenu];
     if (first) {
-      // focus in next tick
       setTimeout(() => first.focus(), 0);
     }
+
+    openByKeyboardRef.current = false;
   }, [openMenu]);
 
   return (
@@ -183,22 +255,19 @@ export function SiteNav() {
                 key={item.label}
                 className="relative"
                 onMouseEnter={() => {
-                  if (closeTimeoutRef.current) {
-                    window.clearTimeout(closeTimeoutRef.current);
-                    closeTimeoutRef.current = null;
-                  }
+                  cancelMenuClose();
                   popoverHoverRef.current = true;
                   setOpenMenu(item.label);
+                  resetDropdownHoverState(item.label);
                 }}
                 onMouseLeave={(event) => {
                   const relatedTarget = event.relatedTarget;
                   const isNode = relatedTarget instanceof Node;
-                  const isStillInsideDropdown = Boolean(
-                    isNode && (
-                      leftMenuDropdownRef.current?.contains(relatedTarget) ||
-                      portalMenuRef.current?.contains(relatedTarget)
-                    )
-                  );
+                  const clusterRoot = event.currentTarget;
+                  const isStillInsideDropdown =
+                    isWithinMenuCluster(isNode ? relatedTarget : null, clusterRoot) ||
+                    isPointerInsideMenuCluster(event) ||
+                    (item.label === "Courses" && Boolean(hoveredCourse));
 
                   popoverHoverRef.current = isStillInsideDropdown;
 
@@ -215,11 +284,11 @@ export function SiteNav() {
                         ? "text-indigo-700 dark:text-indigo-300"
                         : "text-slate-700 hover:text-slate-800 dark:text-slate-200 dark:hover:text-slate-100"
                     }`}
+                    onMouseEnter={() => {
+                      resetDropdownHoverState(item.label);
+                    }}
                     onClick={() => {
-                      if (item.label === "Courses") {
-                        setHoveredCourse(null);
-                        setHoveredItemRect(null);
-                      }
+                      resetDropdownHoverState(item.label);
                     }}
                   >
                     <span className="inline-flex translate-y-0.5 items-center gap-1.5">
@@ -240,19 +309,21 @@ export function SiteNav() {
                     aria-haspopup="menu"
                     aria-expanded={isOpen}
                     aria-label={`Open ${item.label} menu`}
+                    onMouseEnter={() => {
+                      resetDropdownHoverState(item.label);
+                    }}
                     onClick={() => {
-                      if (item.label === "Courses") {
-                        setHoveredCourse(null);
-                        setHoveredItemRect(null);
-                      }
+                      resetDropdownHoverState(item.label);
                       setOpenMenu(isOpen ? null : item.label);
                     }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
+                        openByKeyboardRef.current = true;
                         setOpenMenu(isOpen ? null : item.label);
                       } else if (e.key === "ArrowDown") {
                         e.preventDefault();
+                        openByKeyboardRef.current = true;
                         setOpenMenu(item.label);
                       } else if (e.key === "Escape") {
                         setOpenMenu(null);
@@ -278,17 +349,23 @@ export function SiteNav() {
                         closeTimeoutRef.current = null;
                       }
                       popoverHoverRef.current = true;
+                      openByKeyboardRef.current = false;
                       setOpenMenu(item.label);
+                    }}
+                    onMouseMove={(event) => {
+                      if (isPointerInsideMenuCluster(event)) {
+                        cancelMenuClose();
+                        popoverHoverRef.current = true;
+                      }
                     }}
                     onMouseLeave={(event) => {
                       const relatedTarget = event.relatedTarget;
                       const isNode = relatedTarget instanceof Node;
-                      const isStillInsideDropdown = Boolean(
-                        isNode && (
-                          leftMenuDropdownRef.current?.contains(relatedTarget) ||
-                          portalMenuRef.current?.contains(relatedTarget)
-                        )
-                      );
+                      const clusterRoot = leftMenuDropdownRef.current?.parentElement ?? null;
+                      const isStillInsideDropdown =
+                        isWithinMenuCluster(isNode ? relatedTarget : null, clusterRoot) ||
+                        isPointerInsideMenuCluster(event) ||
+                        (item.label === "Courses" && Boolean(hoveredCourse));
 
                       popoverHoverRef.current = isStillInsideDropdown;
 
@@ -362,7 +439,7 @@ export function SiteNav() {
                         const style: React.CSSProperties = {
                           position: "absolute",
                           left: Math.round(((leftMenuRect?.right ?? hoveredItemRect.right) ?? 0) + window.scrollX),
-                          top: Math.round((hoveredItemRect.top ?? 0) + 8 + window.scrollY),
+                          top: Math.round((hoveredItemRect.top ?? 0) - 10 + window.scrollY),
                           minWidth: 180,
                           zIndex: 120,
                         };
@@ -379,15 +456,20 @@ export function SiteNav() {
                                 closeTimeoutRef.current = null;
                               }
                             }}
+                            onMouseMove={(event) => {
+                              if (isPointerInsideMenuCluster(event)) {
+                                cancelMenuClose();
+                                popoverHoverRef.current = true;
+                              }
+                            }}
                             onMouseLeave={(event) => {
                               const relatedTarget = event.relatedTarget;
                               const isNode = relatedTarget instanceof Node;
-                              const isStillInsideDropdown = Boolean(
-                                isNode && (
-                                  leftMenuDropdownRef.current?.contains(relatedTarget) ||
-                                  portalMenuRef.current?.contains(relatedTarget)
-                                )
-                              );
+                              const clusterRoot = leftMenuDropdownRef.current?.parentElement ?? null;
+                              const isStillInsideDropdown =
+                                isWithinMenuCluster(isNode ? relatedTarget : null, clusterRoot) ||
+                                isPointerInsideMenuCluster(event) ||
+                                (item.label === "Courses" && Boolean(hoveredCourse));
 
                               popoverHoverRef.current = isStillInsideDropdown;
 

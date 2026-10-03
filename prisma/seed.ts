@@ -3,7 +3,49 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-const courseCatalog = [
+type SeedLecture = {
+  title: string;
+  isPreview: boolean;
+  liveSessionUrl?: string;
+  hlsUrl?: string;
+  videoUrl?: string;
+  scheduled?: "recorded" | "none";
+};
+
+type SeedModule = {
+  title: string;
+  description?: string;
+  lectures: SeedLecture[];
+};
+
+type SeedCourse = {
+  slug: string;
+  title: string;
+  shortDescription?: string;
+  description: string;
+  category: string;
+  level: string;
+  durationHours: number;
+  price: number;
+  offerPrice?: number;
+  isPromotional?: boolean;
+  isBestValue?: boolean;
+  isNew?: boolean;
+  promoCode?: string;
+  currency?: string;
+  featured: boolean;
+  isPublished: boolean;
+  isLive: boolean;
+  language: string;
+  imageUrl?: string;
+  instructorName: string;
+  instructorTitle?: string;
+  previewLectureUrl?: string;
+  modules: SeedModule[];
+  [key: string]: unknown;
+};
+
+const courseCatalog: SeedCourse[] = [
   {
     slug: "full-stack-javascript-bootcamp",
     title: "Full Stack JavaScript Bootcamp",
@@ -48,6 +90,53 @@ const courseCatalog = [
           { title: "CI/CD workflow basics", isPreview: false },
           { title: "Deploying on Vercel and Render", isPreview: false },
           { title: "Final project review and optimization", isPreview: false },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "software-development-ii",
+    title: "Software Development II",
+    shortDescription: "Build team-ready software skills with a mix of live sessions, recorded walkthroughs, and unscheduled practice labs.",
+    description:
+      "This course is designed to test the real learning flow: one session is live, one has a recording, and another remains unscheduled. It helps validate how the course detail page behaves across the three session states.",
+    category: "Software Development",
+    level: "Intermediate",
+    durationHours: 30,
+    price: 14999,
+    featured: true,
+    isPublished: true,
+    isLive: true,
+    isPromotional: true,
+    isBestValue: true,
+    offerPrice: 11999,
+    promoCode: "DEVII",
+    language: "en",
+    imageUrl: "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1200&q=80",
+    instructorName: "Vishwajeet Singh",
+    instructorTitle: "Software Engineering Mentor",
+    previewLectureUrl: "https://www.youtube.com/watch?v=QH2-TGUlwu4",
+    modules: [
+      {
+        title: "Engineering workflows",
+        description: "Work through sprint planning, implementation flow, and software team collaboration patterns.",
+        lectures: [
+          {
+            title: "Recorded code review walkthrough",
+            isPreview: true,
+            hlsUrl: "https://example.com/hls/software-development-ii-recorded-review.m3u8",
+            scheduled: "recorded",
+          },
+          {
+            title: "Live sprint planning and architecture review",
+            isPreview: false,
+            liveSessionUrl: "https://meet.google.com/abc-defg-hij",
+          },
+          {
+            title: "Team collaboration and debugging lab",
+            isPreview: false,
+            scheduled: "none",
+          },
         ],
       },
     ],
@@ -1890,7 +1979,23 @@ const courseCatalog = [
   },
 ];
 
-function buildCoursePayload(course: (typeof courseCatalog)[number]) {
+function getLectureMediaState(lecture: SeedLecture, courseSlug: string, lectureIndex: number) {
+  const hasExplicitSchedule = Boolean(lecture.liveSessionUrl || lecture.hlsUrl || lecture.videoUrl || lecture.scheduled);
+  const defaultHlsUrl = `https://example.com/hls/${courseSlug}-${lectureIndex + 1}.m3u8`;
+  const defaultVideoUrl = `https://example.com/videos/${courseSlug}-${lectureIndex + 1}.mp4`;
+
+  const isLive = Boolean(lecture.liveSessionUrl);
+  const isUnscheduled = lecture.scheduled === "none";
+  const shouldFallbackToDefaultRecording = !isLive && !isUnscheduled && !hasExplicitSchedule;
+
+  return {
+    liveSessionUrl: lecture.liveSessionUrl ?? null,
+    hlsUrl: lecture.hlsUrl ?? (shouldFallbackToDefaultRecording ? defaultHlsUrl : null),
+    videoUrl: lecture.videoUrl ?? (shouldFallbackToDefaultRecording ? defaultVideoUrl : null),
+  };
+}
+
+function buildCoursePayload(course: SeedCourse) {
   return {
     ...course,
     modules: {
@@ -1899,14 +2004,17 @@ function buildCoursePayload(course: (typeof courseCatalog)[number]) {
         description: module.description,
         position: moduleIndex + 1,
         lectures: {
-          create: module.lectures.map((lecture, lectureIndex) => ({
-            title: lecture.title,
-            description: lecture.title,
-            position: lectureIndex + 1,
-            isPreview: lecture.isPreview,
-            hlsUrl: `https://example.com/hls/${course.slug}-${lectureIndex + 1}.m3u8`,
-            videoUrl: `https://example.com/videos/${course.slug}-${lectureIndex + 1}.mp4`,
-          })),
+          create: module.lectures.map((lecture, lectureIndex) => {
+            const mediaState = getLectureMediaState(lecture, course.slug, lectureIndex);
+
+            return {
+              title: lecture.title,
+              description: lecture.title,
+              position: lectureIndex + 1,
+              isPreview: lecture.isPreview,
+              ...mediaState,
+            };
+          }),
         },
       })),
     },
@@ -1947,12 +2055,35 @@ async function main() {
   });
 
   for (const course of courseCatalog) {
-    const { modules: _modules, ...courseFields } = course;
+    const { modules, ...courseFields } = course;
 
     await prisma.course.upsert({
       where: { slug: course.slug },
       update: {
         ...courseFields,
+        modules: {
+          deleteMany: {},
+          create: modules.map((module, moduleIndex) => ({
+            title: module.title,
+            description: module.description,
+            position: moduleIndex + 1,
+            lectures: {
+              create: module.lectures.map((lecture, lectureIndex) => ({
+                title: lecture.title,
+                description: lecture.title,
+                position: lectureIndex + 1,
+                isPreview: lecture.isPreview,
+                liveSessionUrl: lecture.liveSessionUrl ?? null,
+                hlsUrl:
+                  lecture.hlsUrl ??
+                  (lecture.liveSessionUrl || lecture.scheduled === "none" ? null : `https://example.com/hls/${course.slug}-${lectureIndex + 1}.m3u8`),
+                videoUrl:
+                  lecture.videoUrl ??
+                  (lecture.liveSessionUrl || lecture.scheduled === "none" ? null : `https://example.com/videos/${course.slug}-${lectureIndex + 1}.mp4`),
+              })),
+            },
+          })),
+        },
       },
       create: buildCoursePayload(course),
     });
