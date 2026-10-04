@@ -100,7 +100,7 @@ export function CourseCard({
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);
-  const limitedOfferBadge = showPromotionalOffer ? { label: "Limited offer", tone: "limited-offer" } : null;
+  const limitedOfferBadge = showPromotionalOffer ? { label: "Limited-time offer", tone: "limited-offer" } : null;
   const featuredBadge = showFeaturedBadge && course.featured ? { label: "Featured", tone: "featured" } : null;
   const showNewStarBadge = Boolean(course.isNew);
 
@@ -241,15 +241,15 @@ export function CourseCard({
                 <div className="flex items-center justify-between gap-2">
                   {showPrice ? (
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-start justify-between gap-1.5">
+                      <div className="mb-0.522 flex items-center justify-between gap-1.52">
                         <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Price</div>
                         {showPromotionalOffer ? (
-                          <span className="mt-0.5 inline-flex items-center rounded-full border border-emerald-200/80 bg-gradient-to-r from-emerald-300/80 via-green-300/80 to-lime-200/80 px-1.5 py-0.5 text-[7px] font-black uppercase tracking-[0.12em] text-emerald-950 shadow-[0_8px_16px_rgba(16,185,129,0.18)] backdrop-blur-sm dark:border-emerald-400/30 dark:from-emerald-500/30 dark:via-green-500/25 dark:to-lime-400/20 dark:text-emerald-50">
+                          <span className="inline-flex translate-y-0.5 items-center rounded-full border border-emerald-200/80 bg-gradient-to-r from-emerald-300/80 via-green-300/80 to-lime-200/80 px-1.5 py-0.5 text-[7px] font-black uppercase tracking-[0.12em] text-emerald-950 shadow-[0_8px_16px_rgba(16,185,129,0.18)] backdrop-blur-sm dark:border-emerald-400/30 dark:from-emerald-500/30 dark:via-green-500/25 dark:to-lime-400/20 dark:text-emerald-50">
                             Save {discountPercent}%
                           </span>
                         ) : null}
                       </div>
-                      <div className="-mt-0.5 flex flex-wrap items-center gap-1.5">
+                      <div className="flex flex-wrap items-center gap-1.5">
                         <span className="text-xl font-black tracking-[-0.04em] text-slate-900 dark:text-slate-50 sm:text-2xl">
                           ₹{formatPrice(displayPrice)}
                         </span>

@@ -145,7 +145,7 @@ export default async function CourseDetailPage({
                     <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-indigo-600 dark:text-indigo-300">Curriculum</p>
                     <h2 className="mt-2 text-3xl font-black tracking-tight text-slate-900 dark:text-white">What you’ll learn</h2>
                   </div>
-                  <div className="hidden rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 sm:block">
+                  <div className="hidden items-center rounded-full border border-indigo-400/30 bg-[linear-gradient(135deg,rgba(99,102,241,0.18),rgba(15,23,42,0.9))] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-indigo-100 shadow-[0_8px_22px_rgba(79,70,229,0.18)] sm:inline-flex">
                     {course.modules.length} modules
                   </div>
                 </div>
@@ -158,17 +158,17 @@ export default async function CourseDetailPage({
                   >
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5">
                       <div className="min-w-0 flex-1">
-                        <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-indigo-600 dark:text-indigo-300">
+                        <span className="inline-flex items-center rounded-full border border-indigo-400/30 bg-[linear-gradient(135deg,rgba(99,102,241,0.18),rgba(30,41,59,0.9))] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.22em] text-indigo-100 shadow-[0_8px_22px_rgba(79,70,229,0.18)]">
                           Module {index + 1}
                         </span>
                         <h3 className="mt-3 text-left text-xl font-bold text-slate-900 dark:text-white">{module.title}</h3>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[9px] font-medium uppercase tracking-[0.14em] text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                        <span className="inline-flex items-center rounded-full border border-indigo-400/30 bg-[linear-gradient(135deg,rgba(99,102,241,0.18),rgba(30,41,59,0.9))] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-indigo-100 shadow-[0_8px_22px_rgba(79,70,229,0.18)]">
                           {module.lectures.length} sessions
                         </span>
-                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-lg font-semibold text-slate-700 shadow-sm transition-all duration-200 group-open:rotate-180 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-indigo-400/30 bg-[linear-gradient(135deg,rgba(99,102,241,0.18),rgba(30,41,59,0.9))] text-lg font-semibold text-indigo-100 shadow-[0_8px_22px_rgba(79,70,229,0.18)] transition-all duration-200 group-open:rotate-180">
                           ▾
                         </span>
                       </div>
@@ -237,7 +237,7 @@ export default async function CourseDetailPage({
             <aside className="lg:pt-10">
               <div className="sticky top-8 overflow-hidden rounded-[30px] border border-slate-200 bg-[linear-gradient(180deg,_rgba(255,255,255,0.96),_rgba(248,250,252,0.98))] p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)] transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-indigo-200 hover:shadow-[0_32px_100px_rgba(79,70,229,0.12)] hover:ring-1 hover:ring-indigo-100/80 dark:border-slate-700 dark:bg-[linear-gradient(180deg,_rgba(15,23,42,0.96),_rgba(17,24,39,0.98))] dark:shadow-[0_22px_60px_rgba(2,6,23,0.35)] dark:hover:border-indigo-500/20 dark:hover:ring-indigo-500/10">
                 {(showBestValueBadge || showPromotionalOffer) ? (
-                  <div className="mb-4 flex items-center justify-between gap-2">
+                  <div className={`mb-4 flex items-center ${courseData.isBestValue && showPromotionalOffer ? "justify-between" : "justify-end"} gap-2`}>
                     {courseData.isBestValue ? (
                       <span className="inline-flex items-center rounded-full border border-amber-300/70 bg-gradient-to-r from-amber-200/80 via-yellow-100/75 to-orange-100/70 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-amber-900 shadow-[0_4px_12px_rgba(245,158,11,0.12)] transition-all duration-250 ease-out hover:-translate-y-0.5 hover:scale-[1.01] hover:shadow-[0_12px_18px_rgba(245,158,11,0.2)] dark:border-amber-500/30 dark:from-amber-500/15 dark:via-yellow-500/10 dark:to-orange-500/15 dark:text-amber-100">
                         Best value
@@ -298,8 +298,8 @@ export default async function CourseDetailPage({
                 <div className="mt-5">
                   {isEnrolled ? (
                     <a
-                      href={courseData.isLive ? `/courses/${courseData.slug}/live` : `/courses/${courseData.slug}`}
-                      className="inline-flex w-full items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-5 py-3.5 text-base font-semibold text-white shadow-[0_16px_36px_rgba(16,185,129,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_20px_42px_rgba(16,185,129,0.32)]"
+                      href={courseData.isLive ? `/courses/${courseData.slug}/live` : `/courses/${courseData.slug}/self-paced`}
+                      className="inline-flex w-full items-center justify-center rounded-full bg-gradient-to-r from-teal-400 via-cyan-500 to-emerald-500 px-5 py-3.5 text-base font-semibold text-white shadow-[0_16px_36px_rgba(13,148,136,0.32)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_20px_42px_rgba(13,148,136,0.42)]"
                     >
                       Continue learning
                     </a>

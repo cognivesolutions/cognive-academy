@@ -6,7 +6,13 @@ import RecordedCoursesCarousel from "./recorded-courses-carousel";
 
 type Course = any;
 
-export default function RecordedSection({ courses }: { courses: Course[] }) {
+export default function RecordedSection({
+  courses,
+  purchasedCourseIds = new Set<string>(),
+}: {
+  courses: Course[];
+  purchasedCourseIds?: Set<string>;
+}) {
   const [lang, setLang] = useState<string>("en");
 
   const english = useMemo(() => courses.filter((c) => (c.language || c.lang || c.locale) === "en"), [courses]);
@@ -35,7 +41,7 @@ export default function RecordedSection({ courses }: { courses: Course[] }) {
         />
       </div>
 
-      <RecordedCoursesCarousel courses={current} />
+      <RecordedCoursesCarousel courses={current} purchasedCourseIds={purchasedCourseIds} />
     </div>
   );
 }

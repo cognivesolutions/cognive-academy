@@ -23,9 +23,10 @@ model User {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  orders      Order[]
-  enrollments Enrollment[]
-  savedCourses SavedCourse[]
+  orders          Order[]
+  enrollments     Enrollment[]
+  savedCourses    SavedCourse[]
+  lectureProgress LectureProgress[]
 
   @@map("users")
 }
@@ -57,10 +58,11 @@ model Course {
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 
-  modules     Module[]
-  enrollments Enrollment[]
-  orders      Order[]
-  savedCourses SavedCourse[]
+  modules         Module[]
+  enrollments     Enrollment[]
+  orders          Order[]
+  savedCourses    SavedCourse[]
+  lectureProgress LectureProgress[]
 
   @@map("courses")
 }
@@ -95,10 +97,30 @@ model Lecture {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  module          Module            @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  lectureProgress LectureProgress[]
 
   @@index([moduleId, position])
   @@map("lectures")
+}
+
+model LectureProgress {
+  id            String   @id @default(cuid())
+  userId        String
+  courseId      String
+  lectureId     String
+  status        String   @default("not_started")
+  watchedPercent Int     @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lecture Lecture @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lectureId])
+  @@index([userId, courseId])
+  @@map("lecture_progress")
 }
 
 model Order {

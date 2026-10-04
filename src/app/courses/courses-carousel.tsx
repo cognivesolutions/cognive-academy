@@ -38,7 +38,13 @@ const formatCategory = (value?: string | null) => {
     .join(" ");
 };
 
-export function CoursesCarousel({ courses }: { courses: Course[] }) {
+export function CoursesCarousel({
+  courses,
+  purchasedCourseIds = new Set<string>(),
+}: {
+  courses: Course[];
+  purchasedCourseIds?: Set<string>;
+}) {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const rafRef = useRef<number | null>(null);
@@ -159,27 +165,36 @@ export function CoursesCarousel({ courses }: { courses: Course[] }) {
         className="-mx-3 flex gap-6 overflow-x-auto px-3 pb-10 pr-8 scroll-smooth snap-x snap-mandatory touch-pan-x hide-scrollbar"
         role="list"
       >
-        {courses.map((course) => (
-          <CourseCard
-            key={course.id}
-            course={course}
-            statusLabel={course.isLive ? "Live" : "Recorded"}
-            statusTone={course.isLive ? "live" : "recorded"}
-            showFeaturedBadge={Boolean(course.featured)}
-            action={
-              <Link
-                href={`/courses/${course.slug}`}
-                onClick={(event) => {
-                  event.preventDefault();
-                  router.push(`/courses/${course.slug}`);
-                }}
-                className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(99,102,241,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_34px_rgba(99,102,241,0.32)] hover:ring-2 hover:ring-indigo-200/60"
-              >
-                View course
-              </Link>
-            }
-          />
-        ))}
+        {courses.map((course) => {
+          const isPurchased = purchasedCourseIds.has(course.id);
+          const destination = isPurchased
+            ? course.isLive
+              ? `/courses/${course.slug}/live`
+              : `/courses/${course.slug}/self-paced`
+            : `/courses/${course.slug}`;
+
+          return (
+            <CourseCard
+              key={course.id}
+              course={course}
+              statusLabel={course.isLive ? "Live" : "Recorded"}
+              statusTone={course.isLive ? "live" : "recorded"}
+              showFeaturedBadge={Boolean(course.featured)}
+              action={
+                <Link
+                  href={destination}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    router.push(destination);
+                  }}
+                  className={`inline-flex items-center justify-center rounded-full px-4 py-2.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(13,148,136,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_34px_rgba(13,148,136,0.36)] hover:ring-2 hover:ring-emerald-200/60 ${isPurchased ? "bg-gradient-to-r from-teal-400 via-cyan-500 to-emerald-500" : "bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500"}`}
+                >
+                  {isPurchased ? "Continue learning" : "View course"}
+                </Link>
+              }
+            />
+          );
+        })}
       </div>
 
       <PaginationDots

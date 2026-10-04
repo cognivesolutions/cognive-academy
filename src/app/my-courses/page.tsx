@@ -185,7 +185,9 @@ export default async function MyCoursesPage({
           ) : (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {filteredCourses.map((item) => {
-                const openCourseHref = item.course.isLive ? `/courses/${item.course.slug}/live` : `/courses/${item.course.slug}`;
+                const openCourseHref = item.course.isLive
+                  ? `/courses/${item.course.slug}/live`
+                  : `/courses/${item.course.slug}/self-paced`;
 
                 return (
                   <article key={item.id} className="group flex h-full flex-col rounded-[26px] border border-slate-200 bg-[linear-gradient(180deg,_rgba(248,250,252,0.9),_rgba(241,245,249,0.96))] p-4 shadow-[0_12px_24px_rgba(15,23,42,0.03)] transition-all duration-300 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-[0_18px_36px_rgba(99,102,241,0.08)] dark:border-slate-700 dark:bg-[linear-gradient(180deg,_rgba(15,23,42,0.92),_rgba(30,41,59,0.8))] dark:hover:border-indigo-500/40">
@@ -223,9 +225,9 @@ export default async function MyCoursesPage({
                     <div className="mt-5 flex gap-3">
                       <Link
                         href={openCourseHref}
-                        className="inline-flex flex-1 items-center justify-center rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
+                        className="inline-flex flex-1 items-center justify-center rounded-full bg-gradient-to-r from-teal-400 via-cyan-500 to-emerald-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_16px_28px_rgba(13,148,136,0.28)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_32px_rgba(13,148,136,0.34)]"
                       >
-                        Open course
+                        Continue learning
                       </Link>
                       <Link
                         href={`/courses/${item.course.slug}#curriculum`}

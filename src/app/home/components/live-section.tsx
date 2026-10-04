@@ -6,7 +6,13 @@ import LiveCoursesCarousel from "./live-courses-carousel";
 
 type Course = any;
 
-export default function LiveSection({ courses }: { courses: Course[] }) {
+export default function LiveSection({
+  courses,
+  purchasedCourseIds = new Set<string>(),
+}: {
+  courses: Course[];
+  purchasedCourseIds?: Set<string>;
+}) {
   const [lang, setLang] = useState<string>("en");
 
   const english = useMemo(() => courses.filter((c) => (c.language || c.lang || c.locale) === "en"), [courses]);
@@ -35,7 +41,7 @@ export default function LiveSection({ courses }: { courses: Course[] }) {
         />
       </div>
 
-      <LiveCoursesCarousel courses={current} />
+      <LiveCoursesCarousel courses={current} purchasedCourseIds={purchasedCourseIds} />
     </div>
   );
 }

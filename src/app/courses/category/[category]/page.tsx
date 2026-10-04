@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import CategoryResultControls from "./category-result-controls";
 
@@ -80,6 +81,16 @@ export default async function CategoryCoursePage({
     const parsed = Number(rawValue);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
   })();
+
+  const session = await auth();
+  const purchasedCourseIds = session?.user?.id
+    ? new Set(
+        (await prisma.enrollment.findMany({
+          where: { userId: session.user.id },
+          select: { courseId: true },
+        })).map((enrollment) => enrollment.courseId),
+      )
+    : new Set<string>();
 
   const courses = await prisma.course.findMany({
     where: { isPublished: true },
@@ -216,6 +227,7 @@ export default async function CategoryCoursePage({
           pageSize={pageSize}
           currentPage={safePage}
           totalPages={totalPages}
+          purchasedCourseIds={purchasedCourseIds}
         />
       </div>
     </main>

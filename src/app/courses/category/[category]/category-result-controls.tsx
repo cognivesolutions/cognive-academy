@@ -15,6 +15,8 @@ type CourseSummary = {
   category: string | null;
   level: string | null;
   price: number | string | null;
+  offerPrice?: number | string | null;
+  isPromotional?: boolean | null;
   currency: string | null;
   featured: boolean | null;
   isNew: boolean | null;
@@ -44,12 +46,14 @@ export default function CategoryResultControls({
   pageSize,
   currentPage,
   totalPages,
+  purchasedCourseIds = new Set<string>(),
 }: {
   liveCourses: CourseSummary[];
   recordedCourses: CourseSummary[];
   pageSize: number;
   currentPage: number;
   totalPages: number;
+  purchasedCourseIds?: Set<string>;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -146,28 +150,17 @@ export default function CategoryResultControls({
         <>
           <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {paginatedCourses.map((course) => {
-              const detailHref = course.isLive ? `/courses/${course.slug}/live` : `/courses/${course.slug}`;
+              const isPurchased = purchasedCourseIds.has(course.id);
+              const detailHref = isPurchased
+                ? course.isLive
+                  ? `/courses/${course.slug}/live`
+                  : `/courses/${course.slug}/self-paced`
+                : `/courses/${course.slug}`;
 
               return (
                 <CourseCard
                   key={course.id}
-                  course={{
-                    id: course.id,
-                    slug: course.slug,
-                    title: course.title,
-                    shortDescription: course.shortDescription,
-                    description: course.description,
-                    category: course.category,
-                    level: course.level,
-                    price: course.price,
-                    featured: course.featured,
-                    isNew: course.isNew,
-                    imageUrl: course.imageUrl,
-                    isLive: course.isLive,
-                    language: course.language,
-                    durationHours: course.durationHours,
-                    modules: course.modules,
-                  }}
+                  course={course}
                   statusLabel={course.isLive ? "Live" : "Recorded"}
                   statusTone={course.isLive ? "live" : "recorded"}
                   showFeaturedBadge={Boolean(course.featured)}
@@ -178,9 +171,9 @@ export default function CategoryResultControls({
                         event.preventDefault();
                         router.push(detailHref);
                       }}
-                      className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(99,102,241,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_34px_rgba(99,102,241,0.32)] hover:ring-2 hover:ring-indigo-200/60"
+                      className={`inline-flex items-center justify-center rounded-full px-4 py-2.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(13,148,136,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_34px_rgba(13,148,136,0.36)] hover:ring-2 hover:ring-emerald-200/60 ${isPurchased ? "bg-gradient-to-r from-teal-400 via-cyan-500 to-emerald-500" : "bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500"}`}
                     >
-                      View course
+                      {isPurchased ? "Continue learning" : "View course"}
                     </Link>
                   }
                 />

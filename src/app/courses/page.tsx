@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { AnimatedValue } from "@/components/animated-stat-card";
 import { BackToTopButton } from "@/components/back-to-top";
@@ -73,6 +74,16 @@ export default async function CoursesPage({
     const value = typeof resolvedSearchParams.page === "string" ? Number(resolvedSearchParams.page) : 1;
     return Number.isFinite(value) && value > 0 ? value : 1;
   })();
+
+  const session = await auth();
+  const purchasedCourseIds = session?.user?.id
+    ? new Set(
+        (await prisma.enrollment.findMany({
+          where: { userId: session.user.id },
+          select: { courseId: true },
+        })).map((enrollment) => enrollment.courseId),
+      )
+    : new Set<string>();
 
   const courses = await prisma.course.findMany({
     where: { isPublished: true },
@@ -442,7 +453,7 @@ export default async function CoursesPage({
           </div>
 
           {coursesByLanguage.length > 0 ? (
-            <CoursesCarousel courses={coursesByLanguage} />
+            <CoursesCarousel courses={coursesByLanguage} purchasedCourseIds={purchasedCourseIds} />
           ) : (
             <div className="rounded-[28px] border border-dashed border-slate-300 bg-white/80 p-10 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900/70">
               <h2 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
