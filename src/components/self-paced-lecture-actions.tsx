@@ -114,7 +114,7 @@ export function SelfPacedLectureActions({
           void handleAction();
           window.open(lecture.hlsUrl ?? "#", "_blank", "noopener,noreferrer");
         }}
-        className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_16px_36px_rgba(109,40,217,0.32)] transition-all duration-200 hover:shadow-[0_20px_42px_rgba(109,40,217,0.42)] dark:shadow-[0_16px_36px_rgba(76,29,149,0.45)]"
+        className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_12px_22px_rgba(16,185,129,0.22)] transition-all duration-200 hover:brightness-[1.02]"
       >
         Continue lecture
       </a>

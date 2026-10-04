@@ -129,15 +129,15 @@ export function SelfPacedContinueLearningCard({
   };
 
   return (
-    <div className="mb-6 rounded-[30px] border border-slate-200/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.96),rgba(226,232,240,0.84),rgba(167,139,250,0.20))] p-5 shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-[0_22px_46px_rgba(109,40,217,0.14)] dark:border-white/10 dark:bg-[linear-gradient(135deg,rgba(14,23,38,0.96),rgba(29,39,59,0.94),rgba(110,103,210,0.52))] dark:shadow-[0_18px_40px_rgba(15,23,42,0.35)] dark:hover:border-violet-400/40 dark:hover:shadow-[0_22px_46px_rgba(76,29,149,0.3)]">
+    <div className="mb-6 rounded-[26px] border border-slate-200/80 bg-[linear-gradient(135deg,#ffffff_0%,#f5f7fb_40%,#eef4ff_100%)] p-4 shadow-[0_16px_32px_rgba(15,23,42,0.06)] transition-all duration-200 hover:border-slate-300 dark:border-slate-700 dark:bg-[linear-gradient(135deg,#0f172a_0%,#111827_45%,#1f2937_100%)] dark:shadow-[0_18px_30px_rgba(2,6,23,0.35)] dark:hover:border-slate-600">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-700 shadow-[0_10px_22px_rgba(139,92,246,0.12)] dark:border-violet-400/35 dark:bg-violet-500/10 dark:text-violet-200">
+          <p className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-700 shadow-[0_10px_18px_rgba(139,92,246,0.10)] dark:border-violet-400/30 dark:bg-violet-500/10 dark:text-violet-200">
             <span className="h-2 w-2 rounded-full bg-violet-500 dark:bg-violet-400" aria-hidden="true" />
             Continue self paced learning
           </p>
-          <h2 className="mt-2 text-[clamp(2rem,2.6vw,3rem)] font-black leading-[1.08] tracking-[-0.04em] text-slate-900 dark:text-white">{lectureLabel}</h2>
-          <p className="mt-2 text-sm text-slate-600 dark:text-slate-200/90">{moduleLabel}</p>
+          <h2 className="mt-2 text-[clamp(1.9rem,2.5vw,2.8rem)] font-black leading-[1.08] tracking-[-0.04em] text-slate-900 dark:text-white">{lectureLabel}</h2>
+          <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-200/90">{moduleLabel}</p>
         </div>
 
         {activeLecture?.lecture.hlsUrl ? (
@@ -150,7 +150,7 @@ export function SelfPacedContinueLearningCard({
               void handleCardAction();
               window.open(actionHref, "_blank", "noopener,noreferrer");
             }}
-            className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_16px_36px_rgba(109,40,217,0.32)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_20px_42px_rgba(109,40,217,0.42)] dark:shadow-[0_16px_36px_rgba(76,29,149,0.45)]"
+            className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_12px_22px_rgba(16,185,129,0.22)] transition-all duration-200 hover:brightness-[1.02]"
           >
             Continue lecture
           </a>

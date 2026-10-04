@@ -99,6 +99,35 @@ export function LiveLectureActions({
   }
 
   const isLive = !!lecture.liveSessionUrl;
+  const hasRecording = !!lecture.hlsUrl;
+
+  if (!isLive && !hasRecording) {
+    return <span className="text-sm text-slate-500 dark:text-slate-400">Not scheduled</span>;
+  }
+
+  if (status === "inprogress") {
+    return (
+      <a
+        href={lecture.hlsUrl ?? lecture.liveSessionUrl ?? "#"}
+        target="_blank"
+        rel="noreferrer"
+        onClick={(event) => {
+          if (!lecture.hlsUrl && !lecture.liveSessionUrl) {
+            event.preventDefault();
+            return;
+          }
+
+          event.preventDefault();
+          void handleAction();
+          window.open((lecture.hlsUrl ?? lecture.liveSessionUrl) ?? "#", "_blank", "noopener,noreferrer");
+        }}
+        className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_12px_22px_rgba(16,185,129,0.22)] transition-all duration-200 hover:brightness-[1.02]"
+      >
+        Continue lecture
+      </a>
+    );
+  }
+
   const href = isLive ? lecture.liveSessionUrl ?? "#" : lecture.hlsUrl ?? "#";
 
   return (
@@ -118,7 +147,7 @@ export function LiveLectureActions({
       }}
       className={
         isLive
-          ? "inline-flex items-center justify-center rounded-full bg-gradient-to-r from-teal-400 via-cyan-500 to-emerald-500 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_16px_36px_rgba(13,148,136,0.32)] transition-all duration-200 hover:shadow-[0_20px_42px_rgba(13,148,136,0.42)]"
+          ? "inline-flex items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_12px_22px_rgba(16,185,129,0.22)] transition-all duration-200 hover:brightness-[1.02]"
           : "inline-flex items-center justify-center rounded-full border border-violet-200 bg-violet-50 px-3.5 py-2 text-sm font-semibold text-violet-700 transition hover:border-violet-300 hover:bg-violet-100 dark:border-violet-400/40 dark:bg-violet-500/10 dark:text-violet-200 dark:hover:bg-violet-500/20"
       }
     >
