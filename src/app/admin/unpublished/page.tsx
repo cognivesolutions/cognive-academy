@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 import { CourseSearchInput } from "../components/course-search-input";
 import { CourseSelect } from "../components/course-select";
 import { PaginationPageSizeSelect } from "../components/pagination-page-size-select";
+import { AdminSidebar } from "../components/admin-sidebar";
 import { PaginationDots } from "@/components/pagination-dots";
 import UnpublishedCourseGrid from "./unpublished-course-grid.client";
 
@@ -224,9 +225,13 @@ export default async function UnpublishedPage({
           </div>
         </div>
 
-        <AdminMessage message={successMessage} type="success" />
+        <div className="flex flex-col gap-6">
+          <AdminSidebar />
 
-        <section className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.05)] dark:border-slate-700 dark:bg-slate-900/80">
+          <div className="flex-1">
+            <AdminMessage message={successMessage} type="success" />
+
+            <section className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.05)] dark:border-slate-700 dark:bg-slate-900/80">
           <div className="mb-5 flex items-center justify-between gap-3 border-b border-slate-200 pb-4 dark:border-slate-700">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-indigo-600 dark:text-indigo-300">Unpublished</p>
@@ -239,8 +244,8 @@ export default async function UnpublishedPage({
 
           <div className="mb-4 space-y-3">
             <form method="GET" className="space-y-2">
-              <div className="flex w-full flex-nowrap items-center justify-between gap-2 rounded-full border border-slate-200 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_rgba(255,255,255,0.98)_38%,_rgba(241,245,249,1)_100%)] p-1.5 shadow-[0_18px_32px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.22),_rgba(10,18,31,0.96)_38%,_rgba(2,6,23,1)_100%)] dark:shadow-[0_18px_32px_rgba(15,23,42,0.28)]">
-                <div className="flex min-w-0 flex-nowrap items-center justify-start gap-2">
+              <div className="flex w-full flex-nowrap items-center justify-between gap-2 overflow-visible rounded-full border border-slate-200 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_rgba(255,255,255,0.98)_38%,_rgba(241,245,249,1)_100%)] p-1.5 shadow-[0_18px_32px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.22),_rgba(10,18,31,0.96)_38%,_rgba(2,6,23,1)_100%)] dark:shadow-[0_18px_32px_rgba(15,23,42,0.28)]">
+                <div className="flex min-w-0 flex-nowrap items-center justify-start gap-2 overflow-visible">
                   {hasActiveFilters ? (
                     <Link
                       href="/admin/unpublished"
@@ -387,7 +392,9 @@ export default async function UnpublishedPage({
               </div>
             </>
           )}
-        </section>
+            </section>
+          </div>
+        </div>
       </div>
     </main>
   );

@@ -4,12 +4,12 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { CourseSelect } from "@/app/admin/components/course-select";
+import { AdminSidebar } from "@/app/admin/components/admin-sidebar";
 
 export const dynamic = "force-dynamic";
 import BackButton from "@/components/back-button";
 import BulkEditor from "..\/bulk-editor.client";
-import ModuleManagement from "..\/modules.client";
-
+import ModuleManagement from "..\/modules.client";import { LectureUploadForm } from "@/app/admin/components/lecture-upload-form.client";
 type Props = {
   params: { courseId?: string };
   searchParams?: Record<string, string | string[] | undefined>;
@@ -76,6 +76,10 @@ export default async function LecturesPage({ params, searchParams }: Props) {
           <BackButton href="/admin/courses" />
         </div>
 
+        <div className="mb-6">
+          <AdminSidebar />
+        </div>
+
         <div className="space-y-6">
           <section className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.05)] dark:border-slate-700 dark:bg-slate-900/80">
             <div className="mb-5 flex items-center justify-between gap-3 border-b border-slate-200 pb-4 dark:border-slate-700">
@@ -115,58 +119,12 @@ export default async function LecturesPage({ params, searchParams }: Props) {
               </div>
             </div>
 
-            <form action="/api/admin/lectures" method="POST" className="grid gap-4 sm:grid-cols-2">
-              <input type="hidden" name="action" value="create" />
-              <input type="hidden" name="courseId" value={course.id} />
-
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 sm:col-span-2">
-                Title
-                <input
-                  name="title"
-                  required
-                  placeholder="e.g. Intro to the course"
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
-                />
-              </label>
-
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
-                Position
-                <input
-                  name="position"
-                  type="number"
-                  defaultValue={1}
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 pr-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 [&::-webkit-outer-spin-button]:opacity-100 [&::-webkit-inner-spin-button]:opacity-100 [&::-webkit-outer-spin-button]:h-5 [&::-webkit-inner-spin-button]:h-5"
-                />
-              </label>
-
-              <div className="sm:col-span-2">
-                <CourseSelect
-                  name="isPreview"
-                  label="Preview"
-                  placeholder="Select preview status"
-                  defaultValue=""
-                  options={[
-                    { value: "false", label: "No" },
-                    { value: "true", label: "Yes" },
-                  ]}
-                />
-              </div>
-
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 sm:col-span-2">
-                Live session URL (optional)
-                <input
-                  name="liveSessionUrl"
-                  placeholder="https://zoom.us/j/123456789"
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
-                />
-              </label>
-
-              <div className="sm:col-span-2 flex justify-end">
-                <button type="submit" className="inline-flex h-[34px] items-center justify-center rounded-full border border-emerald-200 bg-emerald-50/80 px-5 py-1.5 text-sm font-semibold text-emerald-700 shadow-[0_8px_20px_rgba(16,185,129,0.08)] backdrop-blur-sm transition duration-200 hover:border-emerald-300 hover:bg-emerald-100 hover:shadow-[0_10px_24px_rgba(16,185,129,0.12)] hover:brightness-105 active:scale-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:border-emerald-400/50 dark:hover:bg-emerald-500/15">
-                  Create
-                </button>
-              </div>
-            </form>
+            <LectureUploadForm
+              mode="create"
+              courseId={course.id}
+              defaultPosition={1}
+              submitLabel="Create"
+            />
           </section>
           {course.modules.map((mod) => (
             <section key={mod.id} className="rounded-[20px] border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.03)] dark:border-slate-700 dark:bg-slate-900">

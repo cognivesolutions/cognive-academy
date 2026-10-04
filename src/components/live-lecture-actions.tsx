@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import CoursePreviewDialog from "@/components/course-preview-dialog";
+
 type LectureStatus = "not_started" | "inprogress" | "completed";
 
 type LectureProgress = {
@@ -106,52 +108,69 @@ export function LiveLectureActions({
   }
 
   if (status === "inprogress") {
+    if (isLive) {
+      return (
+        <a
+          href={lecture.liveSessionUrl ?? lecture.hlsUrl ?? "#"}
+          target="_blank"
+          rel="noreferrer"
+          onClick={(event) => {
+            if (!lecture.liveSessionUrl && !lecture.hlsUrl) {
+              event.preventDefault();
+              return;
+            }
+
+            event.preventDefault();
+            void handleAction();
+            window.open((lecture.liveSessionUrl ?? lecture.hlsUrl) ?? "#", "_blank", "noopener,noreferrer");
+          }}
+          className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_12px_22px_rgba(16,185,129,0.22)] transition-all duration-200 hover:brightness-[1.02]"
+        >
+          Continue lecture
+        </a>
+      );
+    }
+
+    return (
+      <CoursePreviewDialog
+        videoUrl={lecture.hlsUrl ?? undefined}
+        title={lecture.title}
+        triggerLabel="Continue lecture"
+        onOpen={() => void handleAction()}
+        triggerClassName="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_12px_22px_rgba(16,185,129,0.22)] transition-all duration-200 hover:brightness-[1.02]"
+      />
+    );
+  }
+
+  if (isLive) {
     return (
       <a
-        href={lecture.hlsUrl ?? lecture.liveSessionUrl ?? "#"}
+        href={lecture.liveSessionUrl ?? "#"}
         target="_blank"
         rel="noreferrer"
         onClick={(event) => {
-          if (!lecture.hlsUrl && !lecture.liveSessionUrl) {
+          if (!lecture.liveSessionUrl) {
             event.preventDefault();
             return;
           }
 
           event.preventDefault();
-          void handleAction();
-          window.open((lecture.hlsUrl ?? lecture.liveSessionUrl) ?? "#", "_blank", "noopener,noreferrer");
+          window.open(lecture.liveSessionUrl, "_blank", "noopener,noreferrer");
         }}
         className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_12px_22px_rgba(16,185,129,0.22)] transition-all duration-200 hover:brightness-[1.02]"
       >
-        Continue lecture
+        Join session
       </a>
     );
   }
 
-  const href = isLive ? lecture.liveSessionUrl ?? "#" : lecture.hlsUrl ?? "#";
-
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      onClick={(event) => {
-        if (!href || href === "#") {
-          event.preventDefault();
-          return;
-        }
-
-        event.preventDefault();
-        void handleAction();
-        window.open(href, "_blank", "noopener,noreferrer");
-      }}
-      className={
-        isLive
-          ? "inline-flex items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_12px_22px_rgba(16,185,129,0.22)] transition-all duration-200 hover:brightness-[1.02]"
-          : "inline-flex items-center justify-center rounded-full border border-slate-200 bg-slate-100 px-3.5 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-100 dark:hover:border-slate-600 dark:hover:bg-slate-700/90"
-      }
-    >
-      {isLive ? "Join session" : "Watch recording"}
-    </a>
+    <CoursePreviewDialog
+      videoUrl={lecture.hlsUrl ?? undefined}
+      title={lecture.title}
+      triggerLabel="Watch recording"
+      onOpen={() => void handleAction()}
+      triggerClassName="inline-flex items-center justify-center rounded-full border border-slate-200 bg-slate-100 px-3.5 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-100 dark:hover:border-slate-600 dark:hover:bg-slate-700/90"
+    />
   );
 }

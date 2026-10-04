@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import CoursePreviewDialog from "@/components/course-preview-dialog";
+
 type LectureStatus = "not_started" | "inprogress" | "completed";
 
 type LectureProgress = {
@@ -93,8 +95,6 @@ export function SelfPacedContinueLearningCard({
     ? `Module ${activeLecture.moduleIndex + 1} · ${activeLecture.module.title}`
     : "Your next lesson is waiting";
 
-  const actionHref = activeLecture?.lecture.hlsUrl ?? "#";
-
   const handleCardAction = async () => {
     if (!activeLecture) return;
 
@@ -141,19 +141,13 @@ export function SelfPacedContinueLearningCard({
         </div>
 
         {activeLecture?.lecture.hlsUrl ? (
-          <a
-            href={actionHref}
-            target="_blank"
-            rel="noreferrer"
-            onClick={(event) => {
-              event.preventDefault();
-              void handleCardAction();
-              window.open(actionHref, "_blank", "noopener,noreferrer");
-            }}
-            className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_12px_22px_rgba(16,185,129,0.22)] transition-all duration-200 hover:brightness-[1.02]"
-          >
-            Continue lecture
-          </a>
+          <CoursePreviewDialog
+            videoUrl={activeLecture.lecture.hlsUrl}
+            title={activeLecture.lecture.title}
+            triggerLabel="Continue lecture"
+            onOpen={() => void handleCardAction()}
+            triggerClassName="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_12px_22px_rgba(16,185,129,0.22)] transition-all duration-200 hover:brightness-[1.02]"
+          />
         ) : null}
       </div>
     </div>

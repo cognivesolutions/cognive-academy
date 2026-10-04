@@ -8,6 +8,8 @@ function parseFormData(formData: FormData) {
     courseId: String(formData.get("courseId") ?? "").trim(),
     title: String(formData.get("title") ?? "").trim(),
     liveSessionUrl: String(formData.get("liveSessionUrl") ?? "").trim() || null,
+    videoUrl: String(formData.get("videoUrl") ?? "").trim() || null,
+    hlsUrl: String(formData.get("hlsUrl") ?? "").trim() || null,
     position: Number(formData.get("position") ?? 0) || 0,
     isPreview: String(formData.get("isPreview") ?? "false") === "true",
     action: String(formData.get("action") ?? "update").trim(),
@@ -36,7 +38,17 @@ export async function POST(request: Request) {
         moduleId = mod.id;
       }
 
-      await prisma.lecture.create({ data: { moduleId, title: payload.title || "Untitled lecture", position: payload.position || 0, liveSessionUrl: payload.liveSessionUrl, isPreview: payload.isPreview } });
+      await prisma.lecture.create({
+        data: {
+          moduleId,
+          title: payload.title || "Untitled lecture",
+          position: payload.position || 0,
+          liveSessionUrl: payload.liveSessionUrl,
+          videoUrl: payload.videoUrl ?? payload.hlsUrl ?? null,
+          hlsUrl: payload.hlsUrl ?? payload.videoUrl ?? null,
+          isPreview: payload.isPreview,
+        },
+      });
 
       return NextResponse.redirect(new URL(`/admin/courses/${payload.courseId}/lectures`, request.url));
     }
@@ -76,7 +88,15 @@ export async function POST(request: Request) {
 
     if (!payload.id) return NextResponse.json({ success: false, message: "Lecture id required" }, { status: 400 });
 
-    await prisma.lecture.update({ where: { id: payload.id }, data: { title: payload.title || undefined, liveSessionUrl: payload.liveSessionUrl } });
+    await prisma.lecture.update({
+      where: { id: payload.id },
+      data: {
+        title: payload.title || undefined,
+        liveSessionUrl: payload.liveSessionUrl,
+        videoUrl: payload.videoUrl ?? undefined,
+        hlsUrl: payload.hlsUrl ?? undefined,
+      },
+    });
 
     return NextResponse.redirect(new URL(`/admin/courses/${payload.courseId}/lectures`, request.url));
   } catch (error) {

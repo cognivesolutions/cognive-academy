@@ -40,7 +40,7 @@ export function CourseSelect({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const normalizedDefaultValue = defaultValue === "all" ? "" : defaultValue || "10";
+  const normalizedDefaultValue = defaultValue ?? "";
   const [value, setValue] = useState(normalizedDefaultValue);
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -65,16 +65,18 @@ export function CourseSelect({
   const currentLabel = selectedOption?.label ?? placeholder;
   const hasExplicitDefaultOption = options.some((option) => option.value === "" || option.value === "all");
   const effectiveHideLabel = hideLabel || compact;
-  const visibleValue = value && value !== "" && value !== "all" ? currentLabel : label ?? placeholder;
+  const isDefaultState = value === "" || value === "all";
+  const visibleValue = isDefaultState ? (label ?? placeholder) : (selectedOption?.label ?? label ?? placeholder);
 
   const submitCurrentForm = (nextValue: string) => {
-    const normalizedValue = nextValue === "all" ? "" : nextValue;
-    setValue(normalizedValue);
+    const displayValue = nextValue === "all" ? "all" : nextValue;
+    const submittedValue = nextValue === "all" ? "" : nextValue;
+    setValue(displayValue);
     if (hiddenInputRef.current) {
-      hiddenInputRef.current.value = normalizedValue;
+      hiddenInputRef.current.value = submittedValue;
     }
 
-    onValueChange?.(normalizedValue);
+    onValueChange?.(displayValue);
 
     if (!syncUrl) {
       return;
@@ -82,10 +84,10 @@ export function CourseSelect({
 
     const params = new URLSearchParams(searchParams?.toString() ?? "");
 
-    if (!normalizedValue) {
+    if (!submittedValue) {
       params.delete(name);
     } else {
-      params.set(name, normalizedValue);
+      params.set(name, submittedValue);
     }
 
     const queryString = params.toString();
@@ -95,7 +97,7 @@ export function CourseSelect({
 
   return (
     <label className={effectiveHideLabel ? "block" : "block text-sm font-medium text-slate-700 dark:text-slate-200"}>
-      <div ref={containerRef} className={`relative ${effectiveHideLabel ? "" : "mt-2"}`}>
+      <div ref={containerRef} className={`relative overflow-visible ${effectiveHideLabel ? "" : "mt-2"}`}>
         <input ref={hiddenInputRef} type="hidden" name={name} value={value} required={required} />
 
         <button
@@ -127,7 +129,7 @@ export function CourseSelect({
 
         {isOpen && (
           <div
-            className={`absolute left-0 right-0 top-full z-20 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-slate-900 ${menuClassName}`}
+            className={`absolute left-0 right-0 top-full z-50 mt-2 overflow-visible rounded-xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-slate-900 ${menuClassName}`}
             onMouseLeave={() => setIsOpen(false)}
           >
             {!hasExplicitDefaultOption && (

@@ -9,7 +9,9 @@ export const dynamic = "force-dynamic";
 import { CourseSearchInput } from "../components/course-search-input";
 import { CourseSelect } from "../components/course-select";
 import { PaginationPageSizeSelect } from "../components/pagination-page-size-select";
+import { AdminSidebar } from "../components/admin-sidebar";
 import { PaginationDots } from "@/components/pagination-dots";
+import { AdminModeToggle } from "../components/admin-mode-toggle.client";
 import ManageCourseGrid from "./manage-course-grid.client";
 
 export default async function ManageCoursesPage({
@@ -225,7 +227,8 @@ export default async function ManageCoursesPage({
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Admin</p>
             <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900 dark:text-white">Manage courses</h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <AdminModeToggle />
             <Link
               href="/admin/courses/new"
               className="inline-flex items-center justify-center rounded-full border border-indigo-200 bg-indigo-50/80 px-4 py-2 text-sm font-semibold text-indigo-700 shadow-[0_8px_20px_rgba(99,102,241,0.08)] backdrop-blur-sm transition duration-200 hover:border-indigo-300 hover:bg-indigo-100 hover:shadow-[0_10px_24px_rgba(99,102,241,0.12)] hover:brightness-105 active:scale-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200 dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15"
@@ -241,7 +244,11 @@ export default async function ManageCoursesPage({
           </div>
         </div>
 
-        <section className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.05)] dark:border-slate-700 dark:bg-slate-900/80">
+        <div className="flex flex-col gap-6">
+          <AdminSidebar />
+
+          <div className="flex-1">
+            <section className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.05)] dark:border-slate-700 dark:bg-slate-900/80">
           <div className="mb-5 flex items-center justify-between gap-3 border-b border-slate-200 pb-4 dark:border-slate-700">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-indigo-600 dark:text-indigo-300">Manage</p>
@@ -254,8 +261,8 @@ export default async function ManageCoursesPage({
 
           <div className="space-y-3">
             <form method="GET" className="space-y-2">
-              <div className="flex w-full flex-nowrap items-center justify-between gap-2 rounded-full border border-slate-200 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_rgba(255,255,255,0.98)_38%,_rgba(241,245,249,1)_100%)] p-1.5 shadow-[0_18px_32px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.22),_rgba(10,18,31,0.96)_38%,_rgba(2,6,23,1)_100%)] dark:shadow-[0_18px_32px_rgba(15,23,42,0.28)]">
-                <div className="flex min-w-0 flex-nowrap items-center justify-start gap-2">
+              <div className="flex w-full flex-nowrap items-center justify-between gap-2 overflow-visible rounded-full border border-slate-200 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_rgba(255,255,255,0.98)_38%,_rgba(241,245,249,1)_100%)] p-1.5 shadow-[0_18px_32px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.22),_rgba(10,18,31,0.96)_38%,_rgba(2,6,23,1)_100%)] dark:shadow-[0_18px_32px_rgba(15,23,42,0.28)]">
+                <div className="flex min-w-0 flex-nowrap items-center justify-start gap-2 overflow-visible">
                   {hasActiveFilters ? (
                     <Link
                       href="/admin/courses"
@@ -401,30 +408,32 @@ export default async function ManageCoursesPage({
                 }))}
               />
             )}
-          </div>
 
-          <div className="mt-3 flex items-center justify-end gap-1.5 text-sm text-slate-600 dark:text-slate-300">
-            <div className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-300">
-              <span>Courses per page</span>
-              <PaginationPageSizeSelect defaultValue={String(pageSize || "10")} />
-            </div>
+            <div className="mt-3 flex items-center justify-end gap-1.5 text-sm text-slate-600 dark:text-slate-300">
+              <div className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+                <span>Courses per page</span>
+                <PaginationPageSizeSelect defaultValue={String(pageSize || "10")} />
+              </div>
 
-            <div className="flex items-center gap-0.5">
-              <span className="min-w-[88px] text-right text-xs font-medium text-slate-600 dark:text-slate-300">
-                {Math.min((page - 1) * pageSize + 1, total)}-{Math.min(page * pageSize, total)} of {total}
-              </span>
+              <div className="flex items-center gap-0.5">
+                <span className="min-w-[88px] text-right text-xs font-medium text-slate-600 dark:text-slate-300">
+                  {Math.min((page - 1) * pageSize + 1, total)}-{Math.min(page * pageSize, total)} of {total}
+                </span>
 
-              <PaginationDots
-                currentPage={Math.max(0, page - 1)}
-                totalPages={Math.max(1, totalPages)}
-                showSinglePage={true}
-                pageHrefs={Array.from({ length: totalPages }, (_, index) => buildPageHref(index + 1))}
-                previousHref={page > 1 ? buildPageHref(page - 1) : undefined}
-                nextHref={page < totalPages ? buildPageHref(page + 1) : undefined}
-              />
+                <PaginationDots
+                  currentPage={Math.max(0, page - 1)}
+                  totalPages={Math.max(1, totalPages)}
+                  showSinglePage={true}
+                  pageHrefs={Array.from({ length: totalPages }, (_, index) => buildPageHref(index + 1))}
+                  previousHref={page > 1 ? buildPageHref(page - 1) : undefined}
+                  nextHref={page < totalPages ? buildPageHref(page + 1) : undefined}
+                />
+              </div>
             </div>
           </div>
         </section>
+          </div>
+        </div>
       </div>
     </main>
   );

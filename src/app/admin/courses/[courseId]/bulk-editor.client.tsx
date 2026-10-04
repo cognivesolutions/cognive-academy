@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import ConfirmDialog from "@/components/confirm-dialog";
 
@@ -14,6 +14,8 @@ export default function BulkEditor({ modules, courseId }: { modules: Module[]; c
   const [dragging, setDragging] = useState<{ modIndex: number; lecIndex: number } | null>(null);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [moduleFilter, setModuleFilter] = useState("all");
 
   useEffect(() => {
     if (!feedback) return;
@@ -23,14 +25,37 @@ export default function BulkEditor({ modules, courseId }: { modules: Module[]; c
 
   const clearFeedback = () => setFeedback(null);
 
+  const filteredModules = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+
+    return local.filter((mod) => {
+      const matchesModule = moduleFilter === "all" || mod.id === moduleFilter;
+      if (!matchesModule) return false;
+
+      if (!normalizedQuery) return true;
+
+      const lectureMatches = mod.lectures.some((lecture) => {
+        const haystack = `${lecture.title} ${lecture.liveSessionUrl ?? ""}`.toLowerCase();
+        return haystack.includes(normalizedQuery);
+      });
+
+      return mod.title.toLowerCase().includes(normalizedQuery) || lectureMatches;
+    });
+  }, [local, moduleFilter, searchQuery]);
+
+  const visibleLectureIds = filteredModules.flatMap((mod) => mod.lectures.map((lecture) => lecture.id));
+  const selectedCount = Object.values(selected).filter(Boolean).length;
+
   const toggleSelect = (id: string) => {
     setSelected((s) => ({ ...s, [id]: !s[id] }));
     clearFeedback();
   };
   const selectAll = () => {
     const all: Record<string, boolean> = {};
-    local.forEach((m) => m.lectures.forEach((l) => (all[l.id] = true)));
-    setSelected(all);
+    visibleLectureIds.forEach((id) => {
+      all[id] = true;
+    });
+    setSelected((prev) => ({ ...prev, ...all }));
     clearFeedback();
   };
   const clearAll = () => {
@@ -164,7 +189,106 @@ export default function BulkEditor({ modules, courseId }: { modules: Module[]; c
         </div>
       ) : null}
 
-      {local.map((mod, mi) => (
+      <div className="flex flex-col gap-3 rounded-[20px] border border-slate-200 bg-slate-50/80 p-2.5 shadow-[0_8px_20px_rgba(15,23,42,0.02)] dark:border-slate-700 dark:bg-slate-800/80">
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery("");
+                setModuleFilter("all");
+              }}
+              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white/80 px-3 py-1.5 text-[11px] font-semibold text-slate-700 shadow-[0_8px_20px_rgba(15,23,42,0.04)] backdrop-blur-sm transition duration-200 hover:border-indigo-200 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-200 dark:hover:border-indigo-500/40 dark:hover:text-indigo-200"
+            >
+              Remove filter
+            </button>
+
+            <label className="relative min-w-[150px] flex-1 lg:min-w-[180px]">
+              <span className="sr-only">Module filter</span>
+              <select
+                value={moduleFilter}
+                onChange={(event) => setModuleFilter(event.target.value)}
+                className="w-full appearance-none rounded-full border border-slate-200 bg-white/90 px-3 py-2 text-[11px] font-semibold text-slate-700 shadow-[0_8px_20px_rgba(15,23,42,0.04)] outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100"
+              >
+                <option value="all">Module</option>
+                {local.map((mod) => (
+                  <option key={mod.id} value={mod.id}>{mod.title}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <div className="ml-auto flex w-full max-w-md items-center gap-2">
+            <div className="relative w-full">
+              <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 dark:text-slate-500">
+                🔎
+              </span>
+              <input
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Type to search..."
+                className="w-full rounded-full border border-slate-200 bg-white/90 py-2 pl-9 pr-3 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:placeholder:text-slate-500"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-slate-200 bg-slate-50/80 p-2.5 shadow-[0_8px_20px_rgba(15,23,42,0.02)] dark:border-slate-700 dark:bg-slate-800/80">
+        <div className="flex items-center gap-2.5">
+          <div className="inline-flex min-w-[88px] items-center justify-center rounded-full border border-emerald-200/80 bg-[linear-gradient(135deg,rgba(16,185,129,0.22),rgba(255,255,255,0.72),rgba(16,185,129,0.18))] px-2.5 py-1.5 text-[11px] font-semibold text-emerald-800 shadow-[0_10px_22px_rgba(16,185,129,0.12)] backdrop-blur-md dark:border-emerald-500/30 dark:bg-[linear-gradient(135deg,rgba(16,185,129,0.18),rgba(15,23,42,0.7),rgba(16,185,129,0.12))] dark:text-emerald-200">
+            {selectedCount} selected
+          </div>
+          <button
+            type="button"
+            onClick={selectAll}
+            className="inline-flex items-center justify-center rounded-full border border-indigo-200 bg-indigo-50/80 px-3 py-1.5 text-[11px] font-semibold text-indigo-700 shadow-[0_8px_20px_rgba(99,102,241,0.08)] backdrop-blur-sm transition duration-200 hover:border-indigo-300 hover:bg-indigo-100 hover:shadow-[0_10px_24px_rgba(99,102,241,0.12)] hover:brightness-105 active:scale-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200 dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15"
+          >
+            Select all
+          </button>
+          <button
+            type="button"
+            onClick={clearAll}
+            className="inline-flex items-center justify-center rounded-full border border-red-200 bg-red-50/80 px-3 py-1.5 text-[11px] font-semibold text-red-700 shadow-[0_8px_20px_rgba(239,68,68,0.08)] backdrop-blur-sm transition duration-200 hover:border-red-300 hover:bg-red-100 hover:shadow-[0_10px_24px_rgba(239,68,68,0.12)] hover:brightness-105 active:scale-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200 dark:hover:border-red-400/50 dark:hover:bg-red-500/15"
+          >
+            Clear
+          </button>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => batchAction("publish")}
+            className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50/80 px-3 py-1.5 text-[11px] font-semibold text-emerald-700 shadow-[0_8px_20px_rgba(16,185,129,0.08)] backdrop-blur-sm transition duration-200 hover:border-emerald-300 hover:bg-emerald-100 hover:shadow-[0_10px_24px_rgba(16,185,129,0.12)] hover:brightness-105 active:scale-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:border-emerald-400/50 dark:hover:bg-emerald-500/15"
+          >
+            Publish
+          </button>
+          <button
+            type="button"
+            onClick={() => batchAction("unpublish")}
+            className="inline-flex items-center justify-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] font-semibold text-amber-700 shadow-[0_8px_20px_rgba(245,158,11,0.08)] backdrop-blur-sm transition duration-200 hover:border-amber-300 hover:bg-amber-100 hover:shadow-[0_10px_24px_rgba(245,158,11,0.12)] hover:brightness-105 active:scale-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200 dark:hover:border-amber-400/50 dark:hover:bg-amber-500/15"
+          >
+            Unpublish
+          </button>
+          <button
+            type="button"
+            onClick={() => batchAction("delete")}
+            className="inline-flex items-center justify-center rounded-full border border-red-200 bg-red-50/80 px-3 py-1.5 text-[11px] font-semibold text-red-700 shadow-[0_8px_20px_rgba(239,68,68,0.08)] backdrop-blur-sm transition duration-200 hover:border-red-300 hover:bg-red-100 hover:shadow-[0_10px_24px_rgba(239,68,68,0.12)] hover:brightness-105 active:scale-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200 dark:hover:border-red-400/50 dark:hover:bg-red-500/15"
+          >
+            Delete
+          </button>
+          <button
+            type="button"
+            disabled={submitting}
+            onClick={openConfirm}
+            className="inline-flex h-[34px] items-center justify-center rounded-full border border-emerald-200 bg-emerald-50/80 px-4 py-1.5 text-[11px] font-semibold text-emerald-700 shadow-[0_8px_20px_rgba(16,185,129,0.08)] backdrop-blur-sm transition duration-200 hover:border-emerald-300 hover:bg-emerald-100 hover:shadow-[0_10px_24px_rgba(16,185,129,0.12)] hover:brightness-105 active:scale-100 disabled:opacity-70 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:border-emerald-400/50 dark:hover:bg-emerald-500/15"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+
+      {filteredModules.map((mod, mi) => (
         <div key={mod.id} className="rounded-[20px] border border-slate-200 bg-slate-50/80 p-3 shadow-[0_8px_20px_rgba(15,23,42,0.03)] dark:border-slate-700 dark:bg-slate-800/80">
           <div className="mb-2 flex items-center justify-between gap-3">
             <div className="text-sm font-semibold text-slate-900 dark:text-white">Module: {mod.title}</div>
@@ -200,22 +324,6 @@ export default function BulkEditor({ modules, courseId }: { modules: Module[]; c
           </div>
         </div>
       ))}
-
-      <div className="pt-2">
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-[18px] border border-slate-200 bg-slate-50/80 p-2.5 shadow-[0_8px_20px_rgba(15,23,42,0.02)] dark:border-slate-700 dark:bg-slate-800/80">
-          <div className="flex items-center gap-1.5">
-            <button onClick={selectAll} className="inline-flex items-center justify-center rounded-full border border-indigo-200 bg-indigo-50/80 px-3 py-1.5 text-[11px] font-semibold text-indigo-700 shadow-[0_8px_20px_rgba(99,102,241,0.08)] backdrop-blur-sm transition duration-200 hover:border-indigo-300 hover:bg-indigo-100 hover:shadow-[0_10px_24px_rgba(99,102,241,0.12)] hover:brightness-105 active:scale-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200 dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15">Select all</button>
-            <button onClick={clearAll} className="inline-flex items-center justify-center rounded-full border border-red-200 bg-red-50/80 px-3 py-1.5 text-[11px] font-semibold text-red-700 shadow-[0_8px_20px_rgba(239,68,68,0.08)] backdrop-blur-sm transition duration-200 hover:border-red-300 hover:bg-red-100 hover:shadow-[0_10px_24px_rgba(239,68,68,0.12)] hover:brightness-105 active:scale-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200 dark:hover:border-red-400/50 dark:hover:bg-red-500/15">Clear</button>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <button onClick={() => batchAction("publish")} className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[11px] font-semibold text-emerald-700 shadow-[0_8px_20px_rgba(16,185,129,0.08)] backdrop-blur-sm transition duration-200 hover:border-emerald-300 hover:bg-emerald-100 hover:shadow-[0_10px_24px_rgba(16,185,129,0.12)] hover:brightness-105 active:scale-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:border-emerald-400/50 dark:hover:bg-emerald-500/15">Publish</button>
-            <button onClick={() => batchAction("unpublish")} className="inline-flex items-center justify-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] font-semibold text-amber-700 shadow-[0_8px_20px_rgba(245,158,11,0.08)] backdrop-blur-sm transition duration-200 hover:border-amber-300 hover:bg-amber-100 hover:shadow-[0_10px_24px_rgba(245,158,11,0.12)] hover:brightness-105 active:scale-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200 dark:hover:border-amber-400/50 dark:hover:bg-amber-500/15">Unpublish</button>
-            <button onClick={() => batchAction("delete")} className="inline-flex items-center justify-center rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-[11px] font-semibold text-red-700 shadow-[0_8px_20px_rgba(239,68,68,0.08)] backdrop-blur-sm transition duration-200 hover:border-red-300 hover:bg-red-100 hover:shadow-[0_10px_24px_rgba(239,68,68,0.12)] hover:brightness-105 active:scale-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200 dark:hover:border-red-400/50 dark:hover:bg-red-500/15">Delete</button>
-            <button disabled={submitting} onClick={openConfirm} className="inline-flex h-[34px] items-center justify-center rounded-full border border-emerald-200 bg-emerald-50/80 px-4 py-1.5 text-[11px] font-semibold text-emerald-700 shadow-[0_8px_20px_rgba(16,185,129,0.08)] backdrop-blur-sm transition duration-200 hover:border-emerald-300 hover:bg-emerald-100 hover:shadow-[0_10px_24px_rgba(16,185,129,0.12)] hover:brightness-105 active:scale-100 disabled:opacity-70 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:border-emerald-400/50 dark:hover:bg-emerald-500/15">Save</button>
-          </div>
-        </div>
-      </div>
 
       <ConfirmDialog
         open={!!pendingAction}

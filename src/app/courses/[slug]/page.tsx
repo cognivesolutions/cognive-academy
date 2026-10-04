@@ -210,14 +210,12 @@ export default async function CourseDetailPage({
                                     Join live
                                   </a>
                                 ) : hasRecording ? (
-                                  <a
-                                    href={recordingLink!}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="inline-flex items-center justify-center rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[0.16em] text-indigo-700 transition hover:border-indigo-300 hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200"
-                                  >
-                                    Watch
-                                  </a>
+                                  <CoursePreviewDialog
+                                    videoUrl={recordingLink!}
+                                    title={lecture.title}
+                                    triggerLabel="Watch"
+                                    triggerClassName="inline-flex items-center justify-center rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[0.16em] text-indigo-700 transition hover:border-indigo-300 hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200"
+                                  />
                                 ) : (
                                   <span className="text-[9px] font-medium uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">
                                     Session not scheduled

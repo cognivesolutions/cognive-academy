@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { CreateCourseActionButton } from "./create-course-action.client";
+import { AdminSidebar } from "../../components/admin-sidebar";
 
 export const dynamic = "force-dynamic";
 import { CreateCourseCancelButton } from "./create-course-cancel-action.client";
@@ -42,6 +43,10 @@ export default async function NewCoursePage() {
               Unpublished
             </Link>
           </div>
+        </div>
+
+        <div className="mb-6">
+          <AdminSidebar />
         </div>
 
         <section className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.05)] dark:border-slate-700 dark:bg-slate-900/80 md:p-5">
