@@ -127,7 +127,6 @@ export default async function LivePage({ params }: Props) {
                       <div key={lec.id} className="flex items-center justify-between gap-4 rounded-[18px] border border-slate-200 bg-[#f8fafc] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:shadow-[0_12px_22px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-900/70 dark:shadow-[inset_0_1px_0_rgba(148,163,184,0.12)] dark:hover:border-slate-600 dark:hover:bg-slate-900/80">
                         <div className="min-w-0">
                           <div className="text-base font-semibold text-slate-900 dark:text-white">Session {lectureIndex + 1}: {lec.title}</div>
-                          {lec.isPreview ? <div className="mt-1 text-xs text-violet-600 dark:text-violet-300">Preview available</div> : null}
                         </div>
 
                         <div>

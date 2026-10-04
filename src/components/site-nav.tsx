@@ -10,7 +10,7 @@ type CourseMenuItem = { label: string; href?: string; children?: CourseChild[] }
 
 const slugifyCategory = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
-const buildCourseCategoryHref = (category: string, type: "live" | "recorded") => `/courses/category/${slugifyCategory(category)}?type=${type}`;
+const buildCourseCategoryHref = (category: string, type: "live" | "recorded") => `/courses/category/${slugifyCategory(category)}?type=${type}#${type}-courses`;
 
 const coursesMenu: CourseMenuItem[] = [
   { label: "Software Development", href: buildCourseCategoryHref("Software Development", "live"), children: [{ label: "Live", href: buildCourseCategoryHref("Software Development", "live") }, { label: "Recorded", href: buildCourseCategoryHref("Software Development", "recorded") }] },
