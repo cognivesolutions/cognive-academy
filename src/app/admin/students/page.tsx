@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { AdminModeToggle } from "../components/admin-mode-toggle.client";
-import { AdminSidebar } from "../components/admin-sidebar";
+import { AdminNavbar } from "../components/admin-navbar";
 
 export const dynamic = "force-dynamic";
 
@@ -73,7 +73,7 @@ export default async function AdminStudentsPage() {
     {
       eyebrow: "Student management",
       title: "Manage students",
-      description: "Search learners, filter by status, review enrollment history, and open each student record in one place.",
+      description: "Search students, filter by status, review enrollment history, and open each student record in one place.",
       badge: "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-200",
       badgeDot: "bg-indigo-500 dark:bg-indigo-300",
       badgeLabel: "Users",
@@ -115,17 +115,17 @@ export default async function AdminStudentsPage() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-6">
-          <AdminSidebar />
+        <div className="flex flex-col gap-4">
+          <AdminNavbar />
 
-          <section className="-mt-2 rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.05)] dark:border-slate-700/80 dark:bg-slate-900/80">
-            <div className="mb-3 flex items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-700/80">
+          <section className="-mt-0 rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.05)] dark:border-slate-700 dark:bg-slate-900/80">
+            <div className="mb-4 flex items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-700">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-indigo-600 dark:text-indigo-300">Overview</p>
                 <h2 className="mt-2 text-xl font-black tracking-tight text-slate-900 dark:text-white">Quick access</h2>
               </div>
               <div className="rounded-full bg-rose-100 px-2.5 py-1 text-[10px] font-semibold text-rose-700 dark:bg-rose-500/10 dark:text-rose-200">
-                {totalStudents} learners
+                {totalStudents} students
               </div>
             </div>
 

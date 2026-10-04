@@ -8,15 +8,39 @@ import { CourseSelect } from "../components/course-select";
 type StudentFilterBarProps = {
   defaultQ?: string;
   defaultStatus?: string;
+  defaultStudent?: string;
+  defaultMobile?: string;
+  defaultJoining?: string;
+  studentOptions?: Array<{ value: string; label: string }>;
+  mobileOptions?: Array<{ value: string; label: string }>;
 };
 
-export function StudentFilterBar({ defaultQ = "", defaultStatus = "all" }: StudentFilterBarProps) {
+export function StudentFilterBar({
+  defaultQ = "",
+  defaultStatus = "all",
+  defaultStudent = "all",
+  defaultMobile = "all",
+  defaultJoining = "all",
+  studentOptions = [],
+  mobileOptions = [],
+}: StudentFilterBarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [q, setQ] = useState(defaultQ);
   const [status, setStatus] = useState(defaultStatus);
+  const [studentFilter, setStudentFilter] = useState(defaultStudent);
+  const [mobileFilter, setMobileFilter] = useState(defaultMobile);
+  const [joiningFilter, setJoiningFilter] = useState(defaultJoining);
   const submitTimerRef = useRef<number | null>(null);
+  const calendarRef = useRef<HTMLDivElement | null>(null);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState(() => {
+    if (defaultJoining && defaultJoining !== "all") {
+      return new Date(`${defaultJoining}T00:00:00`);
+    }
+    return new Date();
+  });
 
   useEffect(() => {
     setQ(defaultQ);
@@ -27,6 +51,35 @@ export function StudentFilterBar({ defaultQ = "", defaultStatus = "all" }: Stude
   }, [defaultStatus]);
 
   useEffect(() => {
+    setStudentFilter(defaultStudent);
+  }, [defaultStudent]);
+
+  useEffect(() => {
+    setMobileFilter(defaultMobile);
+  }, [defaultMobile]);
+
+  useEffect(() => {
+    setJoiningFilter(defaultJoining);
+  }, [defaultJoining]);
+
+  useEffect(() => {
+    if (joiningFilter !== "all") {
+      setCalendarMonth(new Date(`${joiningFilter}T00:00:00`));
+    }
+  }, [joiningFilter]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
+        setIsCalendarOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
     return () => {
       if (submitTimerRef.current) {
         window.clearTimeout(submitTimerRef.current);
@@ -34,7 +87,13 @@ export function StudentFilterBar({ defaultQ = "", defaultStatus = "all" }: Stude
     };
   }, []);
 
-  const updateFilters = (nextQ: string, nextStatus: string) => {
+  const updateFilters = (
+    nextQ: string,
+    nextStatus: string,
+    nextStudent: string,
+    nextMobile: string,
+    nextJoining: string,
+  ) => {
     const params = new URLSearchParams(searchParams?.toString() ?? "");
 
     if (!nextQ.trim()) {
@@ -47,6 +106,24 @@ export function StudentFilterBar({ defaultQ = "", defaultStatus = "all" }: Stude
       params.delete("status");
     } else {
       params.set("status", nextStatus);
+    }
+
+    if (nextStudent === "all") {
+      params.delete("student");
+    } else {
+      params.set("student", nextStudent);
+    }
+
+    if (nextMobile === "all") {
+      params.delete("mobile");
+    } else {
+      params.set("mobile", nextMobile);
+    }
+
+    if (nextJoining === "all") {
+      params.delete("joining");
+    } else {
+      params.set("joining", nextJoining);
     }
 
     const targetUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
@@ -62,17 +139,60 @@ export function StudentFilterBar({ defaultQ = "", defaultStatus = "all" }: Stude
     }
 
     submitTimerRef.current = window.setTimeout(() => {
-      updateFilters(nextQ, status);
+      updateFilters(nextQ, status, studentFilter, mobileFilter, joiningFilter);
     }, 250);
   };
 
   const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const nextStatus = event.target.value;
     setStatus(nextStatus);
-    updateFilters(q, nextStatus);
+    updateFilters(q, nextStatus, studentFilter, mobileFilter, joiningFilter);
   };
 
-  const isFiltered = Boolean(q || status !== "all");
+  const handleStudentChange = (nextValue: string) => {
+    const normalizedValue = nextValue === "all" ? "all" : nextValue;
+    setStudentFilter(normalizedValue);
+    updateFilters(q, status, normalizedValue, mobileFilter, joiningFilter);
+  };
+
+  const handleMobileChange = (nextValue: string) => {
+    const normalizedValue = nextValue === "all" ? "all" : nextValue;
+    setMobileFilter(normalizedValue);
+    updateFilters(q, status, studentFilter, normalizedValue, joiningFilter);
+  };
+
+  const handleJoiningChange = (nextValue: string) => {
+    const normalizedValue = nextValue === "all" ? "all" : nextValue;
+    setJoiningFilter(normalizedValue);
+    updateFilters(q, status, studentFilter, mobileFilter, normalizedValue);
+  };
+
+  const isFiltered = Boolean(q || status !== "all" || studentFilter !== "all" || mobileFilter !== "all" || joiningFilter !== "all");
+  const joinedDateValue = joiningFilter === "all" ? "" : joiningFilter;
+  const joinedDateLabel = joinedDateValue
+    ? new Date(`${joinedDateValue}T00:00:00`).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+    : "Joined on";
+
+  const monthLabel = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(calendarMonth);
+  const monthStart = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1);
+  const monthStartOffset = (monthStart.getDay() + 6) % 7;
+  const firstGridDate = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1 - monthStartOffset);
+  const calendarDays = Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(firstGridDate);
+    date.setDate(firstGridDate.getDate() + index);
+    return date;
+  });
+
+  const selectCalendarDate = (date: Date) => {
+    const isoDate = new Date(date.getFullYear(), date.getMonth(), date.getDate()).toISOString().split("T")[0];
+    setCalendarMonth(new Date(`${isoDate}T00:00:00`));
+    handleJoiningChange(isoDate);
+    setIsCalendarOpen(false);
+  };
 
   return (
     <div className="mb-4 space-y-3">
@@ -80,7 +200,7 @@ export function StudentFilterBar({ defaultQ = "", defaultStatus = "all" }: Stude
         <div className="flex min-w-0 flex-nowrap items-center justify-start gap-2 overflow-visible">
           {isFiltered ? (
             <Link
-              href="/admin/students"
+              href={pathname}
               className="inline-flex h-[38px] items-center justify-center rounded-full border border-red-200 bg-red-50/80 px-4 py-0 text-sm font-semibold text-red-700 shadow-[0_8px_20px_rgba(239,68,68,0.08)] backdrop-blur-sm transition duration-200 hover:border-red-300 hover:bg-red-100 hover:shadow-[0_10px_24px_rgba(239,68,68,0.12)] hover:brightness-105 active:scale-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200 dark:hover:border-red-400/50 dark:hover:bg-red-500/15"
             >
               Remove filter
@@ -95,24 +215,169 @@ export function StudentFilterBar({ defaultQ = "", defaultStatus = "all" }: Stude
             </button>
           )}
 
+          <div className="min-w-[160px]">
+            <CourseSelect
+              name="student"
+              label="Student"
+              compact
+              hideLabel
+              placeholder="Student"
+              defaultValue={studentFilter}
+              options={[
+                { value: "all", label: "All" },
+                ...studentOptions,
+              ]}
+              syncUrl={false}
+              onValueChange={handleStudentChange}
+              triggerClassName="!h-[38px] !min-h-[38px] !w-[160px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+              menuClassName="!min-w-[160px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
+            />
+          </div>
+
+          <div className="min-w-[160px]">
+            <CourseSelect
+              name="mobile"
+              label="Mobile"
+              compact
+              hideLabel
+              placeholder="Mobile"
+              defaultValue={mobileFilter}
+              options={[
+                { value: "all", label: "All" },
+                ...mobileOptions,
+              ]}
+              syncUrl={false}
+              onValueChange={handleMobileChange}
+              triggerClassName="!h-[38px] !min-h-[38px] !w-[160px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+              menuClassName="!min-w-[160px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
+            />
+          </div>
+
+          <div className="relative min-w-[150px]" ref={calendarRef}>
+            <label className="sr-only" htmlFor="joined-date-filter">Joined date</label>
+            <div
+              className="relative flex h-[38px] w-[150px] cursor-pointer items-center justify-between gap-2 rounded-full border border-slate-200 bg-white/90 px-3 text-sm text-slate-700 transition duration-200 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100"
+              onClick={() => setIsCalendarOpen((open) => !open)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  setIsCalendarOpen((open) => !open);
+                }
+              }}
+              tabIndex={0}
+              role="button"
+              aria-label="Joined date filter"
+            >
+              <span className="pointer-events-none flex-1 truncate text-left text-slate-700 dark:text-slate-100">
+                {joinedDateLabel}
+              </span>
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 20 20"
+                fill="none"
+                className="pointer-events-none h-4 w-4 shrink-0 text-slate-500 dark:text-slate-300"
+              >
+                <rect x="3" y="5" width="14" height="12" rx="2" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M6 2.5V6M14 2.5V6M3 8.5H17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </div>
+
+            {isCalendarOpen && (
+              <div className="absolute left-0 top-full z-[60] mt-2 w-[280px] overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_16px_40px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[0_16px_40px_rgba(2,6,23,0.5)]">
+                <div className="mb-3 flex items-center justify-between gap-3 text-slate-700 dark:text-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1))}
+                    className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-lg text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                    aria-label="Previous month"
+                  >
+                    ←
+                  </button>
+                  <div className="text-sm font-semibold tracking-[0.12em] uppercase text-slate-700 dark:text-slate-200">{monthLabel}</div>
+                  <button
+                    type="button"
+                    onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1))}
+                    className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-lg text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                    aria-label="Next month"
+                  >
+                    →
+                  </button>
+                </div>
+
+                <div className="mb-2 grid grid-cols-7 gap-1 text-center text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+                  {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((day) => (
+                    <div key={day} className="py-1">{day}</div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-7 gap-1">
+                  {calendarDays.map((date) => {
+                    const isCurrentMonth = date.getMonth() === calendarMonth.getMonth();
+                    const isSelected = joinedDateValue && date.toDateString() === new Date(`${joinedDateValue}T00:00:00`).toDateString();
+                    const isToday = date.toDateString() === new Date().toDateString();
+
+                    return (
+                      <button
+                        key={date.toISOString()}
+                        type="button"
+                        onClick={() => selectCalendarDate(date)}
+                        className={[
+                          "flex h-8 items-center justify-center rounded-md text-sm font-medium transition duration-150",
+                          isCurrentMonth ? "text-slate-700 dark:text-slate-200" : "text-slate-400 dark:text-slate-500",
+                          isSelected ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-200" : "hover:bg-slate-100 dark:hover:bg-slate-800",
+                          isToday && !isSelected ? "ring-1 ring-indigo-200 dark:ring-indigo-500/40" : "",
+                        ].join(" ")}
+                      >
+                        {date.getDate()}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-3 text-sm dark:border-slate-700">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsCalendarOpen(false);
+                      handleJoiningChange("all");
+                    }}
+                    className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                  >
+                    Clear
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const today = new Date();
+                      selectCalendarDate(today);
+                    }}
+                    className="rounded-full bg-slate-100 px-3 py-1.5 font-medium text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                  >
+                    Today
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="min-w-[120px]">
             <CourseSelect
               name="status"
               label="Status"
               compact
               hideLabel
-              placeholder="All"
+              placeholder="Status"
               defaultValue={status}
               options={[
                 { value: "all", label: "All" },
                 { value: "active", label: "Active" },
-                { value: "new", label: "New" },
+                { value: "deactive", label: "Deactive" },
               ]}
               syncUrl={false}
               onValueChange={(nextValue) => {
                 const normalizedValue = nextValue === "all" ? "all" : nextValue;
                 setStatus(normalizedValue);
-                updateFilters(q, normalizedValue);
+                updateFilters(q, normalizedValue, studentFilter, mobileFilter, joiningFilter);
               }}
               triggerClassName="!h-[38px] !min-h-[38px] !w-[120px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
               menuClassName="!min-w-[120px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"

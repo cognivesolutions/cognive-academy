@@ -47,6 +47,8 @@ export function CourseSelect({
   const hiddenInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
+    // Keep the local selection in sync with the parent default value when filters change.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setValue(normalizedDefaultValue);
   }, [normalizedDefaultValue]);
 
@@ -62,7 +64,6 @@ export function CourseSelect({
   }, []);
 
   const selectedOption = options.find((option) => option.value === value);
-  const currentLabel = selectedOption?.label ?? placeholder;
   const hasExplicitDefaultOption = options.some((option) => option.value === "" || option.value === "all");
   const effectiveHideLabel = hideLabel || compact;
   const isDefaultState = value === "" || value === "all";
@@ -97,22 +98,23 @@ export function CourseSelect({
 
   return (
     <label className={effectiveHideLabel ? "block" : "block text-sm font-medium text-slate-700 dark:text-slate-200"}>
-      <div ref={containerRef} className={`relative overflow-visible ${effectiveHideLabel ? "" : "mt-2"}`}>
+      <div ref={containerRef} className={`relative z-[60] overflow-visible ${effectiveHideLabel ? "" : "mt-2"}`}>
         <input ref={hiddenInputRef} type="hidden" name={name} value={value} required={required} />
 
         <button
           type="button"
           aria-expanded={isOpen}
           onClick={() => setIsOpen((open) => !open)}
+          onMouseDown={(event) => event.preventDefault()}
           className={`flex h-[38px] w-full items-center gap-2 rounded-xl border bg-slate-50 pr-3 text-left text-sm transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:bg-slate-800 ${
             compact ? "px-2.5 py-1.5" : "px-3 py-2.5"
           } ${
-            value
-              ? "border-slate-200 text-slate-900 dark:border-slate-700 dark:text-slate-100"
-              : "border-slate-200 text-slate-400 dark:border-slate-700 dark:text-slate-400"
+            isDefaultState
+              ? "border-slate-200 text-slate-700 dark:border-slate-700 dark:text-slate-200"
+              : "border-slate-200 text-slate-900 dark:border-slate-700 dark:text-slate-100"
           } ${triggerClassName}`}
         >
-          <span className={`flex-1 text-left ${value ? "text-slate-900 dark:text-slate-100" : "text-slate-400 dark:text-slate-400"}`}>
+          <span className={`flex-1 text-left ${isDefaultState ? "text-slate-700 dark:text-slate-200" : "text-slate-900 dark:text-slate-100"}`}>
             {visibleValue}
           </span>
           <svg
@@ -129,12 +131,13 @@ export function CourseSelect({
 
         {isOpen && (
           <div
-            className={`absolute left-0 right-0 top-full z-50 mt-2 overflow-visible rounded-xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-slate-900 ${menuClassName}`}
-            onMouseLeave={() => setIsOpen(false)}
+            className={`absolute left-0 right-0 top-full z-[9999] mt-2 overflow-visible rounded-xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-slate-900 ${menuClassName}`}
+            onMouseDown={(event) => event.preventDefault()}
           >
             {!hasExplicitDefaultOption && (
               <button
                 type="button"
+                onMouseDown={(event) => event.preventDefault()}
                 onClick={() => {
                   setIsOpen(false);
                   submitCurrentForm("");
@@ -153,6 +156,7 @@ export function CourseSelect({
               <button
                 key={option.value}
                 type="button"
+                onMouseDown={(event) => event.preventDefault()}
                 onClick={() => {
                   setIsOpen(false);
                   submitCurrentForm(option.value);

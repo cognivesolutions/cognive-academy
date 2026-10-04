@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import BackButton from "@/components/back-button";
-import { AdminSidebar } from "@/app/admin/components/admin-sidebar";
+import { AdminNavbar } from "@/app/admin/components/admin-navbar";
 import { LectureUploadForm } from "@/app/admin/components/lecture-upload-form.client";
 
 export const dynamic = "force-dynamic";
@@ -37,7 +37,7 @@ export default async function LectureEditPage({ params }: Props) {
         </div>
 
         <div className="mb-6">
-          <AdminSidebar />
+          <AdminNavbar />
         </div>
 
         <LectureUploadForm

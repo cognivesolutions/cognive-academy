@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 import { CourseSearchInput } from "../components/course-search-input";
 import { CourseSelect } from "../components/course-select";
 import { PaginationPageSizeSelect } from "../components/pagination-page-size-select";
-import { AdminSidebar } from "../components/admin-sidebar";
+import { AdminNavbar } from "../components/admin-navbar";
 import { PaginationDots } from "@/components/pagination-dots";
 import { AdminModeToggle } from "../components/admin-mode-toggle.client";
 import ManageCourseGrid from "./manage-course-grid.client";
@@ -219,40 +219,28 @@ export default async function ManageCoursesPage({
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
-      <div className="mx-auto max-w-6xl px-6 py-12">
+      <div className="mx-auto max-w-6xl px-5 py-8">
         {successMessage ? <AdminMessage message={successMessage} type="success" /> : null}
 
-        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Admin</p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900 dark:text-white">Manage courses</h1>
+            <h1 className="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">Manage courses</h1>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
             <AdminModeToggle />
-            <Link
-              href="/admin/courses/new"
-              className="inline-flex items-center justify-center rounded-full border border-indigo-200 bg-indigo-50/80 px-4 py-2 text-sm font-semibold text-indigo-700 shadow-[0_8px_20px_rgba(99,102,241,0.08)] backdrop-blur-sm transition duration-200 hover:border-indigo-300 hover:bg-indigo-100 hover:shadow-[0_10px_24px_rgba(99,102,241,0.12)] hover:brightness-105 active:scale-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200 dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15"
-            >
-              Create course
-            </Link>
-            <Link
-              href="/admin/unpublished"
-              className="inline-flex items-center justify-center rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 shadow-[0_8px_20px_rgba(245,158,11,0.08)] transition duration-200 hover:border-amber-300 hover:bg-amber-100 hover:shadow-[0_10px_24px_rgba(245,158,11,0.12)] hover:brightness-105 active:scale-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200 dark:hover:border-amber-400/50 dark:hover:bg-amber-500/15"
-            >
-              Unpublished
-            </Link>
           </div>
         </div>
 
-        <div className="flex flex-col gap-6">
-          <AdminSidebar />
+        <div className="flex flex-col gap-4">
+          <AdminNavbar />
 
           <div className="flex-1">
-            <section className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.05)] dark:border-slate-700 dark:bg-slate-900/80">
+            <section className="-mt-0 rounded-[24px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.05)] dark:border-slate-700 dark:bg-slate-900/80">
           <div className="mb-5 flex items-center justify-between gap-3 border-b border-slate-200 pb-4 dark:border-slate-700">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-indigo-600 dark:text-indigo-300">Manage</p>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">Courses</h2>
+              <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-900 dark:text-white">Courses</h2>
             </div>
             <div className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
               {total} course{total === 1 ? "" : "s"}

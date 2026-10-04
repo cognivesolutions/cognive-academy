@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 
 import { AdminMessage } from "./admin-message.client";
 import { AdminModeToggle } from "./components/admin-mode-toggle.client";
-import { AdminSidebar } from "./components/admin-sidebar";
+import { AdminNavbar } from "./components/admin-navbar";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -77,8 +77,8 @@ export default async function AdminPage({
       badge: "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-200",
       badgeDot: "bg-indigo-500 dark:bg-indigo-300",
       button: "border-indigo-200/80 bg-gradient-to-r from-white/70 via-indigo-100/80 to-sky-100/80 text-indigo-700 shadow-[0_12px_24px_rgba(99,102,241,0.18)] backdrop-blur-xl ring-1 ring-indigo-100/80 dark:border-indigo-400/40 dark:from-indigo-500/20 dark:via-violet-500/20 dark:to-sky-500/20 dark:text-indigo-100 dark:ring-indigo-500/20",
-      tone: "bg-gradient-to-br from-white via-indigo-50/70 to-sky-50 dark:from-slate-900 dark:via-indigo-950/40 dark:to-slate-900",
-      hoverTone: "hover:border-indigo-200 hover:shadow-[0_18px_32px_rgba(99,102,241,0.10)] hover:from-indigo-100/80 hover:via-white hover:to-sky-100",
+      tone: "bg-white dark:bg-slate-900/80",
+      hoverTone: "hover:border-indigo-200 hover:shadow-[0_18px_32px_rgba(99,102,241,0.10)] hover:from-indigo-50 hover:via-white hover:to-sky-50 dark:hover:border-indigo-400/40 dark:hover:from-indigo-950/30 dark:hover:via-slate-900 dark:hover:to-slate-900",
     },
     {
       href: "/admin/unpublished",
@@ -90,7 +90,7 @@ export default async function AdminPage({
       badgeDot: "bg-amber-500 dark:bg-amber-300",
       button: "border-amber-200/80 bg-amber-50/80 text-amber-700 shadow-[0_12px_24px_rgba(245,158,11,0.18)] backdrop-blur-xl ring-1 ring-amber-100/80 dark:border-amber-400/40 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/20",
       tone: "bg-white dark:bg-slate-900/80",
-      hoverTone: "hover:border-amber-200 hover:shadow-[0_18px_32px_rgba(245,158,11,0.10)] hover:bg-gradient-to-br hover:from-amber-50 hover:via-white hover:to-orange-50",
+      hoverTone: "hover:border-amber-200 hover:shadow-[0_18px_32px_rgba(245,158,11,0.10)] hover:from-amber-50 hover:via-white hover:to-orange-50 dark:hover:border-amber-400/40 dark:hover:from-amber-950/20 dark:hover:via-slate-900 dark:hover:to-slate-900",
     },
     {
       href: "/admin/lectures",
@@ -102,7 +102,7 @@ export default async function AdminPage({
       badgeDot: "bg-indigo-500 dark:bg-indigo-300",
       button: "border-indigo-200/80 bg-gradient-to-r from-white/70 via-indigo-100/80 to-cyan-100/80 text-indigo-700 shadow-[0_12px_24px_rgba(99,102,241,0.18)] backdrop-blur-xl ring-1 ring-indigo-100/80 dark:border-indigo-400/40 dark:from-indigo-500/20 dark:via-violet-500/20 dark:to-sky-500/20 dark:text-indigo-100 dark:ring-indigo-500/20",
       tone: "bg-white dark:bg-slate-900/80",
-      hoverTone: "hover:border-indigo-200 hover:shadow-[0_18px_32px_rgba(99,102,241,0.10)] hover:bg-gradient-to-br hover:from-indigo-50 hover:via-white hover:to-cyan-50",
+      hoverTone: "hover:border-indigo-200 hover:shadow-[0_18px_32px_rgba(99,102,241,0.10)] hover:from-indigo-50 hover:via-white hover:to-cyan-50 dark:hover:border-indigo-400/40 dark:hover:from-indigo-950/30 dark:hover:via-slate-900 dark:hover:to-slate-900",
     },
     {
       href: "/admin/courses",
@@ -114,7 +114,7 @@ export default async function AdminPage({
       badgeDot: "bg-violet-500 dark:bg-violet-300",
       button: "border-violet-200/80 bg-gradient-to-r from-white/70 via-violet-100/80 to-indigo-100/80 text-violet-700 shadow-[0_12px_24px_rgba(139,92,246,0.18)] backdrop-blur-xl ring-1 ring-violet-100/80 dark:border-violet-400/40 dark:from-violet-500/20 dark:via-purple-500/20 dark:to-indigo-500/20 dark:text-violet-100 dark:ring-violet-500/20",
       tone: "bg-white dark:bg-slate-900/80",
-      hoverTone: "hover:border-violet-200 hover:shadow-[0_18px_32px_rgba(139,92,246,0.10)] hover:bg-gradient-to-br hover:from-violet-50 hover:via-white hover:to-indigo-50",
+      hoverTone: "hover:border-violet-200 hover:shadow-[0_18px_32px_rgba(139,92,246,0.10)] hover:from-violet-50 hover:via-white hover:to-indigo-50 dark:hover:border-violet-400/40 dark:hover:from-violet-950/20 dark:hover:via-slate-900 dark:hover:to-slate-900",
     },
   ];
 
@@ -142,7 +142,7 @@ export default async function AdminPage({
         </div>
 
         <div className="flex flex-col gap-4">
-          <AdminSidebar />
+          <AdminNavbar />
 
           <section className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.05)] dark:border-slate-700 dark:bg-slate-900/80">
             <div className="mb-4 flex items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-700">
@@ -181,7 +181,7 @@ export default async function AdminPage({
                 <Link
                   key={card.title}
                   href={card.href}
-                  className={`group flex h-full flex-col rounded-[22px] border border-slate-200 p-4 shadow-[0_12px_28px_rgba(15,23,42,0.03)] transition-all duration-200 hover:-translate-y-0.5 ${card.hoverTone} ${card.tone} dark:border-slate-700`}
+                  className={`group flex min-h-[220px] flex-col rounded-[22px] border border-slate-200 bg-white p-4 shadow-[0_12px_28px_rgba(15,23,42,0.03)] transition-all duration-200 hover:-translate-y-0.5 ${card.hoverTone} ${card.tone} dark:border-slate-700 dark:bg-slate-900/80`}
                 >
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-indigo-600 dark:text-indigo-300">{card.eyebrow}</p>

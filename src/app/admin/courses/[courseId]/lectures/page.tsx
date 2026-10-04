@@ -3,28 +3,31 @@ import Link from "next/link";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { CourseSelect } from "@/app/admin/components/course-select";
-import { AdminSidebar } from "@/app/admin/components/admin-sidebar";
+import { AdminNavbar } from "@/app/admin/components/admin-navbar";
+import { AdminModeToggle } from "@/app/admin/components/admin-mode-toggle.client";
 
 export const dynamic = "force-dynamic";
-import BackButton from "@/components/back-button";
+
 import BulkEditor from "..\/bulk-editor.client";
-import ModuleManagement from "..\/modules.client";import { LectureUploadForm } from "@/app/admin/components/lecture-upload-form.client";
+import ModuleManagement from "..\/modules.client";
+import { LectureUploadForm } from "@/app/admin/components/lecture-upload-form.client";
+
 type Props = {
-  params: { courseId?: string };
-  searchParams?: Record<string, string | string[] | undefined>;
+  params: Promise<{ courseId?: string }> | { courseId?: string };
+  searchParams?: Promise<Record<string, string | string[] | undefined>> | Record<string, string | string[] | undefined>;
 };
 
 export default async function LecturesPage({ params, searchParams }: Props) {
   const session = await auth();
   if (!session?.user?.id) {
-    const callbackUrl = `/admin/courses/${(await Promise.resolve(params ?? {} as any))?.courseId ?? ""}/lectures`;
+    const callbackParams = await Promise.resolve(params ?? { courseId: undefined });
+    const callbackUrl = `/admin/courses/${callbackParams.courseId ?? ""}/lectures`;
     redirect(`/admin/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }
   if (session.user.role !== "ADMIN") redirect("/");
   // `params` and `searchParams` can be Promises in some Next.js runtimes — resolve them safely
-  const resolvedParams = await Promise.resolve(params ?? {} as any);
-  const resolvedSearchParams = await Promise.resolve(searchParams ?? {} as any);
+  const resolvedParams = await Promise.resolve(params ?? { courseId: undefined });
+  const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
 
   // prefer dynamic route segment, fall back to ?courseId= query parameter
   let courseId = resolvedParams?.courseId as string | undefined;
@@ -66,21 +69,22 @@ export default async function LecturesPage({ params, searchParams }: Props) {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-      <div className="mx-auto max-w-6xl px-6 py-12">
-        <div className="mb-6 flex items-center justify-between">
+    <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
+      <div className="mx-auto max-w-6xl px-5 py-8">
+        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-2xl font-black">Manage lectures — {course.title}</h1>
-            <p className="text-sm text-slate-600">Add or edit lectures and set a live session URL for each lecture.</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Admin</p>
+            <h1 className="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">Manage lectures — {course.title}</h1>
           </div>
-          <BackButton href="/admin/courses" />
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <AdminModeToggle />
+          </div>
         </div>
 
-        <div className="mb-6">
-          <AdminSidebar />
-        </div>
+        <div className="flex flex-col gap-4">
+          <AdminNavbar />
 
-        <div className="space-y-6">
+          <div className="space-y-6">
           <section className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.05)] dark:border-slate-700 dark:bg-slate-900/80">
             <div className="mb-5 flex items-center justify-between gap-3 border-b border-slate-200 pb-4 dark:border-slate-700">
               <div>
@@ -153,6 +157,7 @@ export default async function LecturesPage({ params, searchParams }: Props) {
               </div>
             </section>
           ))}
+          </div>
         </div>
       </div>
     </main>

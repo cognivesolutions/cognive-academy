@@ -13,6 +13,7 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const callbackUrl = searchParams.get("callbackUrl") ?? "/";
   const error = searchParams.get("error");
@@ -20,23 +21,45 @@ function LoginForm() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
+    setFormError(null);
 
     try {
+      const normalizedEmail = email.trim().toLowerCase();
+      const userStatusResponse = await fetch("/api/auth-check", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: normalizedEmail }),
+      });
+
+      const userStatus = await userStatusResponse.json();
+
+      if (userStatus?.status === "inactive") {
+        setFormError("This account is currently inactive. Please contact support.");
+        return;
+      }
+
+      if (userStatus?.status === "missing") {
+        setFormError("Invalid credentials. Please check your email and password.");
+        return;
+      }
+
       const result = await signIn("credentials", {
-        email,
+        email: normalizedEmail,
         password,
         redirect: false,
       });
 
-      if (result?.error) {
-        router.replace(`/login?error=CredentialsSignin&callbackUrl=${encodeURIComponent(callbackUrl)}`);
+      if (!result || result.error || result.ok === false) {
+        setFormError("Invalid credentials. Please check your email and password.");
         return;
       }
 
       router.replace(callbackUrl);
       router.refresh();
     } catch {
-      router.replace(`/login?error=CredentialsSignin&callbackUrl=${encodeURIComponent(callbackUrl)}`);
+      setFormError("Invalid credentials. Please check your email and password.");
     } finally {
       setLoading(false);
     }
@@ -56,9 +79,12 @@ function LoginForm() {
 
         <AuthMessage
           message={
-            error === "CredentialsSignin"
-              ? "Invalid credentials. Please check your email and password."
-              : null
+            formError ??
+            (error === "AccountInactive"
+              ? "This account is currently inactive. Please contact support."
+              : error === "CredentialsSignin"
+                ? "Invalid credentials. Please check your email and password."
+                : null)
           }
         />
 

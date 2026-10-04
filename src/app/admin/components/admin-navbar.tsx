@@ -13,8 +13,8 @@ const navItems = [
 
 const studentNavItems = [
   { href: "/admin/students", label: "Dashboard", badge: "Home", tone: "indigo" },
-  { href: "/admin/students/manage", label: "Manage students", badge: "Users", tone: "rose" },
-  { href: "/admin/students/access", label: "Student access", badge: "Open", tone: "violet" },
+  { href: "/admin/students/manage", label: "Manage students", badge: "Students", tone: "rose" },
+  { href: "/admin/students/access", label: "Student access", badge: "Profile", tone: "violet" },
 ];
 
 const toneStyles = {
@@ -50,7 +50,7 @@ const toneStyles = {
   },
 } as const;
 
-export function AdminSidebar() {
+export function AdminNavbar() {
   const pathname = usePathname();
   const visibleNavItems = pathname.startsWith("/admin/students") ? studentNavItems : navItems;
 

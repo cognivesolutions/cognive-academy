@@ -87,6 +87,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
+        if (user.isActive === false) {
+          throw new Error("AccountInactive");
+        }
+
         const valid = await bcrypt.compare(password, user.passwordHash);
 
         if (!valid) {

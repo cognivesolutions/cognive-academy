@@ -4,12 +4,13 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { AdminMessage } from "../admin-message.client";
+import { AdminModeToggle } from "../components/admin-mode-toggle.client";
 
 export const dynamic = "force-dynamic";
 import { CourseSearchInput } from "../components/course-search-input";
 import { CourseSelect } from "../components/course-select";
 import { PaginationPageSizeSelect } from "../components/pagination-page-size-select";
-import { AdminSidebar } from "../components/admin-sidebar";
+import { AdminNavbar } from "../components/admin-navbar";
 import { PaginationDots } from "@/components/pagination-dots";
 import UnpublishedCourseGrid from "./unpublished-course-grid.client";
 
@@ -203,30 +204,19 @@ export default async function UnpublishedPage({
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
-      <div className="mx-auto max-w-6xl px-6 py-12">
-        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="mx-auto max-w-6xl px-5 py-8">
+        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Admin</p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900 dark:text-white">Unpublished courses</h1>
+            <h1 className="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">Unpublished courses</h1>
           </div>
           <div className="flex items-center gap-2">
-            <Link
-              href="/admin/courses/new"
-              className="inline-flex items-center justify-center rounded-full border border-indigo-200 bg-indigo-50/80 px-4 py-2 text-sm font-semibold text-indigo-700 shadow-[0_8px_20px_rgba(99,102,241,0.08)] backdrop-blur-sm transition duration-200 hover:border-indigo-300 hover:bg-indigo-100 hover:shadow-[0_10px_24px_rgba(99,102,241,0.12)] hover:brightness-105 active:scale-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200 dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15"
-            >
-              Create Course
-            </Link>
-            <Link
-              href="/admin/courses"
-              className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 shadow-[0_8px_20px_rgba(16,185,129,0.08)] transition duration-200 hover:border-emerald-300 hover:bg-emerald-100 hover:shadow-[0_10px_24px_rgba(16,185,129,0.12)] hover:brightness-105 active:scale-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:border-emerald-400/50 dark:hover:bg-emerald-500/15"
-            >
-              Manage Courses
-            </Link>
+            <AdminModeToggle />
           </div>
         </div>
 
-        <div className="flex flex-col gap-6">
-          <AdminSidebar />
+        <div className="flex flex-col gap-4">
+          <AdminNavbar />
 
           <div className="flex-1">
             <AdminMessage message={successMessage} type="success" />
@@ -235,7 +225,7 @@ export default async function UnpublishedPage({
           <div className="mb-5 flex items-center justify-between gap-3 border-b border-slate-200 pb-4 dark:border-slate-700">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-indigo-600 dark:text-indigo-300">Unpublished</p>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">Saved but not published</h2>
+              <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-900 dark:text-white">Saved but not published</h2>
             </div>
             <div className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
               {total} course{total === 1 ? "" : "s"}
