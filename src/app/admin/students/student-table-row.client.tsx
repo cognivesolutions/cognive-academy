@@ -128,7 +128,7 @@ export function StudentTableRow({ student }: { student: StudentTableRowData }) {
               : "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-200",
           ].join(" ")}
         >
-          {isActive ? "Active" : "Deactive"}
+          {isActive ? "Active" : "Inactive"}
         </span>
       </td>
       <td className="px-4 py-3">

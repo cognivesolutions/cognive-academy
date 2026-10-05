@@ -35,9 +35,9 @@ export function AdminModeToggle() {
               "relative inline-flex h-[46px] w-[180px] shrink-0 items-center justify-center overflow-hidden rounded-full border border-transparent px-5 py-2.5 text-[15px] font-bold tracking-[-0.02em] whitespace-nowrap transition-all duration-200 box-border",
               isActive
                 ? mode.href === "/admin"
-                  ? "bg-[linear-gradient(135deg,#4f46e5_0%,#6366f1_35%,#8b5cf6_100%)] text-white shadow-[0_12px_28px_rgba(99,102,241,0.32)] before:absolute before:inset-0 before:bg-[linear-gradient(120deg,rgba(255,255,255,0.32),rgba(255,255,255,0.08),rgba(255,255,255,0.2))] before:opacity-100 before:content-['']"
-                  : "border-rose-200 bg-rose-100 text-rose-700 shadow-[0_8px_22px_rgba(244,63,94,0.12)] dark:border-rose-500/40 dark:bg-rose-500/20 dark:text-rose-100"
-                : "text-slate-600 hover:bg-white hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white",
+                  ? "border border-emerald-300 bg-[linear-gradient(135deg,rgba(16,185,129,0.18),rgba(255,255,255,0.95),rgba(16,185,129,0.12))] text-emerald-800 shadow-[0_12px_24px_rgba(16,185,129,0.18)] dark:border-emerald-400/60 dark:bg-[linear-gradient(135deg,rgba(16,185,129,0.18),rgba(15,23,42,0.78),rgba(16,185,129,0.12))] dark:text-emerald-100"
+                  : "border border-red-200 bg-[linear-gradient(135deg,rgba(248,113,113,0.12),rgba(255,255,255,0.96),rgba(239,68,68,0.08))] text-red-700 shadow-[0_12px_24px_rgba(239,68,68,0.16)] dark:border-red-400/60 dark:bg-[linear-gradient(135deg,rgba(239,68,68,0.18),rgba(15,23,42,0.78),rgba(239,68,68,0.12))] dark:text-red-100"
+                : "text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-800/80 dark:hover:text-slate-200",
             ].join(" ")}
           >
             {mode.label}
