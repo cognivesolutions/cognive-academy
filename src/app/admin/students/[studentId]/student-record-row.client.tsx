@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export type StudentRecordRowData = {
   id: string;
@@ -16,11 +17,52 @@ export type StudentRecordRowData = {
   isOrder: boolean;
 };
 
-export function StudentRecordTableRow({ record }: { record: StudentRecordRowData }) {
+export function StudentRecordTableRow({ record, studentId }: { record: StudentRecordRowData; studentId: string }) {
   const router = useRouter();
+  const [isAccessGranted, setIsAccessGranted] = useState(record.isActive);
+  const [isUpdatingAccess, setIsUpdatingAccess] = useState(false);
   const detailHref = record.courseId
     ? `/admin/courses/${record.courseId}/lectures?courseId=${record.courseId}`
     : "/admin/courses";
+
+  const handleAccessToggle = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!record.courseId || isUpdatingAccess) {
+      return;
+    }
+
+    setIsUpdatingAccess(true);
+
+    try {
+      const response = await fetch("/api/admin/students/access", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          studentId,
+          courseId: record.courseId,
+          accessGranted: !isAccessGranted,
+        }),
+      });
+
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(payload?.message || "Unable to update access.");
+      }
+
+      setIsAccessGranted(!isAccessGranted);
+      router.refresh();
+    } catch (error) {
+      console.error("Unable to update course access", error);
+      alert(error instanceof Error ? error.message : "Unable to update course access.");
+    } finally {
+      setIsUpdatingAccess(false);
+    }
+  };
 
   return (
     <tr
@@ -50,7 +92,23 @@ export function StudentRecordTableRow({ record }: { record: StudentRecordRowData
       <td className="px-4 py-4 align-middle text-sm leading-[1.35] text-slate-700 dark:text-slate-200">{record.amount}</td>
       <td className="px-4 py-4 align-middle text-sm leading-[1.35] text-slate-700 dark:text-slate-200">{record.status}</td>
       <td className="px-4 py-4 align-middle leading-[1.35]">
-        <div className="flex items-center justify-start">
+        <div className="flex flex-wrap items-center justify-start gap-2">
+          {!record.isOrder && (
+            <button
+              type="button"
+              onClick={handleAccessToggle}
+              disabled={isUpdatingAccess}
+              className={[
+                "inline-flex items-center justify-center rounded-full border px-2.5 py-1.5 text-[10px] font-semibold tracking-[0.08em] shadow-[0_8px_20px_rgba(16,185,129,0.08)] backdrop-blur-sm transition duration-200 hover:brightness-105 active:scale-100 disabled:cursor-not-allowed disabled:opacity-60",
+                isAccessGranted
+                  ? "border-rose-200 bg-rose-50/80 text-rose-700 hover:border-rose-300 hover:bg-rose-100 hover:shadow-[0_10px_24px_rgba(244,63,94,0.12)] dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200 dark:hover:border-rose-400/50 dark:hover:bg-rose-500/15"
+                  : "border-emerald-200 bg-emerald-50/80 text-emerald-700 hover:border-emerald-300 hover:bg-emerald-100 hover:shadow-[0_10px_24px_rgba(16,185,129,0.12)] dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:border-emerald-400/50 dark:hover:bg-emerald-500/15",
+              ].join(" ")}
+            >
+              {isUpdatingAccess ? "Saving..." : isAccessGranted ? "Revoke access" : "Grant access"}
+            </button>
+          )}
+
           <Link
             href={detailHref}
             onClick={(event) => event.stopPropagation()}

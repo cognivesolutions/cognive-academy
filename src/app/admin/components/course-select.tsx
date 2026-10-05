@@ -67,7 +67,8 @@ export function CourseSelect({
   const hasExplicitDefaultOption = options.some((option) => option.value === "" || option.value === "all");
   const effectiveHideLabel = hideLabel || compact;
   const isDefaultState = value === "" || value === "all";
-  const visibleValue = isDefaultState ? (label ?? placeholder) : (selectedOption?.label ?? label ?? placeholder);
+  const defaultDisplayText = label && label !== "Course" ? label : "Courses";
+  const visibleValue = isDefaultState ? defaultDisplayText : (selectedOption?.label ?? defaultDisplayText);
 
   const submitCurrentForm = (nextValue: string) => {
     const displayValue = nextValue === "all" ? "all" : nextValue;
@@ -98,7 +99,7 @@ export function CourseSelect({
 
   return (
     <label className={effectiveHideLabel ? "block" : "block text-sm font-medium text-slate-700 dark:text-slate-200"}>
-      <div ref={containerRef} className={`relative z-[60] overflow-visible ${effectiveHideLabel ? "" : "mt-2"}`}>
+      <div ref={containerRef} className={`relative isolate z-[10] overflow-visible ${effectiveHideLabel ? "" : "mt-2"}`}>
         <input ref={hiddenInputRef} type="hidden" name={name} value={value} required={required} />
 
         <button
@@ -106,15 +107,15 @@ export function CourseSelect({
           aria-expanded={isOpen}
           onClick={() => setIsOpen((open) => !open)}
           onMouseDown={(event) => event.preventDefault()}
-          className={`flex h-[38px] w-full items-center gap-2 rounded-xl border bg-slate-50 pr-3 text-left text-sm transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:bg-slate-800 ${
+          className={`relative z-[2] flex h-[38px] w-full items-center gap-2 rounded-full border bg-white/90 pr-3 text-left text-sm transition duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 dark:bg-slate-900/70 ${
             compact ? "px-2.5 py-1.5" : "px-3 py-2.5"
           } ${
             isDefaultState
-              ? "border-slate-200 text-slate-700 dark:border-slate-700 dark:text-slate-200"
-              : "border-slate-200 text-slate-900 dark:border-slate-700 dark:text-slate-100"
+              ? "border-slate-200 text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:border-slate-700 dark:text-slate-100"
+              : "border-slate-200 text-slate-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:border-slate-700 dark:text-slate-100"
           } ${triggerClassName}`}
         >
-          <span className={`flex-1 text-left ${isDefaultState ? "text-slate-700 dark:text-slate-200" : "text-slate-900 dark:text-slate-100"}`}>
+          <span className="flex-1 text-left text-current">
             {visibleValue}
           </span>
           <svg
@@ -131,24 +132,24 @@ export function CourseSelect({
 
         {isOpen && (
           <div
-            className={`absolute left-0 right-0 top-full z-[9999] mt-2 overflow-visible rounded-xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-slate-900 ${menuClassName}`}
+            className={`absolute left-0 right-0 top-full z-[20] mt-2 overflow-visible rounded-2xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)] ring-1 ring-slate-700/10 dark:border-slate-700 dark:bg-slate-950 ${menuClassName}`}
             onMouseDown={(event) => event.preventDefault()}
           >
-            {!hasExplicitDefaultOption && (
+            {(!hasExplicitDefaultOption || options.some((option) => option.value === "all")) && (
               <button
                 type="button"
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => {
                   setIsOpen(false);
-                  submitCurrentForm("");
+                  submitCurrentForm("all");
                 }}
                 className={`flex w-full items-center justify-between px-3 py-2.5 text-left text-sm transition hover:bg-slate-100 dark:hover:bg-slate-800 ${
-                  value
-                    ? "text-slate-600 dark:text-slate-300"
-                    : "bg-slate-50 text-slate-400 dark:bg-slate-800 dark:text-slate-400"
+                  value === "all" || value === ""
+                    ? "bg-slate-900/80 text-white dark:bg-slate-800 dark:text-slate-100"
+                    : "text-slate-700 dark:text-slate-200"
                 }`}
               >
-                {placeholder}
+                All
               </button>
             )}
 
@@ -163,7 +164,7 @@ export function CourseSelect({
                 }}
                 className={`flex w-full items-center justify-between px-3 py-2.5 text-left text-sm transition ${
                   value === option.value
-                    ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-200"
+                    ? "bg-slate-900 text-white dark:bg-slate-800 dark:text-slate-100"
                     : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
                 }`}
               >

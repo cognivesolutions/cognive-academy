@@ -155,7 +155,7 @@ export function StudentRecordsFilterBar({
             }}
             triggerClassName="!min-h-[38px] !w-[142px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
             menuClassName="!min-w-[142px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
-            options={[{ value: "", label: "All courses" }, ...courseOptions]}
+            options={[{ value: "", label: "All" }, ...courseOptions]}
           />
         </div>
 

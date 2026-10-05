@@ -195,7 +195,7 @@ export function StudentFilterBar({
   };
 
   return (
-    <div className="mb-4 space-y-3">
+    <div className="relative z-[1] mb-4 space-y-3">
       <div className="flex w-full flex-nowrap items-center justify-between gap-2 overflow-visible rounded-full border border-slate-200 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.10),_rgba(255,255,255,0.98)_38%,_rgba(241,245,249,1)_100%)] p-1.5 shadow-[0_18px_32px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.18),_rgba(10,18,31,0.96)_38%,_rgba(2,6,23,1)_100%)] dark:shadow-[0_18px_32px_rgba(15,23,42,0.28)]">
         <div className="flex min-w-0 flex-nowrap items-center justify-start gap-2 overflow-visible">
           {isFiltered ? (

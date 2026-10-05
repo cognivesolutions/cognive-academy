@@ -1,0 +1,36 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+export function StudentProfileToggle({ studentId }: { studentId: string }) {
+  const pathname = usePathname();
+  const isCourses = pathname === `/admin/students/${studentId}`;
+  const isPurchaseHistory = pathname === `/admin/students/${studentId}/orders`;
+
+  return (
+    <div className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 p-1 shadow-[0_8px_20px_rgba(15,23,42,0.04)] dark:border-slate-700 dark:bg-slate-800/80">
+      <Link
+        href={`/admin/students/${studentId}`}
+        className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] transition ${
+          isCourses
+            ? "border border-emerald-200 bg-emerald-50 text-emerald-700 shadow-[0_8px_20px_rgba(16,185,129,0.10)] dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200"
+            : "text-slate-700 hover:bg-white hover:text-indigo-600 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-indigo-300"
+        }`}
+      >
+        Courses Access
+      </Link>
+
+      <Link
+        href={`/admin/students/${studentId}/orders`}
+        className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] transition ${
+          isPurchaseHistory
+            ? "border border-emerald-200 bg-emerald-50 text-emerald-700 shadow-[0_8px_20px_rgba(16,185,129,0.10)] dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200"
+            : "text-slate-700 hover:bg-white hover:text-indigo-600 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-indigo-300"
+        }`}
+      >
+        Orders
+      </Link>
+    </div>
+  );
+}
