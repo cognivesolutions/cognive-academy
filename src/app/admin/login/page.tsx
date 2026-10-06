@@ -12,6 +12,7 @@ function AdminLoginForm() {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -45,6 +46,11 @@ function AdminLoginForm() {
         return;
       }
 
+      if (userStatus?.status === "verification_required") {
+        setFormError("Please verify your email and mobile number before logging in.");
+        return;
+      }
+
       const result = await signIn("credentials", {
         email: normalizedEmail,
         password,
@@ -53,7 +59,10 @@ function AdminLoginForm() {
       });
 
       if (!result || result.error || result.ok === false) {
-        setFormError("Invalid credentials. Please make sure you are using the correct admin email and password.");
+        const loginErrorMessage = result?.error === "VerificationRequired"
+          ? "Please verify your email and mobile number before logging in."
+          : "Invalid credentials. Please make sure you are using the correct admin email and password.";
+        setFormError(loginErrorMessage);
         return;
       }
 
@@ -86,9 +95,11 @@ function AdminLoginForm() {
             formError ??
             (error === "AccountInactive"
               ? "This account is currently inactive. Please contact support."
-              : error === "CredentialsSignin"
-                ? "Invalid credentials. Please make sure you are using the correct admin email and password."
-                : null)
+              : error === "VerificationRequired"
+                ? "Please verify your email and mobile number before logging in."
+                : error === "CredentialsSignin"
+                  ? "Invalid credentials. Please make sure you are using the correct admin email and password."
+                  : null)
           }
         />
 
@@ -107,15 +118,25 @@ function AdminLoginForm() {
           </div>
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">Password</label>
-            <input
-              type="password"
-              name="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter admin password"
-              autoComplete="current-password"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-indigo-500 focus:bg-white dark:border-slate-700 dark:bg-slate-950/60 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400 dark:focus:bg-slate-900"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter admin password"
+                autoComplete="current-password"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 pr-11 text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-indigo-500 focus:bg-white dark:border-slate-700 dark:bg-slate-950/60 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400 dark:focus:bg-slate-900"
+              />
+              <button
+                type="button"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                onClick={() => setShowPassword((currentValue) => !currentValue)}
+                className="absolute inset-y-0 right-3 flex items-center text-slate-500 transition hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+              >
+                {showPassword ? "🙈" : "👁️"}
+              </button>
+            </div>
           </div>
           <button
             type="submit"

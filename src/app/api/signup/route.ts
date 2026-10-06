@@ -83,6 +83,7 @@ export async function POST(request: Request) {
         phone,
         passwordHash,
         role: "STUDENT",
+        isActive: false,
       },
     });
 

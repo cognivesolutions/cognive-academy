@@ -20,6 +20,8 @@ export default async function ProfilePage() {
       phone: true,
       bio: true,
       role: true,
+      emailVerifiedAt: true,
+      phoneVerifiedAt: true,
       emailNotifications: true,
       courseReminders: true,
       marketingEmails: true,

@@ -21,6 +21,8 @@ const BOOTSTRAP_USERS = {
   },
 } as const;
 
+let bootstrapRepairPromise: Promise<void> | null = null;
+
 async function ensureBootstrapUser(email: string, requestedRole?: string) {
   const normalizedEmail = email.trim().toLowerCase();
   const bootstrapUser = Object.values(BOOTSTRAP_USERS).find((user) => user.email === normalizedEmail);
@@ -31,22 +33,73 @@ async function ensureBootstrapUser(email: string, requestedRole?: string) {
 
   const hash = await bcrypt.hash(bootstrapUser.password, 10);
   const resolvedRole = requestedRole?.toUpperCase() === "ADMIN" ? "ADMIN" : bootstrapUser.role;
+  const isAdminBootstrap = resolvedRole === "ADMIN";
+
+  const existingUser = await prisma.user.findUnique({
+    where: { email: normalizedEmail },
+    select: {
+      id: true,
+      passwordHash: true,
+      role: true,
+      isActive: true,
+      emailVerifiedAt: true,
+      phoneVerifiedAt: true,
+    },
+  });
+
+  const needsPasswordReset = !existingUser?.passwordHash || !(await bcrypt.compare(bootstrapUser.password, existingUser.passwordHash));
 
   return prisma.user.upsert({
     where: { email: normalizedEmail },
     update: {
       name: bootstrapUser.name,
-      passwordHash: hash,
+      passwordHash: needsPasswordReset ? hash : existingUser?.passwordHash ?? hash,
       role: resolvedRole,
+      isActive: true,
+      phone: isAdminBootstrap ? "+919000000000" : undefined,
+      emailVerifiedAt: isAdminBootstrap ? new Date() : undefined,
+      phoneVerifiedAt: isAdminBootstrap ? new Date() : undefined,
     },
     create: {
       email: normalizedEmail,
       name: bootstrapUser.name,
       passwordHash: hash,
       role: resolvedRole,
+      phone: isAdminBootstrap ? "+919000000000" : null,
+      isActive: isAdminBootstrap ? true : false,
+      emailVerifiedAt: isAdminBootstrap ? new Date() : null,
+      phoneVerifiedAt: isAdminBootstrap ? new Date() : null,
     },
   });
 }
+
+export async function ensureBootstrapUsers() {
+  if (bootstrapRepairPromise) {
+    return bootstrapRepairPromise;
+  }
+
+  bootstrapRepairPromise = (async () => {
+    try {
+      for (const bootstrapUser of Object.values(BOOTSTRAP_USERS)) {
+        await ensureBootstrapUser(bootstrapUser.email, bootstrapUser.role);
+      }
+    } catch (error) {
+      console.error("Bootstrap user repair failed:", error);
+      throw error;
+    }
+  })();
+
+  try {
+    await bootstrapRepairPromise;
+  } catch {
+    bootstrapRepairPromise = null;
+    return;
+  }
+
+  return bootstrapRepairPromise;
+}
+
+void ensureBootstrapUsers().catch(() => undefined);
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: authSecret,
@@ -75,11 +128,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         const normalizedEmail = email.trim().toLowerCase();
+        await ensureBootstrapUsers();
+        const bootstrapUserMatch = Object.values(BOOTSTRAP_USERS).find((user) => user.email === normalizedEmail);
         let user = await prisma.user.findUnique({
           where: { email: normalizedEmail },
         });
 
-        if (!user) {
+        if (bootstrapUserMatch) {
           user = await ensureBootstrapUser(normalizedEmail, requestedRole ?? undefined);
         }
 
@@ -87,8 +142,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
+        const isInternalAdmin = user.role?.toUpperCase?.() === "ADMIN";
+
         if (user.isActive === false) {
           throw new Error("AccountInactive");
+        }
+
+        if (!isInternalAdmin && (!user.emailVerifiedAt || !user.phoneVerifiedAt)) {
+          throw new Error("VerificationRequired");
         }
 
         const valid = await bcrypt.compare(password, user.passwordHash);

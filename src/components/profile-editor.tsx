@@ -9,6 +9,8 @@ interface ProfileUser {
   phone?: string | null;
   bio?: string | null;
   role: string;
+  emailVerifiedAt?: Date | string | null;
+  phoneVerifiedAt?: Date | string | null;
   emailNotifications: boolean;
   courseReminders: boolean;
   marketingEmails: boolean;
@@ -30,6 +32,13 @@ export function ProfileEditor({ user }: { user: ProfileUser }) {
   const [saving, setSaving] = useState(false);
   const [profileMessage, setProfileMessage] = useState<string | null>(null);
   const [accountMessage, setAccountMessage] = useState<string | null>(null);
+  const [emailVerified, setEmailVerified] = useState(Boolean(user.emailVerifiedAt));
+  const [phoneVerified, setPhoneVerified] = useState(Boolean(user.phoneVerifiedAt));
+  const [emailOtpCode, setEmailOtpCode] = useState("");
+  const [phoneOtpCode, setPhoneOtpCode] = useState("");
+  const [emailOtpLoading, setEmailOtpLoading] = useState(false);
+  const [phoneOtpLoading, setPhoneOtpLoading] = useState(false);
+  const [verificationMessage, setVerificationMessage] = useState<string | null>(null);
 
   const initials = useMemo(() => {
     const label = name?.trim() || user.email || "S";
@@ -48,8 +57,136 @@ export function ProfileEditor({ user }: { user: ProfileUser }) {
   const accountOverview = [
     { label: "Account status", value: "Active" },
     { label: "Role", value: user.role },
-    { label: "Email verification", value: "Verified" },
+    { label: "Email verification", value: emailVerified ? "Verified" : "Pending" },
   ];
+
+  async function handleSendEmailOtp() {
+    setEmailOtpLoading(true);
+    setVerificationMessage(null);
+
+    try {
+      const response = await fetch("/api/auth/send-email-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message ?? "Unable to send email OTP.");
+      }
+
+      setVerificationMessage("A verification code has been sent to your email.");
+    } catch (error) {
+      setVerificationMessage(error instanceof Error ? error.message : "Unable to send email OTP.");
+    } finally {
+      setEmailOtpLoading(false);
+    }
+  }
+
+  async function handleVerifyEmailOtp() {
+    if (!emailOtpCode.trim()) {
+      setVerificationMessage("Please enter the email verification code.");
+      return;
+    }
+
+    setEmailOtpLoading(true);
+    setVerificationMessage(null);
+
+    try {
+      const response = await fetch("/api/auth/verify-email-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email, code: emailOtpCode.trim() }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message ?? "Unable to verify email OTP.");
+      }
+
+      setEmailVerified(true);
+      setEmailOtpCode("");
+      setVerificationMessage("Email verified successfully.");
+    } catch (error) {
+      setVerificationMessage(error instanceof Error ? error.message : "Unable to verify email OTP.");
+    } finally {
+      setEmailOtpLoading(false);
+    }
+  }
+
+  async function handleSendPhoneOtp() {
+    const normalizedPhone = (phone || user.phone || "").trim();
+
+    if (!normalizedPhone) {
+      setVerificationMessage("Please add a mobile number before sending a verification code.");
+      return;
+    }
+
+    setPhoneOtpLoading(true);
+    setVerificationMessage(null);
+
+    try {
+      const response = await fetch("/api/auth/send-mobile-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: normalizedPhone }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message ?? "Unable to send mobile OTP.");
+      }
+
+      setVerificationMessage("A verification code has been sent to your mobile number.");
+    } catch (error) {
+      setVerificationMessage(error instanceof Error ? error.message : "Unable to send mobile OTP.");
+    } finally {
+      setPhoneOtpLoading(false);
+    }
+  }
+
+  async function handleVerifyPhoneOtp() {
+    const normalizedPhone = (phone || user.phone || "").trim();
+
+    if (!normalizedPhone) {
+      setVerificationMessage("Please add a mobile number before verifying it.");
+      return;
+    }
+
+    if (!phoneOtpCode.trim()) {
+      setVerificationMessage("Please enter the mobile verification code.");
+      return;
+    }
+
+    setPhoneOtpLoading(true);
+    setVerificationMessage(null);
+
+    try {
+      const response = await fetch("/api/auth/verify-mobile-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: normalizedPhone, code: phoneOtpCode.trim() }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message ?? "Unable to verify mobile OTP.");
+      }
+
+      setPhoneVerified(true);
+      setPhoneOtpCode("");
+      setVerificationMessage("Mobile number verified successfully.");
+    } catch (error) {
+      setVerificationMessage(error instanceof Error ? error.message : "Unable to verify mobile OTP.");
+    } finally {
+      setPhoneOtpLoading(false);
+    }
+  }
 
   const notificationOptions = [
     { key: "emailNotifications", label: "Email notifications", description: "Course updates and platform announcements", value: emailNotifications, onChange: setEmailNotifications },
@@ -213,6 +350,92 @@ export function ProfileEditor({ user }: { user: ProfileUser }) {
               <div className="mt-2 text-lg font-bold text-slate-900 dark:text-white">{item.value}</div>
             </div>
           ))}
+        </div>
+
+        <div className="mt-8 rounded-[26px] border border-slate-200 bg-white/80 p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900/80">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Account verification</p>
+              <h2 className="mt-1 text-lg font-bold text-slate-900 dark:text-white">Verify your account before login</h2>
+            </div>
+            <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${emailVerified && phoneVerified ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300" : "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"}`}>
+              {emailVerified && phoneVerified ? "Verified" : "Pending"}
+            </span>
+          </div>
+
+          {verificationMessage ? (
+            <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+              {verificationMessage}
+            </div>
+          ) : null}
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/70">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-sm font-semibold text-slate-900 dark:text-white">Email verification</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">{emailVerified ? "Verified" : "Not verified"}</div>
+                </div>
+                {!emailVerified ? (
+                  <button type="button" onClick={handleSendEmailOtp} disabled={emailOtpLoading} className="rounded-full bg-indigo-600 px-3 py-1.5 text-[10px] font-semibold text-white transition hover:bg-indigo-500 disabled:opacity-70">
+                    {emailOtpLoading ? "Sending..." : "Send OTP"}
+                  </button>
+                ) : null}
+              </div>
+
+              {!emailVerified ? (
+                <div className="mt-3 flex gap-2">
+                  <input
+                    type="text"
+                    value={emailOtpCode}
+                    onChange={(event) => setEmailOtpCode(event.target.value)}
+                    placeholder="6-digit code"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                  />
+                  <button type="button" onClick={handleVerifyEmailOtp} disabled={emailOtpLoading} className="rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-700 disabled:opacity-70 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white">
+                    Verify
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
+                  Your email is verified.
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/70">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-sm font-semibold text-slate-900 dark:text-white">Mobile verification</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">{phoneVerified ? "Verified" : "Not verified"}</div>
+                </div>
+                {!phoneVerified ? (
+                  <button type="button" onClick={handleSendPhoneOtp} disabled={phoneOtpLoading} className="rounded-full bg-indigo-600 px-3 py-1.5 text-[10px] font-semibold text-white transition hover:bg-indigo-500 disabled:opacity-70">
+                    {phoneOtpLoading ? "Sending..." : "Send OTP"}
+                  </button>
+                ) : null}
+              </div>
+
+              {!phoneVerified ? (
+                <div className="mt-3 flex gap-2">
+                  <input
+                    type="text"
+                    value={phoneOtpCode}
+                    onChange={(event) => setPhoneOtpCode(event.target.value)}
+                    placeholder="6-digit code"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                  />
+                  <button type="button" onClick={handleVerifyPhoneOtp} disabled={phoneOtpLoading} className="rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-700 disabled:opacity-70 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white">
+                    Verify
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
+                  Your mobile number is verified.
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="mt-8 rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-violet-50 to-sky-50 p-4 dark:border-indigo-500/20 dark:from-indigo-500/5 dark:via-violet-500/5 dark:to-sky-500/5">

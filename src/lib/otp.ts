@@ -5,7 +5,7 @@ import twilio from "twilio";
 
 import { prisma } from "@/lib/prisma";
 
-export type OtpPurpose = "EMAIL_VERIFICATION" | "MOBILE_VERIFICATION";
+export type OtpPurpose = "EMAIL_VERIFICATION" | "MOBILE_VERIFICATION" | "PASSWORD_RESET";
 
 const resendApiKey = process.env.RESEND_API_KEY;
 const resendFromEmail = process.env.RESEND_FROM_EMAIL ?? "noreply@localhost";
@@ -105,17 +105,36 @@ export async function verifyOtp({
     data: { usedAt: new Date() },
   });
 
-  if (normalizedEmail) {
+  if (purpose === "EMAIL_VERIFICATION" && normalizedEmail) {
     await prisma.user.updateMany({
       where: { email: normalizedEmail },
       data: { emailVerifiedAt: new Date() },
     });
   }
 
-  if (normalizedPhone) {
+  if (purpose === "MOBILE_VERIFICATION" && normalizedPhone) {
     await prisma.user.updateMany({
       where: { phone: normalizedPhone },
       data: { phoneVerifiedAt: new Date() },
+    });
+  }
+
+  const userToActivate = normalizedEmail
+    ? await prisma.user.findFirst({
+        where: { email: normalizedEmail },
+        select: { id: true, emailVerifiedAt: true, phoneVerifiedAt: true },
+      })
+    : normalizedPhone
+      ? await prisma.user.findFirst({
+          where: { phone: normalizedPhone },
+          select: { id: true, emailVerifiedAt: true, phoneVerifiedAt: true },
+        })
+      : null;
+
+  if (userToActivate && userToActivate.emailVerifiedAt && userToActivate.phoneVerifiedAt) {
+    await prisma.user.update({
+      where: { id: userToActivate.id },
+      data: { isActive: true },
     });
   }
 

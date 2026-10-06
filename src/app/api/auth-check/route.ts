@@ -13,15 +13,27 @@ export async function POST(request: Request) {
 
     const user = await prisma.user.findUnique({
       where: { email },
-      select: { isActive: true, email: true },
+      select: {
+        isActive: true,
+        email: true,
+        role: true,
+        emailVerifiedAt: true,
+        phoneVerifiedAt: true,
+      },
     });
 
     if (!user) {
       return NextResponse.json({ status: "missing" });
     }
 
+    const isInternalAdmin = user.role?.toUpperCase?.() === "ADMIN";
+
     if (user.isActive === false) {
       return NextResponse.json({ status: "inactive" });
+    }
+
+    if (!isInternalAdmin && (!user.emailVerifiedAt || !user.phoneVerifiedAt)) {
+      return NextResponse.json({ status: "verification_required" });
     }
 
     return NextResponse.json({ status: "active" });
