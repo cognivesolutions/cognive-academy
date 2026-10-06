@@ -14,7 +14,7 @@ const navItems = [
 const studentNavItems = [
   { href: "/admin/students", label: "Dashboard", badge: "Home", tone: "indigo" },
   { href: "/admin/students/manage", label: "Manage students", badge: "Students", tone: "rose" },
-  { href: "/admin/students/access", label: "Student access", badge: "Profile", tone: "violet" },
+  { href: "/admin/students/orders", label: "Course orders", badge: "Orders", tone: "violet" },
 ];
 
 const toneStyles = {
@@ -52,18 +52,55 @@ const toneStyles = {
 
 export function AdminNavbar() {
   const pathname = usePathname();
-  const visibleNavItems = pathname.startsWith("/admin/students") ? studentNavItems : navItems;
+  const isStudentFlow = pathname.startsWith("/admin/students") || pathname.startsWith("/admin/orders");
+  const visibleNavItems = isStudentFlow ? studentNavItems : navItems;
+
+  const isActiveItem = (itemHref: string) => {
+    if (isStudentFlow) {
+      if (itemHref === "/admin/students") {
+        return pathname === "/admin/students" || pathname.startsWith("/admin/students/") || pathname.startsWith("/admin/orders");
+      }
+
+      if (itemHref === "/admin/students/manage") {
+        return pathname === "/admin/students/manage" || pathname.startsWith("/admin/students/manage/");
+      }
+
+      if (itemHref === "/admin/students/orders") {
+        return pathname === "/admin/students/orders" || pathname.startsWith("/admin/students/orders/");
+      }
+
+      return false;
+    }
+
+    if (itemHref === "/admin") {
+      return pathname === "/admin" || pathname.startsWith("/admin?");
+    }
+
+    if (itemHref === "/admin/courses/new") {
+      return pathname === "/admin/courses/new" || pathname.startsWith("/admin/courses/new/");
+    }
+
+    if (itemHref === "/admin/unpublished") {
+      return pathname === "/admin/unpublished" || pathname.startsWith("/admin/unpublished/");
+    }
+
+    if (itemHref === "/admin/lectures") {
+      return pathname === "/admin/lectures" || pathname.startsWith("/admin/lectures/");
+    }
+
+    if (itemHref === "/admin/courses") {
+      return pathname === "/admin/courses" || pathname.startsWith("/admin/courses/");
+    }
+
+    return false;
+  };
 
   return (
     <aside className="mx-auto w-full max-w-6xl">
       <div className="sticky top-6 rounded-[24px] border border-slate-200 bg-white/80 p-3 shadow-[0_18px_40px_rgba(15,23,42,0.04)] backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/80">
-        <nav className="flex flex-wrap items-center gap-2">
+        <nav className="flex flex-wrap items-center gap-2.5">
           {visibleNavItems.map((item) => {
-            const isActive =
-              item.href === "/admin"
-                ? pathname === "/admin"
-                : pathname === item.href || pathname.startsWith(`${item.href}/`);
-
+            const isActive = isActiveItem(item.href);
             const tone = toneStyles[item.tone as keyof typeof toneStyles];
 
             return (
@@ -71,13 +108,13 @@ export function AdminNavbar() {
                 key={item.href}
                 href={item.href}
                 className={[
-                  "inline-flex items-center justify-between rounded-2xl border px-3 py-2.5 text-sm font-semibold transition-all duration-200",
+                  "inline-flex items-center justify-between rounded-[18px] border px-3 py-2 text-[13px] font-semibold tracking-[-0.02em] transition-all duration-200",
                   isActive ? tone.active : tone.base,
                 ].join(" ")}
               >
                 <span>{item.label}</span>
                 <span className={[
-                  "ml-3 rounded-full px-1.5 py-0.5 text-[10px] uppercase tracking-[0.18em]",
+                  "ml-2 rounded-full px-1.5 py-0.5 text-[8px] uppercase tracking-[0.16em]",
                   tone.badge,
                 ].join(" ")}>
                   {item.badge}

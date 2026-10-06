@@ -131,12 +131,6 @@ export default async function AdminPage({
             <h1 className="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">Course dashboard</h1>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
-            <Link
-              href="/"
-              className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(99,102,241,0.26)] transition hover:brightness-110"
-            >
-              Back to site
-            </Link>
             <AdminModeToggle />
           </div>
         </div>

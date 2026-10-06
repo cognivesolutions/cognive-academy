@@ -135,7 +135,7 @@ export function CourseSelect({
             className={`absolute left-0 right-0 top-full z-[20] mt-2 overflow-visible rounded-2xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)] ring-1 ring-slate-700/10 dark:border-slate-700 dark:bg-slate-950 ${menuClassName}`}
             onMouseDown={(event) => event.preventDefault()}
           >
-            {(!hasExplicitDefaultOption || options.some((option) => option.value === "all")) && (
+            {!hasExplicitDefaultOption && (
               <button
                 type="button"
                 onMouseDown={(event) => event.preventDefault()}

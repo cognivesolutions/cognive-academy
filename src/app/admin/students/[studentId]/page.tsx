@@ -116,12 +116,12 @@ export default async function StudentDetailPage({
   const selectedCourse = Array.isArray(resolvedSearchParams.course)
     ? resolvedSearchParams.course[0] ?? ""
     : resolvedSearchParams.course ?? "";
-  const selectedType = Array.isArray(resolvedSearchParams.type)
-    ? resolvedSearchParams.type[0] ?? "all"
-    : resolvedSearchParams.type ?? "all";
-  const selectedPrice = Array.isArray(resolvedSearchParams.price)
-    ? resolvedSearchParams.price[0] ?? "all"
-    : resolvedSearchParams.price ?? "all";
+  const selectedCategory = Array.isArray(resolvedSearchParams.category)
+    ? resolvedSearchParams.category[0] ?? "all"
+    : resolvedSearchParams.category ?? "all";
+  const selectedJoined = Array.isArray(resolvedSearchParams.joined)
+    ? resolvedSearchParams.joined[0] ?? "all"
+    : resolvedSearchParams.joined ?? "all";
   const rawPage = Number(Array.isArray(resolvedSearchParams.page) ? resolvedSearchParams.page[0] : resolvedSearchParams.page ?? "1");
   const rawPageSize = Array.isArray(resolvedSearchParams.pageSize)
     ? resolvedSearchParams.pageSize[0] ?? "10"
@@ -138,7 +138,9 @@ export default async function StudentDetailPage({
     courseId: enrollment.course.id,
     title: enrollment.course.title,
     category: enrollment.course.category ?? "General",
-    type: enrollment.accessGranted ? "Active" : "Pending",
+    joinedAt: new Date(enrollment.createdAt),
+    expiryLabel: enrollment.accessGranted ? "Lifetime" : "No access",
+    type: enrollment.accessGranted ? "Access granted" : "Awaiting access",
     amount: "—",
     numericAmount: 0,
     status: enrollment.accessGranted ? "Access granted" : "Awaiting access",
@@ -152,18 +154,41 @@ export default async function StudentDetailPage({
     ).values(),
   );
 
-  const priceOptions = [{ value: "all", label: "All" }];
+  const uniqueCategoryOptions = Array.from(
+    new Map(
+      recordRows.map((record) => [record.category, { value: record.category, label: record.category }]),
+    ).values(),
+  );
+
+  const uniqueJoinedOptions = Array.from(
+    new Map(
+      recordRows.map((record) => {
+        const label = new Intl.DateTimeFormat("en-GB", {
+          timeZone: "Asia/Kolkata",
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        }).format(new Date(record.joinedAt));
+        return [label, { value: label, label }];
+      }),
+    ).values(),
+  );
 
   const filteredRecords = recordRows.filter((record) => {
+    const joinedDateText = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(new Date(record.joinedAt));
+
     const searchText = [
       record.title,
       record.category,
-      record.type,
+      joinedDateText,
+      record.isActive ? "active" : "inactive",
       record.status,
-      record.amount,
-      record.isOrder ? "order" : "enrollment",
-      record.isOrder ? "paid" : "active",
-      record.numericAmount > 0 ? String(record.numericAmount) : "0",
+      record.type,
     ]
       .join(" ")
       .toLowerCase();
@@ -172,31 +197,17 @@ export default async function StudentDetailPage({
 
     const matchesStatus =
       status === "all" ||
-      (status === "active"
-        ? record.isActive
-        : !record.isActive);
+      (status === "active" && record.isActive) ||
+      (status === "inactive" && !record.isActive);
 
     const matchesCourse = !selectedCourse || record.title === selectedCourse;
+    const matchesCategory = selectedCategory === "all" || record.category === selectedCategory;
+    const matchesJoined = selectedJoined === "all" || joinedDateText === selectedJoined;
 
-    const matchesType =
-      selectedType === "all" ||
-      (selectedType === "enrollment" && !record.isOrder) ||
-      (selectedType === "order" && record.isOrder) ||
-      (selectedType === "active" && record.isActive) ||
-      (selectedType === "pending" && !record.isActive && !record.isOrder);
-
-    const matchesPrice =
-      selectedPrice === "all" ||
-      (selectedPrice === "under-2000" && record.numericAmount > 0 && record.numericAmount < 2000) ||
-      (selectedPrice === "2000-5000" && record.numericAmount >= 2000 && record.numericAmount <= 5000) ||
-      (selectedPrice === "above-5000" && record.numericAmount > 5000) ||
-      (selectedPrice === "free" && record.numericAmount === 0) ||
-      (selectedPrice !== "all" && selectedPrice !== "under-2000" && selectedPrice !== "2000-5000" && selectedPrice !== "above-5000" && selectedPrice !== "free" && Number(selectedPrice) === record.numericAmount);
-
-    return matchesQuery && matchesStatus && matchesCourse && matchesType && matchesPrice;
+    return matchesQuery && matchesStatus && matchesCourse && matchesCategory && matchesJoined;
   });
 
-  const hasActiveFilters = Boolean(q || status !== "all" || selectedCourse || selectedType !== "all" || selectedPrice !== "all");
+  const hasActiveFilters = Boolean(q || status !== "all" || selectedCourse || selectedCategory !== "all" || selectedJoined !== "all");
 
   const effectivePageSize = pageSize === "all" ? filteredRecords.length || 1 : pageSize;
   const totalPages = Math.max(1, Math.ceil(filteredRecords.length / effectivePageSize));
@@ -220,12 +231,12 @@ export default async function StudentDetailPage({
       params.set("course", selectedCourse);
     }
 
-    if (selectedType !== "all") {
-      params.set("type", selectedType);
+    if (selectedCategory !== "all") {
+      params.set("category", selectedCategory);
     }
 
-    if (selectedPrice !== "all") {
-      params.set("price", selectedPrice);
+    if (selectedJoined !== "all") {
+      params.set("joined", selectedJoined);
     }
 
     params.set("page", String(nextPage));
@@ -252,6 +263,14 @@ export default async function StudentDetailPage({
 
     return "border-slate-200 bg-slate-100 text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200";
   };
+
+  const formatJoinedDate = (date: Date) =>
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(date);
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
@@ -285,7 +304,7 @@ export default async function StudentDetailPage({
                 <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-200">
                   <div>{student.email}</div>
                   <div>{student.phone ?? "No phone number"}</div>
-                  <div>Joined {new Date(student.createdAt).toLocaleDateString()}</div>
+                  <div>Joined {formatJoinedDate(new Date(student.createdAt))}</div>
                 </div>
               </div>
 
@@ -328,12 +347,13 @@ export default async function StudentDetailPage({
                 defaultQ={q}
                 defaultStatus={status}
                 defaultCourse={selectedCourse}
-                defaultType={selectedType}
-                defaultPrice={selectedPrice}
+                defaultCategory={selectedCategory}
+                defaultJoined={selectedJoined}
                 pageSize={pageSize === "all" ? "all" : String(pageSize)}
                 hasActiveFilters={hasActiveFilters}
                 courseOptions={uniqueCourseOptions}
-                priceOptions={priceOptions}
+                categoryOptions={uniqueCategoryOptions}
+                joinedOptions={uniqueJoinedOptions}
               />
 
               <div className="overflow-hidden rounded-[20px] border border-slate-200 dark:border-slate-700">
@@ -341,17 +361,18 @@ export default async function StudentDetailPage({
                   <table className="min-w-full divide-y divide-slate-200 text-left dark:divide-slate-700">
                     <thead className="bg-slate-50 dark:bg-slate-800/80">
                       <tr>
-                        <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Course</th>
-                        <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Category</th>
-                        <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Type</th>
-                        <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Status</th>
-                        <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Actions</th>
+                        <th className="px-4 py-3 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Course Name</th>
+                        <th className="px-4 py-3 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Category</th>
+                        <th className="px-4 py-3 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Start Date</th>
+                        <th className="px-4 py-3 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Expiry Date</th>
+                        <th className="px-4 py-3 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Status</th>
+                        <th className="px-4 py-3 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-700 dark:bg-slate-900">
                       {filteredRecords.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+                          <td colSpan={6} className="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
                             No course access records match your filters.
                           </td>
                         </tr>

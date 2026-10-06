@@ -64,6 +64,14 @@ export function StudentTableRow({ student }: { student: StudentTableRowData }) {
     }
   };
 
+  const formatJoinedDate = (date: Date) =>
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(date);
+
   const handleDeleteStudent = async () => {
     try {
       const response = await fetch("/api/admin/students/delete", {
@@ -98,46 +106,36 @@ export function StudentTableRow({ student }: { student: StudentTableRowData }) {
         }
         router.push(`/admin/students/${student.id}`);
       }}
-      className="group cursor-pointer align-middle transition-all duration-200 hover:-translate-y-0.5 hover:bg-gradient-to-r hover:from-indigo-50/80 hover:via-white hover:to-violet-50/80 hover:shadow-[0_12px_24px_rgba(99,102,241,0.08)] dark:hover:from-slate-800/70 dark:hover:via-slate-800/70 dark:hover:to-indigo-950/30 dark:hover:shadow-[0_12px_24px_rgba(15,23,42,0.30)]"
+      className="group cursor-pointer align-middle transition-all duration-200 hover:bg-slate-50 hover:shadow-[inset_0_0_0_1px_rgba(148,163,184,0.12)] dark:hover:bg-slate-800/80"
     >
-      <td className="px-4 py-3">
+      <td className="px-3 py-2 align-middle text-left">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-sm font-bold text-white shadow-[0_10px_25px_rgba(99,102,241,0.25)]">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-[11px] font-bold text-white shadow-[0_8px_18px_rgba(99,102,241,0.22)]">
             {(student.name ?? "U").charAt(0).toUpperCase()}
           </div>
           <div>
-            <div className="font-semibold text-slate-900 dark:text-white">{student.name ?? "Unnamed"}</div>
-            <div className="text-xs text-slate-500 dark:text-slate-400">{student.id.slice(0, 8)}</div>
+            <div className="text-[13px] font-semibold tracking-[-0.01em] text-slate-900 dark:text-white">{student.name ?? "Unnamed"}</div>
           </div>
         </div>
       </td>
-      <td className="px-4 py-3">
-        <div className="text-sm text-slate-700 dark:text-slate-200">{student.email}</div>
-        <div className="text-xs text-slate-500 dark:text-slate-400">{student.phone ?? "No phone"}</div>
-      </td>
-      <td className="px-4 py-3 text-center text-sm font-medium text-slate-700 dark:text-slate-200">
+      <td className="px-3 py-2 align-middle text-left text-[12.5px] text-slate-700 dark:text-slate-200">{student.email ?? "No email"}</td>
+      <td className="px-3 py-2 align-middle text-left text-[12.5px] text-slate-700 dark:text-slate-200">{student.phone ?? "No phone"}</td>
+      <td className="px-3 py-2 align-middle text-center text-[12.5px] font-medium text-slate-700 dark:text-slate-200">
         {purchasedCourseCount}
       </td>
-      <td className="px-4 py-3 text-center text-sm text-slate-700 dark:text-slate-200">{new Date(student.createdAt).toLocaleDateString()}</td>
-      <td className="px-4 py-3 text-center">
-        <span
-          className={[
-            "inline-flex items-center justify-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em]",
-            isActive
-              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200"
-              : "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-200",
-          ].join(" ")}
-        >
+      <td className="px-3 py-2 align-middle text-center text-[12.5px] text-slate-700 dark:text-slate-200">{formatJoinedDate(new Date(student.createdAt))}</td>
+      <td className="px-3 py-2 align-middle text-center leading-[1.35]">
+        <span className={`text-[12.5px] font-semibold ${isActive ? "text-emerald-600 dark:text-emerald-300" : "text-red-600 dark:text-red-300"}`}>
           {isActive ? "Active" : "Inactive"}
         </span>
       </td>
-      <td className="px-4 py-3">
+      <td className="px-3 py-2 align-middle text-center">
         <div className="flex items-center justify-center gap-2">
           <button
             type="button"
             onClick={handleToggleStatus}
             className={[
-              "inline-flex items-center justify-center rounded-full px-3 py-1.5 text-[11px] font-semibold shadow-[0_8px_20px_rgba(15,23,42,0.08)] transition duration-200 active:scale-100",
+              "inline-flex items-center justify-center rounded-full px-2.5 py-1.5 text-[10px] font-semibold shadow-[0_6px_14px_rgba(15,23,42,0.06)] transition duration-200 active:scale-100",
               isActive
                 ? "border border-red-200 bg-red-50 text-red-700 hover:border-red-300 hover:bg-red-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200 dark:hover:border-red-400/50 dark:hover:bg-red-500/15"
                 : "border border-emerald-200 bg-emerald-50 text-emerald-700 hover:border-emerald-300 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:border-emerald-400/50 dark:hover:bg-emerald-500/15",

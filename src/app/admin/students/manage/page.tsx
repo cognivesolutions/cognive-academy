@@ -12,6 +12,24 @@ import { PaginationPageSizeSelect } from "@/app/admin/components/pagination-page
 
 export const dynamic = "force-dynamic";
 
+const formatIstDateForFilter = (date: Date) => {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+
+  const getPart = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+  return `${getPart("year")}-${getPart("month")}-${getPart("day")}`;
+};
+
+const formatIstDate = (date: Date, options?: Intl.DateTimeFormatOptions) =>
+  new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Kolkata",
+    ...options,
+  }).format(date);
+
 export default async function AdminStudentsManagePage({
   searchParams,
 }: {
@@ -89,10 +107,22 @@ export default async function AdminStudentsManagePage({
     .sort()
     .map((phone) => ({ value: phone, label: phone }));
 
+  const statusOptions = Array.from(
+    new Map(
+      students.map((student) => [
+        student.isActive ? "active" : "inactive",
+        {
+          value: student.isActive ? "active" : "inactive",
+          label: student.isActive ? "Active" : "Inactive",
+        },
+      ]),
+    ).values(),
+  );
+
   const filteredStudents = students.filter((student) => {
     const joinedDate = new Date(student.createdAt);
-    const joinedDateValue = joinedDate.toISOString().slice(0, 10);
-    const statusLabel = student.isActive ? "active" : "deactive";
+    const joinedDateValue = formatIstDateForFilter(joinedDate);
+    const statusLabel = student.isActive ? "active" : "inactive";
     const courseCount = student.enrollments.length;
 
     const matchesStudentFilter = studentFilter === "all" || student.id === studentFilter;
@@ -112,10 +142,10 @@ export default async function AdminStudentsManagePage({
       student.email ?? "",
       student.phone ?? "",
       statusLabel,
-      student.isActive ? "Active" : "Deactive",
+      student.isActive ? "Active" : "Inactive",
       joinedDateValue,
-      joinedDate.toLocaleDateString(),
-      joinedDate.toLocaleDateString("en-GB"),
+      formatIstDate(joinedDate, { day: "2-digit", month: "2-digit", year: "numeric" }),
+      formatIstDate(joinedDate, { day: "2-digit", month: "short", year: "numeric" }),
       String(courseCount),
       `${courseCount} course${courseCount === 1 ? "" : "s"}`,
     ];
@@ -125,6 +155,7 @@ export default async function AdminStudentsManagePage({
 
   const totalStudents = filteredStudents.length;
   const activeStudents = filteredStudents.filter((student) => student.isActive).length;
+  const inactiveStudents = filteredStudents.filter((student) => !student.isActive).length;
   const totalEnrollments = students.reduce((total, student) => total + student.enrollments.length, 0);
 
   const effectivePageSize = pageSize === "all" ? totalStudents || 1 : pageSize;
@@ -192,10 +223,51 @@ export default async function AdminStudentsManagePage({
             <div className="mb-4 flex items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-700">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-indigo-600 dark:text-indigo-300">Control center</p>
-                <h2 className="mt-2 text-xl font-black tracking-tight text-slate-900 dark:text-white">Manage students</h2>
+                <h2 className="mt-1.5 text-xl font-black tracking-tight text-slate-900 dark:text-white">Manage students</h2>
               </div>
-              <div className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200">
-                {totalStudents} learners
+              <div className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200">
+                {totalStudents} Students
+              </div>
+            </div>
+
+            <div className="mb-5 mt-2 grid gap-3 lg:grid-cols-3">
+              <div className="rounded-[22px] border border-slate-200 bg-gradient-to-br from-indigo-50 via-white to-white p-4 ring-1 ring-slate-100/80 transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-[0_18px_32px_rgba(99,102,241,0.10)] hover:from-indigo-100 hover:via-white hover:to-sky-50 dark:border-slate-700 dark:from-indigo-950/20 dark:via-slate-900 dark:to-slate-900 dark:ring-slate-800 dark:hover:border-indigo-500/20 dark:hover:shadow-[0_18px_32px_rgba(99,102,241,0.16)]">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Total students</p>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-100 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-200">
+                    <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 dark:bg-indigo-300" />
+                    Users
+                  </span>
+                </div>
+                <div className="mt-4 flex items-end justify-between gap-3">
+                  <p className="text-2xl font-black tracking-tight text-indigo-600 dark:text-indigo-300">{totalStudents}</p>
+                </div>
+              </div>
+
+              <div className="rounded-[22px] border border-slate-200 bg-gradient-to-br from-emerald-50 via-white to-white p-4 ring-1 ring-slate-100/80 transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-[0_18px_32px_rgba(16,185,129,0.10)] hover:from-emerald-100 hover:via-white hover:to-teal-50 dark:border-slate-700 dark:from-emerald-950/20 dark:via-slate-900 dark:to-slate-900 dark:ring-slate-800 dark:hover:border-emerald-500/20 dark:hover:shadow-[0_18px_32px_rgba(16,185,129,0.16)]">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Active Student</p>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-300" />
+                    Active
+                  </span>
+                </div>
+                <div className="mt-4 flex items-end justify-between gap-3">
+                  <p className="text-2xl font-black tracking-tight text-emerald-600 dark:text-emerald-300">{activeStudents}</p>
+                </div>
+              </div>
+
+              <div className="rounded-[22px] border border-slate-200 bg-gradient-to-br from-rose-50 via-white to-white p-4 ring-1 ring-slate-100/80 transition-all duration-200 hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-[0_18px_32px_rgba(244,63,94,0.10)] hover:from-rose-100 hover:via-white hover:to-red-50 dark:border-slate-700 dark:from-red-950/20 dark:via-slate-900 dark:to-slate-900 dark:ring-slate-800 dark:hover:border-red-500/20 dark:hover:shadow-[0_18px_32px_rgba(244,63,94,0.16)]">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Inactive Student</p>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-rose-700 dark:bg-rose-500/10 dark:text-rose-200">
+                    <span className="h-1.5 w-1.5 rounded-full bg-rose-500 dark:bg-rose-300" />
+                    Inactive
+                  </span>
+                </div>
+                <div className="mt-4 flex items-end justify-between gap-3">
+                  <p className="text-2xl font-black tracking-tight text-rose-600 dark:text-rose-300">{inactiveStudents}</p>
+                </div>
               </div>
             </div>
 
@@ -208,6 +280,7 @@ export default async function AdminStudentsManagePage({
                 defaultJoining={joiningFilter}
                 studentOptions={studentOptions}
                 mobileOptions={mobileOptions}
+                statusOptions={statusOptions}
               />
             </div>
 
@@ -216,12 +289,13 @@ export default async function AdminStudentsManagePage({
                 <table className="min-w-full divide-y divide-slate-200 text-left dark:divide-slate-700">
                   <thead className="bg-slate-50 dark:bg-slate-800/80">
                     <tr>
-                      <th className="px-4 py-3 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Student</th>
-                      <th className="px-4 py-3 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Contact</th>
-                      <th className="px-4 py-3 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Course</th>
-                      <th className="px-4 py-3 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Joined On</th>
-                      <th className="px-4 py-3 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Status</th>
-                      <th className="px-4 py-3 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Actions</th>
+                      <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Student Name</th>
+                      <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Email</th>
+                      <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Mobile</th>
+                      <th className="px-3 py-2.5 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Course</th>
+                      <th className="px-3 py-2.5 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Joined On</th>
+                      <th className="px-3 py-2.5 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Status</th>
+                      <th className="px-3 py-2.5 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-700 dark:bg-slate-900">

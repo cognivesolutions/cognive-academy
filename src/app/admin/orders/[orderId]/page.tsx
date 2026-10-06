@@ -3,6 +3,8 @@ import { notFound, redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { AdminModeToggle } from "@/app/admin/components/admin-mode-toggle.client";
+import { AdminNavbar } from "@/app/admin/components/admin-navbar";
 
 export const dynamic = "force-dynamic";
 
@@ -75,75 +77,74 @@ export default async function OrderDetailPage({ params }: Props) {
   })();
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-      <div className="mx-auto max-w-5xl px-5 py-8">
-        <div className="mb-4 flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-          <Link href="/admin" className="font-medium text-indigo-600 transition hover:text-indigo-500 dark:text-indigo-300 dark:hover:text-indigo-200">
-            Admin
-          </Link>
-          <span>/</span>
-          <Link href="/admin/students" className="font-medium text-indigo-600 transition hover:text-indigo-500 dark:text-indigo-300 dark:hover:text-indigo-200">
-            Students
-          </Link>
-          <span>/</span>
-          <Link href={`/admin/students/${order.user.id}`} className="font-medium text-indigo-600 transition hover:text-indigo-500 dark:text-indigo-300 dark:hover:text-indigo-200">
-            Student
-          </Link>
-          <span>/</span>
-          <span className="text-slate-500 dark:text-slate-400">Order details</span>
-        </div>
-
-        <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+    <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
+      <div className="mx-auto max-w-6xl px-5 py-8">
+        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Admin</p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900 dark:text-white">Order details</h1>
+            <h1 className="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">Order details</h1>
           </div>
 
-          <Link
-            href={`/admin/students/${order.user.id}`}
-            className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
-            Back to student
-          </Link>
+          <div className="flex items-center gap-2">
+            <AdminModeToggle />
+          </div>
         </div>
 
-        <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_18px_40px_rgba(15,23,42,0.05)] dark:border-slate-700 dark:bg-slate-900/80">
-          <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-indigo-600 dark:text-indigo-300">Payment information</p>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">{order.course.title}</h2>
+        <div className="flex flex-col gap-4">
+          <AdminNavbar />
+
+          <section className="rounded-[24px] border border-slate-200 bg-white p-3 shadow-[0_16px_40px_rgba(15,23,42,0.05)] dark:border-slate-700 dark:bg-slate-900/80">
+            <div className="mb-3 flex items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-700">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-indigo-600 dark:text-indigo-300">Billing</p>
+                <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-900 dark:text-white">{order.course.title}</h2>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/admin/students/${order.user.id}/courses/${order.course.id}`}
+                  className="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-indigo-700 transition hover:border-indigo-300 hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200 dark:hover:bg-indigo-500/20"
+                >
+                  View course access
+                </Link>
+                <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] ${statusClasses}`}>
+                  {order.status}
+                </span>
+              </div>
             </div>
 
-            <span className={`inline-flex items-center rounded-full border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${statusClasses}`}>
-              {order.status}
-            </span>
-          </div>
-
-          <div className="grid gap-5 lg:grid-cols-3">
-            <div className="rounded-[20px] border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
+          <div className="mt-6 grid gap-5 lg:grid-cols-3">
+            <div className="rounded-[20px] border border-slate-200 bg-slate-50 p-4 shadow-[0_12px_28px_rgba(15,23,42,0.04)] dark:border-slate-700 dark:bg-slate-800/60">
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Amount</p>
               <div className="mt-3 text-3xl font-black tracking-tight text-indigo-600 dark:text-indigo-300">
                 ₹{Number(order.amount ?? 0).toLocaleString("en-IN")}
               </div>
             </div>
 
-            <div className="rounded-[20px] border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
+            <div className="rounded-[20px] border border-slate-200 bg-slate-50 p-4 shadow-[0_12px_28px_rgba(15,23,42,0.04)] dark:border-slate-700 dark:bg-slate-800/60">
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Invoice</p>
               <div className="mt-3 text-base font-bold text-slate-900 dark:text-white">
                 {order.invoiceNumber ?? order.id.slice(0, 8).toUpperCase()}
               </div>
             </div>
 
-            <div className="rounded-[20px] border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Placed</p>
+            <div className="rounded-[20px] border border-slate-200 bg-slate-50 p-4 shadow-[0_12px_28px_rgba(15,23,42,0.04)] dark:border-slate-700 dark:bg-slate-800/60">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Placed on</p>
               <div className="mt-3 text-base font-bold text-slate-900 dark:text-white">
-                {new Date(order.createdAt).toLocaleString()}
+                {new Intl.DateTimeFormat("en-GB", {
+                  timeZone: "Asia/Kolkata",
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }).format(new Date(order.createdAt))}
               </div>
             </div>
           </div>
 
           <div className="mt-6 grid gap-5 lg:grid-cols-2">
-            <div className="rounded-[22px] border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-700 dark:bg-slate-800/60">
+            <div className="rounded-[22px] border border-slate-200 bg-slate-50/60 p-4 shadow-[0_12px_28px_rgba(15,23,42,0.04)] dark:border-slate-700 dark:bg-slate-800/60">
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Student</p>
               <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-200">
                 <div className="font-semibold text-slate-900 dark:text-white">{order.user.name ?? "Unnamed student"}</div>
@@ -151,28 +152,29 @@ export default async function OrderDetailPage({ params }: Props) {
               </div>
             </div>
 
-            <div className="rounded-[22px] border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-700 dark:bg-slate-800/60">
+            <div className="rounded-[22px] border border-slate-200 bg-slate-50/60 p-4 shadow-[0_12px_28px_rgba(15,23,42,0.04)] dark:border-slate-700 dark:bg-slate-800/60">
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Payment details</p>
               <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-200">
-                <div>Provider: {order.paymentProvider}</div>
-                <div>Currency: {order.currency}</div>
-                <div>Order ID: {order.id}</div>
+                <div><span className="font-medium text-slate-900 dark:text-white">Provider:</span> {order.paymentProvider}</div>
+                <div><span className="font-medium text-slate-900 dark:text-white">Currency:</span> {order.currency}</div>
+                <div><span className="font-medium text-slate-900 dark:text-white">Order ID:</span> {order.id}</div>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 rounded-[20px] border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-700 dark:bg-slate-800/70">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Reference data</p>
-            <div className="mt-3 grid gap-3 md:grid-cols-2">
-              <div className="rounded-[14px] border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
-                <span className="text-slate-500 dark:text-slate-400">Payment ID:</span> {order.razorpayPaymentId ?? "—"}
-              </div>
-              <div className="rounded-[14px] border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
-                <span className="text-slate-500 dark:text-slate-400">Razorpay Order:</span> {order.razorpayOrderId ?? "—"}
+            <div className="mt-6 rounded-[20px] border border-slate-200 bg-slate-50/70 p-4 shadow-[0_12px_28px_rgba(15,23,42,0.04)] dark:border-slate-700 dark:bg-slate-800/70">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Reference data</p>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                <div className="rounded-[14px] border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                  <span className="font-medium text-slate-900 dark:text-white">Payment ID:</span> {order.razorpayPaymentId ?? "—"}
+                </div>
+                <div className="rounded-[14px] border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                  <span className="font-medium text-slate-900 dark:text-white">Razorpay Order:</span> {order.razorpayOrderId ?? "—"}
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
       </div>
     </main>
   );

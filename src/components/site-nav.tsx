@@ -10,14 +10,16 @@ type CourseMenuItem = { label: string; href?: string; children?: CourseChild[] }
 
 const slugifyCategory = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
-const buildCourseCategoryHref = (category: string, type: "live" | "recorded") => `/courses/category/${slugifyCategory(category)}?type=${type}#${type}-courses`;
+const buildCourseCategoryHref = (category: string, type: "live" | "recorded") => `/courses/category/${slugifyCategory(category)}?type=${type}`;
+
+const buildCourseSectionHref = (category: string, type: "live" | "recorded") => `${buildCourseCategoryHref(category, type)}#${type}-courses`;
 
 const coursesMenu: CourseMenuItem[] = [
-  { label: "Software Development", href: buildCourseCategoryHref("Software Development", "live"), children: [{ label: "Live", href: buildCourseCategoryHref("Software Development", "live") }, { label: "Recorded", href: buildCourseCategoryHref("Software Development", "recorded") }] },
-  { label: "AI Engineering", href: buildCourseCategoryHref("AI Engineering", "live"), children: [{ label: "Live", href: buildCourseCategoryHref("AI Engineering", "live") }, { label: "Recorded", href: buildCourseCategoryHref("AI Engineering", "recorded") }] },
-  { label: "Data Engineering", href: buildCourseCategoryHref("Data Engineering", "live"), children: [{ label: "Live", href: buildCourseCategoryHref("Data Engineering", "live") }, { label: "Recorded", href: buildCourseCategoryHref("Data Engineering", "recorded") }] },
-  { label: "Data Analytics", href: buildCourseCategoryHref("Data Analytics", "live"), children: [{ label: "Live", href: buildCourseCategoryHref("Data Analytics", "live") }, { label: "Recorded", href: buildCourseCategoryHref("Data Analytics", "recorded") }] },
-  { label: "Data Structures and Algorithms (DSA)", href: buildCourseCategoryHref("Data Structures and Algorithms (DSA)", "live"), children: [{ label: "Live", href: buildCourseCategoryHref("Data Structures and Algorithms (DSA)", "live") }, { label: "Recorded", href: buildCourseCategoryHref("Data Structures and Algorithms (DSA)", "recorded") }] },
+  { label: "Software Development", href: buildCourseCategoryHref("Software Development", "live"), children: [{ label: "Live", href: buildCourseSectionHref("Software Development", "live") }, { label: "Recorded", href: buildCourseSectionHref("Software Development", "recorded") }] },
+  { label: "AI Engineering", href: buildCourseCategoryHref("AI Engineering", "live"), children: [{ label: "Live", href: buildCourseSectionHref("AI Engineering", "live") }, { label: "Recorded", href: buildCourseSectionHref("AI Engineering", "recorded") }] },
+  { label: "Data Engineering", href: buildCourseCategoryHref("Data Engineering", "live"), children: [{ label: "Live", href: buildCourseSectionHref("Data Engineering", "live") }, { label: "Recorded", href: buildCourseSectionHref("Data Engineering", "recorded") }] },
+  { label: "Data Analytics", href: buildCourseCategoryHref("Data Analytics", "live"), children: [{ label: "Live", href: buildCourseSectionHref("Data Analytics", "live") }, { label: "Recorded", href: buildCourseSectionHref("Data Analytics", "recorded") }] },
+  { label: "Data Structures and Algorithms (DSA)", href: buildCourseCategoryHref("Data Structures and Algorithms (DSA)", "live"), children: [{ label: "Live", href: buildCourseSectionHref("Data Structures and Algorithms (DSA)", "live") }, { label: "Recorded", href: buildCourseSectionHref("Data Structures and Algorithms (DSA)", "recorded") }] },
 ];
 
 const resourcesMenu = [

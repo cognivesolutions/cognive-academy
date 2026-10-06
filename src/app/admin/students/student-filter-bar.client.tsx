@@ -13,6 +13,7 @@ type StudentFilterBarProps = {
   defaultJoining?: string;
   studentOptions?: Array<{ value: string; label: string }>;
   mobileOptions?: Array<{ value: string; label: string }>;
+  statusOptions?: Array<{ value: string; label: string }>;
 };
 
 export function StudentFilterBar({
@@ -23,6 +24,10 @@ export function StudentFilterBar({
   defaultJoining = "all",
   studentOptions = [],
   mobileOptions = [],
+  statusOptions = [
+    { value: "active", label: "Active" },
+    { value: "inactive", label: "Inactive" },
+  ],
 }: StudentFilterBarProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -35,9 +40,14 @@ export function StudentFilterBar({
   const submitTimerRef = useRef<number | null>(null);
   const calendarRef = useRef<HTMLDivElement | null>(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const parseLocalDate = (value: string) => {
+    const [year, month, day] = value.split("-").map(Number);
+    return new Date(year, month - 1, day);
+  };
+
   const [calendarMonth, setCalendarMonth] = useState(() => {
     if (defaultJoining && defaultJoining !== "all") {
-      return new Date(`${defaultJoining}T00:00:00`);
+      return parseLocalDate(defaultJoining);
     }
     return new Date();
   });
@@ -64,7 +74,7 @@ export function StudentFilterBar({
 
   useEffect(() => {
     if (joiningFilter !== "all") {
-      setCalendarMonth(new Date(`${joiningFilter}T00:00:00`));
+      setCalendarMonth(parseLocalDate(joiningFilter));
     }
   }, [joiningFilter]);
 
@@ -169,13 +179,14 @@ export function StudentFilterBar({
 
   const isFiltered = Boolean(q || status !== "all" || studentFilter !== "all" || mobileFilter !== "all" || joiningFilter !== "all");
   const joinedDateValue = joiningFilter === "all" ? "" : joiningFilter;
-  const joinedDateLabel = joinedDateValue
-    ? new Date(`${joinedDateValue}T00:00:00`).toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      })
-    : "Joined on";
+  const formatIstDate = (date: Date) =>
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(date);
+  const joinedDateLabel = joinedDateValue ? formatIstDate(parseLocalDate(joinedDateValue)) : "Joined on";
 
   const monthLabel = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(calendarMonth);
   const monthStart = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1);
@@ -187,9 +198,16 @@ export function StudentFilterBar({
     return date;
   });
 
+  const formatLocalDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
   const selectCalendarDate = (date: Date) => {
-    const isoDate = new Date(date.getFullYear(), date.getMonth(), date.getDate()).toISOString().split("T")[0];
-    setCalendarMonth(new Date(`${isoDate}T00:00:00`));
+    const isoDate = formatLocalDate(date);
+    setCalendarMonth(new Date(date.getFullYear(), date.getMonth(), date.getDate()));
     handleJoiningChange(isoDate);
     setIsCalendarOpen(false);
   };
@@ -201,6 +219,7 @@ export function StudentFilterBar({
           {isFiltered ? (
             <Link
               href={pathname}
+              scroll={false}
               className="inline-flex h-[38px] items-center justify-center rounded-full border border-red-200 bg-red-50/80 px-4 py-0 text-sm font-semibold text-red-700 shadow-[0_8px_20px_rgba(239,68,68,0.08)] backdrop-blur-sm transition duration-200 hover:border-red-300 hover:bg-red-100 hover:shadow-[0_10px_24px_rgba(239,68,68,0.12)] hover:brightness-105 active:scale-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200 dark:hover:border-red-400/50 dark:hover:bg-red-500/15"
             >
               Remove filter
@@ -313,8 +332,8 @@ export function StudentFilterBar({
                 <div className="grid grid-cols-7 gap-1">
                   {calendarDays.map((date) => {
                     const isCurrentMonth = date.getMonth() === calendarMonth.getMonth();
-                    const isSelected = joinedDateValue && date.toDateString() === new Date(`${joinedDateValue}T00:00:00`).toDateString();
-                    const isToday = date.toDateString() === new Date().toDateString();
+                    const isSelected = joinedDateValue && formatLocalDate(date) === joinedDateValue;
+                    const isToday = formatLocalDate(date) === formatLocalDate(new Date());
 
                     return (
                       <button
@@ -370,8 +389,7 @@ export function StudentFilterBar({
               defaultValue={status}
               options={[
                 { value: "all", label: "All" },
-                { value: "active", label: "Active" },
-                { value: "deactive", label: "Deactive" },
+                ...statusOptions,
               ]}
               syncUrl={false}
               onValueChange={(nextValue) => {

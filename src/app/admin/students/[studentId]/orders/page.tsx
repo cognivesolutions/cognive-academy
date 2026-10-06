@@ -12,6 +12,7 @@ import { PaginationDots } from "@/components/pagination-dots";
 import { PaginationPageSizeSelect } from "@/app/admin/components/pagination-page-size-select";
 import { StudentProfileToggle } from "../student-profile-toggle.client";
 import { PurchaseHistoryTable } from "../purchase-history-table.client";
+import { PlacedOnDateFilter } from "./placed-on-date-filter.client";
 
 export const dynamic = "force-dynamic";
 
@@ -61,9 +62,15 @@ export default async function StudentOrderHistoryPage({ params, searchParams }: 
   const courseFilter = Array.isArray(resolvedSearchParams.course)
     ? resolvedSearchParams.course[0] ?? "all"
     : resolvedSearchParams.course ?? "all";
+  const priceFilter = Array.isArray(resolvedSearchParams.price)
+    ? resolvedSearchParams.price[0] ?? "all"
+    : resolvedSearchParams.price ?? "all";
   const statusFilter = Array.isArray(resolvedSearchParams.status)
     ? resolvedSearchParams.status[0] ?? "all"
     : resolvedSearchParams.status ?? "all";
+  const placedOnFilter = Array.isArray(resolvedSearchParams.placedOn)
+    ? resolvedSearchParams.placedOn[0] ?? "all"
+    : resolvedSearchParams.placedOn ?? "all";
   const rawPage = Number(Array.isArray(resolvedSearchParams.page) ? resolvedSearchParams.page[0] : resolvedSearchParams.page ?? "1");
   const rawPageSize = Array.isArray(resolvedSearchParams.pageSize)
     ? resolvedSearchParams.pageSize[0] ?? "10"
@@ -75,29 +82,78 @@ export default async function StudentOrderHistoryPage({ params, searchParams }: 
   const pageSize = fallbackPageSize === "all" ? "all" : Math.max(1, Math.min(100, fallbackPageSize));
   const page = Math.max(1, requestedPage);
 
+  const formatPlacedDate = (value: Date | string) =>
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(new Date(value));
+
+  const normalizePlacedOnValue = (value: string) => {
+    if (!value || value === "all") {
+      return "";
+    }
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return value;
+    }
+
+    const [day, month, year] = value.split("/");
+    if (day && month && year) {
+      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    }
+
+    return "";
+  };
+
+  const placedOnInputValue = normalizePlacedOnValue(placedOnFilter);
+
   const courseOptions = [
     { value: "all", label: "All" },
     ...Array.from(new Set(student.orders.map((order) => order.course.title))).map((title) => ({ value: title, label: title })),
+  ];
+
+  const priceOptions = [
+    { value: "all", label: "All" },
+    ...Array.from(new Set(student.orders.map((order) => String(Number(order.amount ?? 0))))).map((amountValue) => ({
+      value: amountValue,
+      label: `₹${Number(amountValue).toLocaleString("en-IN")}`,
+    })),
+  ];
+
+  const statusOptions = [
+    { value: "all", label: "All" },
+    ...Array.from(new Set(student.orders.map((order) => order.status))).map((status) => ({
+      value: status,
+      label: status.charAt(0).toUpperCase() + status.slice(1).toLowerCase(),
+    })),
   ];
 
   const filteredOrders = student.orders.filter((order) => {
     const orderText = [
       order.id,
       order.course.title,
-      order.status,
       String(Number(order.amount ?? 0)),
-      new Date(order.createdAt).toLocaleDateString(),
+      `₹${Number(order.amount ?? 0).toLocaleString("en-IN")}`,
+      order.status,
+      formatPlacedDate(order.createdAt),
+      normalizePlacedOnValue(formatPlacedDate(order.createdAt)),
+      String(order.status).toLowerCase(),
     ]
       .join(" ")
       .toLowerCase();
 
+    const orderPlacedValue = normalizePlacedOnValue(formatPlacedDate(order.createdAt));
     const matchesSearch = !searchTerm || orderText.includes(searchTerm);
     const matchesCourse = courseFilter === "all" || order.course.title === courseFilter;
+    const matchesPrice = priceFilter === "all" || String(Number(order.amount ?? 0)) === priceFilter;
     const matchesStatus = statusFilter === "all" || order.status === statusFilter;
-    return matchesSearch && matchesCourse && matchesStatus;
+    const matchesPlacedOn = placedOnInputValue === "" || orderPlacedValue === placedOnInputValue;
+    return matchesSearch && matchesCourse && matchesPrice && matchesStatus && matchesPlacedOn;
   });
 
-  const hasActiveFilters = Boolean(q || courseFilter !== "all" || statusFilter !== "all");
+  const hasActiveFilters = Boolean(q || courseFilter !== "all" || priceFilter !== "all" || statusFilter !== "all" || placedOnFilter !== "all");
   const effectivePageSize = pageSize === "all" ? filteredOrders.length || 1 : pageSize;
   const totalPages = Math.max(1, Math.ceil(filteredOrders.length / effectivePageSize));
   const safePage = Math.min(page, totalPages);
@@ -116,8 +172,16 @@ export default async function StudentOrderHistoryPage({ params, searchParams }: 
       params.set("course", courseFilter);
     }
 
+    if (priceFilter !== "all") {
+      params.set("price", priceFilter);
+    }
+
     if (statusFilter !== "all") {
       params.set("status", statusFilter);
+    }
+
+    if (placedOnFilter !== "all") {
+      params.set("placedOn", placedOnFilter);
     }
 
     params.set("page", String(nextPage));
@@ -184,6 +248,20 @@ export default async function StudentOrderHistoryPage({ params, searchParams }: 
                         />
                       </div>
 
+                      <div className="min-w-[120px]">
+                        <CourseSelect
+                          name="price"
+                          label="Price"
+                          compact
+                          hideLabel
+                          placeholder="Price"
+                          defaultValue={priceFilter || "all"}
+                          options={priceOptions}
+                          triggerClassName="!h-[38px] !min-h-[38px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                          menuClassName="!min-w-[120px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
+                        />
+                      </div>
+
                       <div className="min-w-[140px]">
                         <CourseSelect
                           name="status"
@@ -192,17 +270,13 @@ export default async function StudentOrderHistoryPage({ params, searchParams }: 
                           hideLabel
                           placeholder="Status"
                           defaultValue={statusFilter || "all"}
-                          options={[
-                            { value: "all", label: "All" },
-                            { value: "PAID", label: "Paid" },
-                            { value: "PENDING", label: "Pending" },
-                            { value: "FAILED", label: "Failed" },
-                            { value: "CANCELLED", label: "Cancelled" },
-                          ]}
+                          options={statusOptions}
                           triggerClassName="!h-[38px] !min-h-[38px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
                           menuClassName="!min-w-[140px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
                         />
                       </div>
+
+                      <PlacedOnDateFilter defaultValue={placedOnInputValue} />
                     </>
                   }
                   rightControls={<CourseSearchInput defaultValue={q} />}

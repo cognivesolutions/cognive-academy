@@ -83,15 +83,15 @@ export default async function AdminStudentsPage() {
       buttonClassName: "border-indigo-300 bg-indigo-100 text-indigo-800 shadow-[0_10px_26px_rgba(79,70,229,0.10)] transition-all duration-200 group-hover:-translate-x-0.5 group-hover:bg-indigo-200 group-hover:shadow-[0_12px_26px_rgba(79,70,229,0.12)] dark:border-indigo-400/40 dark:bg-indigo-500/15 dark:text-indigo-100 dark:shadow-[0_10px_26px_rgba(99,102,241,0.14)] dark:group-hover:bg-indigo-500/25",
     },
     {
-      eyebrow: "Records",
-      title: "View student access",
-      description: "Check active and pending enrollments, identify students with missing access, and review recent activity.",
+      eyebrow: "Orders",
+      title: "View course orders",
+      description: "Review recent purchases, track pending and paid orders, and follow each student’s latest transaction activity.",
       badge: "bg-violet-100 text-violet-700 dark:bg-violet-500/10 dark:text-violet-200",
       badgeDot: "bg-violet-500 dark:bg-violet-300",
-      badgeLabel: "Access",
+      badgeLabel: "Orders",
       tone: "bg-gradient-to-br from-[#f3ecff] via-[#f1f0ff] to-[#e9edff] text-slate-800 transition-all duration-200 hover:from-[#f5f0ff] hover:via-white hover:to-[#edf3ff] dark:from-[#111d35] dark:via-[#101b32] dark:to-[#0d172d] dark:text-white",
-      href: "/admin/students/manage",
-      buttonLabel: "View records",
+      href: "/admin/students/orders",
+      buttonLabel: "View orders",
       buttonClassName: "border-violet-300 bg-violet-100 text-violet-800 shadow-[0_10px_26px_rgba(139,92,246,0.10)] transition-all duration-200 group-hover:-translate-x-0.5 group-hover:bg-violet-200 group-hover:shadow-[0_12px_26px_rgba(139,92,246,0.12)] dark:border-violet-400/40 dark:bg-violet-500/15 dark:text-violet-100 dark:shadow-[0_10px_26px_rgba(91,105,255,0.14)] dark:group-hover:bg-violet-500/25",
     },
   ];
@@ -105,12 +105,6 @@ export default async function AdminStudentsPage() {
             <h1 className="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">Student dashboard</h1>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
-            <Link
-              href="/"
-              className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(99,102,241,0.26)] transition hover:brightness-110"
-            >
-              Back to site
-            </Link>
             <AdminModeToggle />
           </div>
         </div>
@@ -124,7 +118,7 @@ export default async function AdminStudentsPage() {
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-indigo-600 dark:text-indigo-300">Overview</p>
                 <h2 className="mt-2 text-xl font-black tracking-tight text-slate-900 dark:text-white">Quick access</h2>
               </div>
-              <div className="rounded-full bg-rose-100 px-2.5 py-1 text-[10px] font-semibold text-rose-700 dark:bg-rose-500/10 dark:text-rose-200">
+              <div className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200">
                 {totalStudents} students
               </div>
             </div>
