@@ -17,6 +17,8 @@ model User {
   avatarUrl          String?
   bio                String?
   phone              String?
+  emailVerifiedAt    DateTime?
+  phoneVerifiedAt    DateTime?
   emailNotifications Boolean   @default(true)
   courseReminders    Boolean   @default(true)
   marketingEmails    Boolean   @default(false)
@@ -30,6 +32,24 @@ model User {
   lectureProgress LectureProgress[]
 
   @@map("users")
+}
+
+model OtpVerification {
+  id        String    @id @default(cuid())
+  userId    String?
+  email     String?
+  phone     String?
+  purpose   String
+  code      String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([email, purpose])
+  @@index([phone, purpose])
+  @@index([userId, purpose])
+  @@map("otp_verifications")
 }
 
 model Course {

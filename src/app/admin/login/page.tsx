@@ -41,7 +41,7 @@ function AdminLoginForm() {
       }
 
       if (userStatus?.status === "missing") {
-        setFormError("Invalid credentials. Please check your admin email and password.");
+        setFormError("Invalid credentials. Please make sure you are using the correct admin email and password.");
         return;
       }
 
@@ -53,14 +53,14 @@ function AdminLoginForm() {
       });
 
       if (!result || result.error || result.ok === false) {
-        setFormError("Invalid credentials. Please check your admin email and password.");
+        setFormError("Invalid credentials. Please make sure you are using the correct admin email and password.");
         return;
       }
 
       router.replace(callbackUrl);
       router.refresh();
     } catch {
-      setFormError("Invalid credentials. Please check your admin email and password.");
+      setFormError("Invalid credentials. Please make sure you are using the correct admin email and password.");
     } finally {
       setLoading(false);
     }
@@ -87,7 +87,7 @@ function AdminLoginForm() {
             (error === "AccountInactive"
               ? "This account is currently inactive. Please contact support."
               : error === "CredentialsSignin"
-                ? "Invalid credentials. Please check your admin email and password."
+                ? "Invalid credentials. Please make sure you are using the correct admin email and password."
                 : null)
           }
         />

@@ -41,7 +41,7 @@ function LoginForm() {
       }
 
       if (userStatus?.status === "missing") {
-        setFormError("Invalid credentials. Please check your email and password.");
+        setFormError("Invalid credentials. Please make sure you are using the correct email and password.");
         return;
       }
 
@@ -52,14 +52,14 @@ function LoginForm() {
       });
 
       if (!result || result.error || result.ok === false) {
-        setFormError("Invalid credentials. Please check your email and password.");
+        setFormError("Invalid credentials. Please make sure you are using the correct email and password.");
         return;
       }
 
       router.replace(callbackUrl);
       router.refresh();
     } catch {
-      setFormError("Invalid credentials. Please check your email and password.");
+      setFormError("Invalid credentials. Please make sure you are using the correct email and password.");
     } finally {
       setLoading(false);
     }
@@ -83,7 +83,7 @@ function LoginForm() {
             (error === "AccountInactive"
               ? "This account is currently inactive. Please contact support."
               : error === "CredentialsSignin"
-                ? "Invalid credentials. Please check your email and password."
+                ? "Invalid credentials. Please make sure you are using the correct email and password."
                 : null)
           }
         />
