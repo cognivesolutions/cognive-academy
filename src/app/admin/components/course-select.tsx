@@ -111,8 +111,8 @@ export function CourseSelect({
             compact ? "px-2.5 py-1.5" : "px-3 py-2.5"
           } ${
             isDefaultState
-              ? "border-slate-200 text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:border-slate-700 dark:text-slate-100"
-              : "border-slate-200 text-slate-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:border-slate-700 dark:text-slate-100"
+              ? "border-slate-200 text-slate-700 shadow-none dark:border-slate-700 dark:text-slate-100"
+              : "border-slate-200 text-slate-900 shadow-none dark:border-slate-700 dark:text-slate-100"
           } ${triggerClassName}`}
         >
           <span className="flex-1 text-left text-current">
@@ -143,10 +143,10 @@ export function CourseSelect({
                   setIsOpen(false);
                   submitCurrentForm("all");
                 }}
-                className={`flex w-full items-center justify-between px-3 py-2.5 text-left text-sm transition hover:bg-slate-100 dark:hover:bg-slate-800 ${
+                className={`flex w-full items-center justify-between px-3 py-2.5 text-left text-sm transition ${
                   value === "all" || value === ""
-                    ? "bg-slate-900/80 text-white dark:bg-slate-800 dark:text-slate-100"
-                    : "text-slate-700 dark:text-slate-200"
+                    ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100"
+                    : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
                 }`}
               >
                 All
@@ -164,7 +164,7 @@ export function CourseSelect({
                 }}
                 className={`flex w-full items-center justify-between px-3 py-2.5 text-left text-sm transition ${
                   value === option.value
-                    ? "bg-slate-900 text-white dark:bg-slate-800 dark:text-slate-100"
+                    ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100"
                     : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
                 }`}
               >

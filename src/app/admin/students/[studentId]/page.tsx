@@ -6,11 +6,12 @@ import { AdminNavbar } from "@/app/admin/components/admin-navbar";
 import { AdminModeToggle } from "@/app/admin/components/admin-mode-toggle.client";
 import { PaginationDots } from "@/components/pagination-dots";
 import { PaginationPageSizeSelect } from "@/app/admin/components/pagination-page-size-select";
-import { StudentRecordsFilterBar } from "./student-records-filter-bar.client";
-import { StudentRecordTableRow } from "./student-record-row.client";
+import { StudentCourseAccessFilterBar } from "./student-course-access-filter-bar.client";
+import { StudentCourseAccessTableRow } from "./student-course-access-table-row.client";
 import { StudentAccessActions } from "./student-access-actions.client";
 import { StudentAdminQuickActions } from "./student-admin-actions.client";
 import { StudentProfileToggle } from "./student-profile-toggle.client";
+import { StudentProfileExportActions } from "../student-profile-export-actions.client";
 
 export const dynamic = "force-dynamic";
 
@@ -113,6 +114,7 @@ export default async function StudentDetailPage({
 
   const q = Array.isArray(resolvedSearchParams.q) ? resolvedSearchParams.q[0] ?? "" : resolvedSearchParams.q ?? "";
   const status = Array.isArray(resolvedSearchParams.status) ? resolvedSearchParams.status[0] ?? "all" : resolvedSearchParams.status ?? "all";
+  const selectedType = Array.isArray(resolvedSearchParams.type) ? resolvedSearchParams.type[0] ?? "all" : resolvedSearchParams.type ?? "all";
   const selectedCourse = Array.isArray(resolvedSearchParams.course)
     ? resolvedSearchParams.course[0] ?? ""
     : resolvedSearchParams.course ?? "";
@@ -133,20 +135,29 @@ export default async function StudentDetailPage({
   const pageSize = fallbackPageSize === "all" ? "all" : Math.max(1, Math.min(100, fallbackPageSize));
   const page = Math.max(1, requestedPage);
 
-  const recordRows = student.enrollments.map((enrollment) => ({
-    id: `${student.id}-course-${enrollment.course.id}`,
-    courseId: enrollment.course.id,
-    title: enrollment.course.title,
-    category: enrollment.course.category ?? "General",
-    joinedAt: new Date(enrollment.createdAt),
-    expiryLabel: enrollment.accessGranted ? "Lifetime" : "No access",
-    type: enrollment.accessGranted ? "Access granted" : "Awaiting access",
-    amount: "—",
-    numericAmount: 0,
-    status: enrollment.accessGranted ? "Access granted" : "Awaiting access",
-    isActive: enrollment.accessGranted,
-    isOrder: false,
-  }));
+  const recordRows = student.enrollments.map((enrollment) => {
+    const matchingOrder = student.orders.find((order) => order.course.id === enrollment.course.id);
+    const derivedType = matchingOrder
+      ? "Purchased"
+      : enrollment.accessGranted
+        ? "Manual access"
+        : "Not assigned";
+
+    return {
+      id: `${student.id}-course-${enrollment.course.id}`,
+      courseId: enrollment.course.id,
+      title: enrollment.course.title,
+      category: enrollment.course.category ?? "General",
+      joinedAt: new Date(enrollment.createdAt),
+      expiryLabel: enrollment.accessGranted ? "Lifetime" : "No access",
+      type: derivedType,
+      amount: "—",
+      numericAmount: 0,
+      status: enrollment.accessGranted ? "Access granted" : matchingOrder ? "Access revoked" : "Awaiting access",
+      isActive: enrollment.accessGranted,
+      isOrder: Boolean(matchingOrder),
+    };
+  });
 
   const uniqueCourseOptions = Array.from(
     new Map(
@@ -174,6 +185,14 @@ export default async function StudentDetailPage({
     ).values(),
   );
 
+  const uniqueTypeOptions = Array.from(
+    new Map(recordRows.map((record) => [record.type, { value: record.type, label: record.type }])).values(),
+  );
+
+  const uniqueStatusOptions = Array.from(
+    new Map(recordRows.map((record) => [record.status, { value: record.status, label: record.status }])).values(),
+  );
+
   const filteredRecords = recordRows.filter((record) => {
     const joinedDateText = new Intl.DateTimeFormat("en-GB", {
       timeZone: "Asia/Kolkata",
@@ -197,17 +216,21 @@ export default async function StudentDetailPage({
 
     const matchesStatus =
       status === "all" ||
+      (status === "granted" && record.status === "Access granted") ||
+      (status === "revoked" && record.status === "Access revoked") ||
+      (status === "awaiting" && record.status === "Awaiting access") ||
       (status === "active" && record.isActive) ||
       (status === "inactive" && !record.isActive);
 
+    const matchesType = selectedType === "all" || record.type === selectedType;
     const matchesCourse = !selectedCourse || record.title === selectedCourse;
     const matchesCategory = selectedCategory === "all" || record.category === selectedCategory;
     const matchesJoined = selectedJoined === "all" || joinedDateText === selectedJoined;
 
-    return matchesQuery && matchesStatus && matchesCourse && matchesCategory && matchesJoined;
+    return matchesQuery && matchesStatus && matchesType && matchesCourse && matchesCategory && matchesJoined;
   });
 
-  const hasActiveFilters = Boolean(q || status !== "all" || selectedCourse || selectedCategory !== "all" || selectedJoined !== "all");
+  const hasActiveFilters = Boolean(q || status !== "all" || selectedType !== "all" || selectedCourse || selectedCategory !== "all" || selectedJoined !== "all");
 
   const effectivePageSize = pageSize === "all" ? filteredRecords.length || 1 : pageSize;
   const totalPages = Math.max(1, Math.ceil(filteredRecords.length / effectivePageSize));
@@ -225,6 +248,10 @@ export default async function StudentDetailPage({
 
     if (status !== "all") {
       params.set("status", status);
+    }
+
+    if (selectedType !== "all") {
+      params.set("type", selectedType);
     }
 
     if (selectedCourse) {
@@ -299,7 +326,7 @@ export default async function StudentDetailPage({
             </div>
 
             <div className="grid gap-5 lg:grid-cols-3">
-              <div className="rounded-[22px] border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/70">
+              <div className="rounded-[22px] border border-slate-200 bg-gradient-to-br from-indigo-50 via-white to-white p-4 ring-1 ring-slate-100/80 transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-[0_18px_32px_rgba(99,102,241,0.10)] hover:from-indigo-100 hover:via-white hover:to-sky-50 dark:border-slate-700 dark:from-indigo-950/20 dark:via-slate-900 dark:to-slate-900 dark:ring-slate-800 dark:hover:border-indigo-500/20 dark:hover:shadow-[0_18px_32px_rgba(99,102,241,0.16)]">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Contact</p>
                 <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-200">
                   <div>{student.email}</div>
@@ -308,13 +335,13 @@ export default async function StudentDetailPage({
                 </div>
               </div>
 
-              <div className="rounded-[22px] border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/70">
+              <div className="rounded-[22px] border border-slate-200 bg-gradient-to-br from-emerald-50 via-white to-white p-4 ring-1 ring-slate-100/80 transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-[0_18px_32px_rgba(16,185,129,0.10)] hover:from-emerald-100 hover:via-white hover:to-teal-50 dark:border-slate-700 dark:from-emerald-950/20 dark:via-slate-900 dark:to-slate-900 dark:ring-slate-800 dark:hover:border-emerald-500/20 dark:hover:shadow-[0_18px_32px_rgba(16,185,129,0.16)]">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Active access</p>
                 <div className="mt-3 text-3xl font-black tracking-tight text-emerald-600 dark:text-emerald-300">{activeCourses.length}</div>
                 <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Currently active course access</p>
               </div>
 
-              <div className="rounded-[22px] border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/70">
+              <div className="rounded-[22px] border border-slate-200 bg-gradient-to-br from-violet-50 via-white to-white p-4 ring-1 ring-slate-100/80 transition-all duration-200 hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-[0_18px_32px_rgba(139,92,246,0.10)] hover:from-violet-100 hover:via-white hover:to-purple-50 dark:border-slate-700 dark:from-violet-950/20 dark:via-slate-900 dark:to-slate-900 dark:ring-slate-800 dark:hover:border-violet-500/20 dark:hover:shadow-[0_18px_32px_rgba(139,92,246,0.16)]">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Total enrolled courses</p>
                 <div className="mt-3 text-3xl font-black tracking-tight text-indigo-600 dark:text-indigo-300">{student.enrollments.length}</div>
                 <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">All courses linked to this student</p>
@@ -328,7 +355,7 @@ export default async function StudentDetailPage({
                   <h3 className="mt-1 text-lg font-black tracking-tight text-slate-900 dark:text-white">Admin controls</h3>
                 </div>
 
-                <div className="relative z-[80] flex flex-wrap items-center justify-end gap-2 rounded-full border border-slate-700 bg-slate-950/85 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_12px_24px_rgba(15,23,42,0.22)] dark:border-slate-600 dark:bg-slate-950/90">
+                <div className="relative z-[80] flex flex-wrap items-center justify-end gap-2 rounded-full border border-slate-200 bg-white/80 p-1.5 shadow-[0_10px_24px_rgba(15,23,42,0.06)] backdrop-blur-sm dark:border-slate-700 dark:bg-slate-950/80 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_12px_24px_rgba(15,23,42,0.22)]">
                   <div className="flex flex-wrap items-center justify-end gap-2">
                     <StudentAccessActions studentId={student.id} availableCourses={availableCourses} />
                     <StudentAdminQuickActions
@@ -343,9 +370,10 @@ export default async function StudentDetailPage({
             </div>
 
             <div id="course-access" className="mt-6 scroll-mt-24">
-              <StudentRecordsFilterBar
+              <StudentCourseAccessFilterBar
                 defaultQ={q}
                 defaultStatus={status}
+                defaultType={selectedType}
                 defaultCourse={selectedCourse}
                 defaultCategory={selectedCategory}
                 defaultJoined={selectedJoined}
@@ -354,6 +382,8 @@ export default async function StudentDetailPage({
                 courseOptions={uniqueCourseOptions}
                 categoryOptions={uniqueCategoryOptions}
                 joinedOptions={uniqueJoinedOptions}
+                typeOptions={uniqueTypeOptions}
+                statusOptions={uniqueStatusOptions}
               />
 
               <div className="overflow-hidden rounded-[20px] border border-slate-200 dark:border-slate-700">
@@ -361,12 +391,13 @@ export default async function StudentDetailPage({
                   <table className="min-w-full divide-y divide-slate-200 text-left dark:divide-slate-700">
                     <thead className="bg-slate-50 dark:bg-slate-800/80">
                       <tr>
-                        <th className="px-4 py-3 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Course Name</th>
-                        <th className="px-4 py-3 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Category</th>
-                        <th className="px-4 py-3 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Start Date</th>
-                        <th className="px-4 py-3 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Expiry Date</th>
-                        <th className="px-4 py-3 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Status</th>
-                        <th className="px-4 py-3 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Actions</th>
+                        <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Course Name</th>
+                        <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Category</th>
+                        <th className="px-3 py-2.5 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Start Date</th>
+                        <th className="px-3 py-2.5 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Expiry Date</th>
+                        <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Type</th>
+                        <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Status</th>
+                        <th className="px-3 py-2.5 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-700 dark:bg-slate-900">
@@ -378,7 +409,7 @@ export default async function StudentDetailPage({
                         </tr>
                       ) : (
                         paginatedRecords.map((record) => (
-                          <StudentRecordTableRow key={record.id} record={record} studentId={student.id} />
+                          <StudentCourseAccessTableRow key={record.id} record={record} studentId={student.id} />
                         ))
                       )}
                     </tbody>
@@ -386,25 +417,47 @@ export default async function StudentDetailPage({
                 </div>
               </div>
 
-              <div className="mt-5 flex items-center justify-end gap-1.5 text-sm text-slate-600 dark:text-slate-300">
-                <div className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-300">
-                  <span>Records per page</span>
-                  <PaginationPageSizeSelect defaultValue={String(pageSize === "all" ? "all" : pageSize)} />
+              <div className="mt-5 flex items-center justify-between gap-3 text-sm text-slate-600 dark:text-slate-300">
+                <div className="flex items-center gap-2">
+                  <StudentProfileExportActions
+                    title={`Course access - ${student.name ?? "Student"}`}
+                    filenamePrefix={`course-access-${student.name ?? "student"}`}
+                    rows={filteredRecords.map((record) => ({
+                      "Course Name": record.title,
+                      Category: record.category,
+                      Type: record.type,
+                      "Start Date": new Intl.DateTimeFormat("en-GB", {
+                        timeZone: "Asia/Kolkata",
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      }).format(new Date(record.joinedAt)),
+                      "Expiry Date": record.expiryLabel,
+                      Status: record.status,
+                    }))}
+                  />
                 </div>
 
-                <div className="flex items-center gap-0.5">
-                  <span className="min-w-[88px] text-right text-xs font-medium text-slate-600 dark:text-slate-300">
-                    {filteredRecords.length === 0 ? 0 : firstVisible}-{lastVisible} of {filteredRecords.length}
-                  </span>
+                <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+                    <span>Records per page</span>
+                    <PaginationPageSizeSelect defaultValue={String(pageSize === "all" ? "all" : pageSize)} />
+                  </div>
 
-                  <PaginationDots
-                    currentPage={safePage - 1}
-                    totalPages={totalPages}
-                    showSinglePage={true}
-                    pageHrefs={Array.from({ length: totalPages }, (_, index) => buildPageHref(index + 1))}
-                    previousHref={safePage > 1 ? buildPageHref(safePage - 1) : undefined}
-                    nextHref={safePage < totalPages ? buildPageHref(safePage + 1) : undefined}
-                  />
+                  <div className="flex items-center gap-0.5">
+                    <span className="min-w-[88px] text-right text-xs font-medium text-slate-600 dark:text-slate-300">
+                      {filteredRecords.length === 0 ? 0 : firstVisible}-{lastVisible} of {filteredRecords.length}
+                    </span>
+
+                    <PaginationDots
+                      currentPage={safePage - 1}
+                      totalPages={totalPages}
+                      showSinglePage={true}
+                      pageHrefs={Array.from({ length: totalPages }, (_, index) => buildPageHref(index + 1))}
+                      previousHref={safePage > 1 ? buildPageHref(safePage - 1) : undefined}
+                      nextHref={safePage < totalPages ? buildPageHref(safePage + 1) : undefined}
+                    />
+                  </div>
                 </div>
               </div>
             </div>

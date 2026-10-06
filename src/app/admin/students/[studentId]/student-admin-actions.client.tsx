@@ -91,7 +91,7 @@ export function StudentAdminQuickActions({
         type="button"
         onClick={() => handleStudentMessage("reminder")}
         disabled={Boolean(busyAction)}
-        className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+        className="inline-flex h-10 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-3 text-xs font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:border-emerald-400/50 dark:hover:bg-emerald-500/15"
       >
         {busyAction === "reminder" ? "Sending..." : "Send reminder"}
       </button>
@@ -100,7 +100,7 @@ export function StudentAdminQuickActions({
         type="button"
         onClick={() => handleStudentMessage("message")}
         disabled={Boolean(busyAction) || !studentEmail}
-        className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+        className="inline-flex h-10 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-3 text-xs font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:border-emerald-400/50 dark:hover:bg-emerald-500/15"
       >
         {busyAction === "message" ? "Opening..." : "Message student"}
       </button>

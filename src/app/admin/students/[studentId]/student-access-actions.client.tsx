@@ -67,15 +67,15 @@ export function StudentAccessActions({
           label: course.title,
         }))}
         onValueChange={(nextValue) => setSelectedCourseId(nextValue === "all" ? "" : nextValue)}
-        triggerClassName="!relative !z-[100] !h-[38px] !min-h-[38px] !w-[220px] !rounded-full !border-slate-700 !bg-slate-950/85 !text-slate-100 !shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] dark:!border-slate-600 dark:!bg-slate-950/85 dark:!text-slate-100"
-        menuClassName="!z-[120] !min-w-[220px] !max-h-[320px] !overflow-y-auto !rounded-2xl !border-slate-700 !bg-slate-950/95 !text-slate-100 !shadow-[0_18px_40px_rgba(2,6,23,0.45)] ring-1 ring-slate-700/20 dark:!border-slate-600 dark:!bg-slate-950/95 dark:!text-slate-100"
+        triggerClassName="!relative !z-[100] !h-[38px] !min-h-[38px] !w-[220px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-none dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100"
+        menuClassName="!z-[120] !min-w-[220px] !max-h-[320px] !overflow-y-auto !rounded-2xl !border-slate-200 !bg-white !text-slate-700 !shadow-[0_16px_40px_rgba(15,23,42,0.12)] dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
       />
 
       <button
         type="button"
         onClick={handleGrantAccess}
         disabled={isSubmitting}
-        className="inline-flex h-10 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-3 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:bg-emerald-500/15"
+        className="inline-flex h-10 items-center justify-center rounded-full border border-emerald-200/80 bg-[linear-gradient(135deg,rgba(16,185,129,0.14),rgba(255,255,255,0.72),rgba(16,185,129,0.08))] px-3 text-xs font-semibold text-emerald-700 shadow-[0_10px_22px_rgba(16,185,129,0.08)] backdrop-blur-sm transition hover:border-emerald-300 hover:bg-[linear-gradient(135deg,rgba(16,185,129,0.18),rgba(255,255,255,0.76),rgba(16,185,129,0.1))] disabled:cursor-not-allowed disabled:opacity-60 dark:border-emerald-500/30 dark:bg-[linear-gradient(135deg,rgba(16,185,129,0.18),rgba(15,23,42,0.72),rgba(16,185,129,0.08))] dark:text-emerald-100 dark:hover:border-emerald-400/50 dark:hover:bg-[linear-gradient(135deg,rgba(16,185,129,0.24),rgba(15,23,42,0.8),rgba(16,185,129,0.12))]"
       >
         {isSubmitting ? "Granting..." : "Add course access"}
       </button>

@@ -101,7 +101,7 @@ export function PlacedOnDateFilter({ defaultValue = "" }: PlacedOnDateFilterProp
       <button
         type="button"
         onClick={() => setIsCalendarOpen((open) => !open)}
-        className="relative flex h-[38px] w-[170px] cursor-pointer items-center justify-between gap-2 rounded-full border border-slate-200 bg-white/90 px-3 text-sm text-slate-700 transition duration-200 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100"
+        className="relative flex h-[38px] w-[150px] cursor-pointer items-center justify-between gap-2 rounded-full border border-slate-200 bg-white/90 px-3 text-sm text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] transition duration-200 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
         aria-label="Placed on filter"
       >
         <span className="pointer-events-none flex-1 truncate text-left text-slate-700 dark:text-slate-100">
@@ -178,7 +178,7 @@ export function PlacedOnDateFilter({ defaultValue = "" }: PlacedOnDateFilterProp
                 setIsCalendarOpen(false);
                 updateFilter("");
               }}
-              className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              className="rounded-full border border-red-200 bg-red-50 px-3 py-1.5 font-medium text-red-700 transition hover:bg-red-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200 dark:hover:bg-red-500/15"
             >
               Clear
             </button>
@@ -188,7 +188,7 @@ export function PlacedOnDateFilter({ defaultValue = "" }: PlacedOnDateFilterProp
                 const today = new Date();
                 selectCalendarDate(today);
               }}
-              className="rounded-full bg-slate-100 px-3 py-1.5 font-medium text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+              className="rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 font-medium text-indigo-700 shadow-[0_8px_20px_rgba(99,102,241,0.10)] backdrop-blur-sm transition hover:border-indigo-300 hover:bg-indigo-100/70 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200 dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15"
             >
               Today
             </button>

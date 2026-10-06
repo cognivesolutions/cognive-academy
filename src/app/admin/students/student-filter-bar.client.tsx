@@ -272,6 +272,29 @@ export function StudentFilterBar({
             />
           </div>
 
+          <div className="min-w-[120px]">
+            <CourseSelect
+              name="status"
+              label="Status"
+              compact
+              hideLabel
+              placeholder="Status"
+              defaultValue={status}
+              options={[
+                { value: "all", label: "All" },
+                ...statusOptions,
+              ]}
+              syncUrl={false}
+              onValueChange={(nextValue) => {
+                const normalizedValue = nextValue === "all" ? "all" : nextValue;
+                setStatus(normalizedValue);
+                updateFilters(q, normalizedValue, studentFilter, mobileFilter, joiningFilter);
+              }}
+              triggerClassName="!h-[38px] !min-h-[38px] !w-[120px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+              menuClassName="!min-w-[120px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
+            />
+          </div>
+
           <div className="relative min-w-[150px]" ref={calendarRef}>
             <label className="sr-only" htmlFor="joined-date-filter">Joined date</label>
             <div
@@ -360,7 +383,7 @@ export function StudentFilterBar({
                       setIsCalendarOpen(false);
                       handleJoiningChange("all");
                     }}
-                    className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                    className="rounded-full border border-red-200 bg-red-50 px-3 py-1.5 font-medium text-red-700 transition hover:bg-red-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200 dark:hover:bg-red-500/15"
                   >
                     Clear
                   </button>
@@ -370,36 +393,13 @@ export function StudentFilterBar({
                       const today = new Date();
                       selectCalendarDate(today);
                     }}
-                    className="rounded-full bg-slate-100 px-3 py-1.5 font-medium text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                    className="rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 font-medium text-indigo-700 shadow-[0_8px_20px_rgba(99,102,241,0.10)] backdrop-blur-sm transition hover:border-indigo-300 hover:bg-indigo-100/70 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200 dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15"
                   >
                     Today
                   </button>
                 </div>
               </div>
             )}
-          </div>
-
-          <div className="min-w-[120px]">
-            <CourseSelect
-              name="status"
-              label="Status"
-              compact
-              hideLabel
-              placeholder="Status"
-              defaultValue={status}
-              options={[
-                { value: "all", label: "All" },
-                ...statusOptions,
-              ]}
-              syncUrl={false}
-              onValueChange={(nextValue) => {
-                const normalizedValue = nextValue === "all" ? "all" : nextValue;
-                setStatus(normalizedValue);
-                updateFilters(q, normalizedValue, studentFilter, mobileFilter, joiningFilter);
-              }}
-              triggerClassName="!h-[38px] !min-h-[38px] !w-[120px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-              menuClassName="!min-w-[120px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
-            />
           </div>
         </div>
 

@@ -9,6 +9,7 @@ import { StudentTableRow } from "../student-table-row.client";
 import { AdminModeToggle } from "@/app/admin/components/admin-mode-toggle.client";
 import { AdminNavbar } from "@/app/admin/components/admin-navbar";
 import { PaginationPageSizeSelect } from "@/app/admin/components/pagination-page-size-select";
+import { StudentManageExportActions } from "./student-manage-export-actions.client";
 
 export const dynamic = "force-dynamic";
 
@@ -90,46 +91,102 @@ export default async function AdminStudentsManagePage({
   });
 
   const normalizedQuery = q.trim().toLowerCase();
-  const studentOptions = Array.from(
-    new Map(
-      students
-        .filter((student) => student.name?.trim())
-        .map((student) => [student.id, { value: student.id, label: student.name ?? "Unnamed student" }]),
-    ).values(),
-  );
-  const mobileOptions = Array.from(
-    new Set(
-      students
-        .map((student) => student.phone?.trim())
-        .filter((phone): phone is string => Boolean(phone)),
-    ),
-  )
-    .sort()
-    .map((phone) => ({ value: phone, label: phone }));
 
-  const statusOptions = Array.from(
-    new Map(
-      students.map((student) => [
-        student.isActive ? "active" : "inactive",
-        {
-          value: student.isActive ? "active" : "inactive",
-          label: student.isActive ? "Active" : "Inactive",
-        },
-      ]),
-    ).values(),
-  );
+  const getStatusValue = (student: (typeof students)[number]) => (student.isActive ? "active" : "inactive");
+  const matchesActiveFilters = (
+    student: (typeof students)[number],
+    filters: {
+      student: string;
+      mobile: string;
+      status: string;
+      joining: string;
+    },
+  ) => {
+    const joinedDate = new Date(student.createdAt);
+    const joinedDateValue = formatIstDateForFilter(joinedDate);
+    const statusValue = getStatusValue(student);
+
+    const matchesStudentFilter = filters.student === "all" || student.id === filters.student;
+    const matchesMobileFilter = filters.mobile === "all" || student.phone?.trim() === filters.mobile;
+    const matchesStatusFilter = filters.status === "all" || statusValue === filters.status;
+    const matchesJoiningFilter = filters.joining === "all" || joinedDateValue === filters.joining;
+
+    return matchesStudentFilter && matchesMobileFilter && matchesStatusFilter && matchesJoiningFilter;
+  };
+
+  const buildCascadingOptions = (field: "student" | "mobile" | "status") => {
+    const candidateUsers = students.filter((student) => {
+      const nextFilters = {
+        student: field === "student" ? "all" : studentFilter,
+        mobile: field === "mobile" ? "all" : mobileFilter,
+        status: field === "status" ? "all" : status,
+        joining: joiningFilter,
+      };
+
+      return matchesActiveFilters(student, nextFilters);
+    });
+
+    if (field === "student") {
+      return Array.from(
+        new Map(
+          candidateUsers
+            .filter((student) => student.name?.trim())
+            .map((student) => [student.id, { value: student.id, label: student.name ?? "Unnamed student" }]),
+        ).values(),
+      );
+    }
+
+    if (field === "mobile") {
+      return Array.from(
+        new Set(
+          candidateUsers
+            .map((student) => student.phone?.trim())
+            .filter((phone): phone is string => Boolean(phone)),
+        ),
+      )
+        .sort()
+        .map((phone) => ({ value: phone, label: phone }));
+    }
+
+    return Array.from(
+      new Map(
+        candidateUsers.map((student) => [
+          getStatusValue(student),
+          {
+            value: getStatusValue(student),
+            label: student.isActive ? "Active" : "Inactive",
+          },
+        ]),
+      ).values(),
+    );
+  };
+
+  const studentOptions = buildCascadingOptions("student");
+  const mobileOptions = buildCascadingOptions("mobile");
+  const statusOptions = buildCascadingOptions("status");
+
+  const effectiveStudentFilter = studentFilter !== "all" && !studentOptions.some((option) => option.value === studentFilter)
+    ? "all"
+    : studentFilter;
+  const effectiveMobileFilter = mobileFilter !== "all" && !mobileOptions.some((option) => option.value === mobileFilter)
+    ? "all"
+    : mobileFilter;
+  const effectiveStatus = status !== "all" && !statusOptions.some((option) => option.value === status)
+    ? "all"
+    : status;
 
   const filteredStudents = students.filter((student) => {
     const joinedDate = new Date(student.createdAt);
     const joinedDateValue = formatIstDateForFilter(joinedDate);
-    const statusLabel = student.isActive ? "active" : "inactive";
+    const statusLabel = getStatusValue(student);
     const courseCount = student.enrollments.length;
 
-    const matchesStudentFilter = studentFilter === "all" || student.id === studentFilter;
-    const matchesMobileFilter = mobileFilter === "all" || student.phone?.trim() === mobileFilter;
+    const matchesStudentFilter = effectiveStudentFilter === "all" || student.id === effectiveStudentFilter;
+    const matchesMobileFilter = effectiveMobileFilter === "all" || student.phone?.trim() === effectiveMobileFilter;
+    const matchesStatusFilter = effectiveStatus === "all" || statusLabel === effectiveStatus;
     const matchesJoiningFilter = joiningFilter === "all" || joinedDateValue === joiningFilter;
 
-    if (!matchesStudentFilter || !matchesMobileFilter || !matchesJoiningFilter) {
+    if (!matchesStudentFilter || !matchesMobileFilter || !matchesStatusFilter || !matchesJoiningFilter) {
       return false;
     }
 
@@ -175,12 +232,12 @@ export default async function AdminStudentsManagePage({
       params.set("status", status);
     }
 
-    if (studentFilter !== "all") {
-      params.set("student", studentFilter);
+    if (effectiveStudentFilter !== "all") {
+      params.set("student", effectiveStudentFilter);
     }
 
-    if (mobileFilter !== "all") {
-      params.set("mobile", mobileFilter);
+    if (effectiveMobileFilter !== "all") {
+      params.set("mobile", effectiveMobileFilter);
     }
 
     if (joiningFilter !== "all") {
@@ -274,9 +331,9 @@ export default async function AdminStudentsManagePage({
             <div className="mt-6">
               <StudentFilterBar
                 defaultQ={q}
-                defaultStatus={status}
-                defaultStudent={studentFilter}
-                defaultMobile={mobileFilter}
+                defaultStatus={effectiveStatus}
+                defaultStudent={effectiveStudentFilter}
+                defaultMobile={effectiveMobileFilter}
                 defaultJoining={joiningFilter}
                 studentOptions={studentOptions}
                 mobileOptions={mobileOptions}
@@ -313,25 +370,44 @@ export default async function AdminStudentsManagePage({
               </div>
             </div>
 
-            <div className="mt-4 -translate-y-0 flex items-center justify-end gap-1.5 text-sm text-slate-600 dark:text-slate-300">
-              <div className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-300">
-                <span>Students per page</span>
-                <PaginationPageSizeSelect defaultValue={String(pageSize === "all" ? "all" : pageSize)} />
+            <div className="mt-4 flex items-center justify-between gap-3 text-sm text-slate-600 dark:text-slate-300">
+              <div className="flex items-center gap-2">
+                <StudentManageExportActions
+                  rows={recentStudents.map((student) => ({
+                    name: student.name ?? "Unnamed student",
+                    email: student.email ?? "N/A",
+                    mobile: student.phone ?? "N/A",
+                    courseCount: String(student.enrollments.length),
+                    joinedOn: formatIstDate(new Date(student.createdAt), {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    }),
+                    status: student.isActive ? "Active" : "Inactive",
+                  }))}
+                />
               </div>
 
-              <div className="flex items-center gap-0.5">
-                <span className="min-w-[88px] text-right text-xs font-medium text-slate-600 dark:text-slate-300">
-                  {firstVisible}-{lastVisible} of {totalStudents}
-                </span>
+              <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+                  <span>Students per page</span>
+                  <PaginationPageSizeSelect defaultValue={String(pageSize === "all" ? "all" : pageSize)} />
+                </div>
 
-                <PaginationDots
-                  currentPage={currentPageIndex}
-                  totalPages={totalPages}
-                  showSinglePage={true}
-                  pageHrefs={Array.from({ length: totalPages }, (_, index) => buildPageHref(index + 1))}
-                  previousHref={currentPageIndex > 0 ? buildPageHref(currentPageIndex) : undefined}
-                  nextHref={currentPageIndex < totalPages - 1 ? buildPageHref(currentPageIndex + 2) : undefined}
-                />
+                <div className="flex items-center gap-0.5">
+                  <span className="min-w-[88px] text-right text-xs font-medium text-slate-600 dark:text-slate-300">
+                    {firstVisible}-{lastVisible} of {totalStudents}
+                  </span>
+
+                  <PaginationDots
+                    currentPage={currentPageIndex}
+                    totalPages={totalPages}
+                    showSinglePage={true}
+                    pageHrefs={Array.from({ length: totalPages }, (_, index) => buildPageHref(index + 1))}
+                    previousHref={currentPageIndex > 0 ? buildPageHref(currentPageIndex) : undefined}
+                    nextHref={currentPageIndex < totalPages - 1 ? buildPageHref(currentPageIndex + 2) : undefined}
+                  />
+                </div>
               </div>
             </div>
           </section>

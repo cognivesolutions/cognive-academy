@@ -18,7 +18,7 @@ export function AdminModeToggle() {
     pathname.startsWith("/admin/lectures") ||
     pathname.startsWith("/admin/courses/new");
 
-  const isStudentMode = pathname.startsWith("/admin/students") || pathname.startsWith("/admin/orders");
+  const isStudentMode = pathname.startsWith("/admin/students");
 
   return (
     <div className="inline-flex items-center justify-end rounded-full border border-slate-200 bg-slate-100/80 p-1 shadow-[0_10px_24px_rgba(15,23,42,0.08)] dark:border-slate-700 dark:bg-slate-800/80 dark:shadow-[0_10px_24px_rgba(15,23,42,0.25)]">

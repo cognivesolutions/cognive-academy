@@ -11,7 +11,8 @@ import { CourseSelect } from "@/app/admin/components/course-select";
 import { PaginationDots } from "@/components/pagination-dots";
 import { PaginationPageSizeSelect } from "@/app/admin/components/pagination-page-size-select";
 import { StudentProfileToggle } from "../student-profile-toggle.client";
-import { PurchaseHistoryTable } from "../purchase-history-table.client";
+import { StudentOrderHistoryTable } from "../student-order-history-table.client";
+import { StudentProfileExportActions } from "../../student-profile-export-actions.client";
 import { PlacedOnDateFilter } from "./placed-on-date-filter.client";
 
 export const dynamic = "force-dynamic";
@@ -82,6 +83,14 @@ export default async function StudentOrderHistoryPage({ params, searchParams }: 
   const pageSize = fallbackPageSize === "all" ? "all" : Math.max(1, Math.min(100, fallbackPageSize));
   const page = Math.max(1, requestedPage);
 
+  const formatCurrencyInr = (value: number | string | null) =>
+    new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(Number(value ?? 0));
+
   const formatPlacedDate = (value: Date | string) =>
     new Intl.DateTimeFormat("en-GB", {
       timeZone: "Asia/Kolkata",
@@ -118,7 +127,7 @@ export default async function StudentOrderHistoryPage({ params, searchParams }: 
     { value: "all", label: "All" },
     ...Array.from(new Set(student.orders.map((order) => String(Number(order.amount ?? 0))))).map((amountValue) => ({
       value: amountValue,
-      label: `₹${Number(amountValue).toLocaleString("en-IN")}`,
+      label: formatCurrencyInr(amountValue),
     })),
   ];
 
@@ -135,7 +144,7 @@ export default async function StudentOrderHistoryPage({ params, searchParams }: 
       order.id,
       order.course.title,
       String(Number(order.amount ?? 0)),
-      `₹${Number(order.amount ?? 0).toLocaleString("en-IN")}`,
+      formatCurrencyInr(order.amount),
       order.status,
       formatPlacedDate(order.createdAt),
       normalizePlacedOnValue(formatPlacedDate(order.createdAt)),
@@ -289,7 +298,7 @@ export default async function StudentOrderHistoryPage({ params, searchParams }: 
                 </div>
               ) : (
                 <>
-                  <PurchaseHistoryTable
+                  <StudentOrderHistoryTable
                     orders={paginatedOrders.map((order) => ({
                       id: order.id,
                       amount: Number(order.amount ?? 0),
@@ -301,25 +310,45 @@ export default async function StudentOrderHistoryPage({ params, searchParams }: 
                     }))}
                   />
 
-                  <div className="mt-5 flex items-center justify-end gap-1.5 text-sm text-slate-600 dark:text-slate-300">
-                    <div className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-300">
-                      <span>Records per page</span>
-                      <PaginationPageSizeSelect defaultValue={String(pageSize === "all" ? "all" : pageSize)} />
+                  <div className="mt-5 flex items-center justify-between gap-3 text-sm text-slate-600 dark:text-slate-300">
+                    <div className="flex items-center gap-2">
+                      <StudentProfileExportActions
+                        title={`Course purchase history - ${student.name ?? "Student"}`}
+                        filenamePrefix={`course-purchase-history-${student.name ?? "student"}`}
+                        rows={filteredOrders.map((order) => ({
+                          Course: order.course.title,
+                          Amount: formatCurrencyInr(order.amount),
+                          Status: order.status,
+                          "Placed On": new Intl.DateTimeFormat("en-GB", {
+                            timeZone: "Asia/Kolkata",
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          }).format(new Date(order.createdAt)),
+                        }))}
+                      />
                     </div>
 
-                    <div className="flex items-center gap-0.5">
-                      <span className="min-w-[88px] text-right text-xs font-medium text-slate-600 dark:text-slate-300">
-                        {filteredOrders.length === 0 ? 0 : firstVisible}-{lastVisible} of {filteredOrders.length}
-                      </span>
+                    <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+                        <span>Records per page</span>
+                        <PaginationPageSizeSelect defaultValue={String(pageSize === "all" ? "all" : pageSize)} />
+                      </div>
 
-                      <PaginationDots
-                        currentPage={safePage - 1}
-                        totalPages={totalPages}
-                        showSinglePage={true}
-                        pageHrefs={Array.from({ length: totalPages }, (_, index) => buildPageHref(index + 1))}
-                        previousHref={safePage > 1 ? buildPageHref(safePage - 1) : undefined}
-                        nextHref={safePage < totalPages ? buildPageHref(safePage + 1) : undefined}
-                      />
+                      <div className="flex items-center gap-0.5">
+                        <span className="min-w-[88px] text-right text-xs font-medium text-slate-600 dark:text-slate-300">
+                          {filteredOrders.length === 0 ? 0 : firstVisible}-{lastVisible} of {filteredOrders.length}
+                        </span>
+
+                        <PaginationDots
+                          currentPage={safePage - 1}
+                          totalPages={totalPages}
+                          showSinglePage={true}
+                          pageHrefs={Array.from({ length: totalPages }, (_, index) => buildPageHref(index + 1))}
+                          previousHref={safePage > 1 ? buildPageHref(safePage - 1) : undefined}
+                          nextHref={safePage < totalPages ? buildPageHref(safePage + 1) : undefined}
+                        />
+                      </div>
                     </div>
                   </div>
                 </>

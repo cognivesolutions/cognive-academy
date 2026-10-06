@@ -14,7 +14,7 @@ const navItems = [
 const studentNavItems = [
   { href: "/admin/students", label: "Dashboard", badge: "Home", tone: "indigo" },
   { href: "/admin/students/manage", label: "Manage students", badge: "Students", tone: "rose" },
-  { href: "/admin/students/orders", label: "Course orders", badge: "Orders", tone: "violet" },
+  { href: "/admin/students/orders", label: "Student purchases", badge: "Orders", tone: "violet" },
 ];
 
 const toneStyles = {
@@ -52,13 +52,13 @@ const toneStyles = {
 
 export function AdminNavbar() {
   const pathname = usePathname();
-  const isStudentFlow = pathname.startsWith("/admin/students") || pathname.startsWith("/admin/orders");
+  const isStudentFlow = pathname.startsWith("/admin/students");
   const visibleNavItems = isStudentFlow ? studentNavItems : navItems;
 
   const isActiveItem = (itemHref: string) => {
     if (isStudentFlow) {
       if (itemHref === "/admin/students") {
-        return pathname === "/admin/students" || pathname.startsWith("/admin/students/") || pathname.startsWith("/admin/orders");
+        return pathname === "/admin/students" || pathname.startsWith("/admin/students/");
       }
 
       if (itemHref === "/admin/students/manage") {

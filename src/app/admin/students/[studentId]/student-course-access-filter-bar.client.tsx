@@ -6,9 +6,10 @@ import { useEffect, useRef, useState } from "react";
 
 import { CourseSelect } from "@/app/admin/components/course-select";
 
-type StudentRecordsFilterBarProps = {
+type StudentCourseAccessFilterBarProps = {
   defaultQ?: string;
   defaultStatus?: string;
+  defaultType?: string;
   defaultCourse?: string;
   defaultCategory?: string;
   defaultJoined?: string;
@@ -17,11 +18,14 @@ type StudentRecordsFilterBarProps = {
   courseOptions?: Array<{ value: string; label: string }>;
   categoryOptions?: Array<{ value: string; label: string }>;
   joinedOptions?: Array<{ value: string; label: string }>;
+  typeOptions?: Array<{ value: string; label: string }>;
+  statusOptions?: Array<{ value: string; label: string }>;
 };
 
-export function StudentRecordsFilterBar({
+export function StudentCourseAccessFilterBar({
   defaultQ = "",
   defaultStatus = "all",
+  defaultType = "all",
   defaultCourse = "",
   defaultCategory = "all",
   defaultJoined = "all",
@@ -30,12 +34,15 @@ export function StudentRecordsFilterBar({
   courseOptions = [],
   categoryOptions = [],
   joinedOptions = [],
-}: StudentRecordsFilterBarProps) {
+  typeOptions = [],
+  statusOptions = [],
+}: StudentCourseAccessFilterBarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [q, setQ] = useState(defaultQ);
   const [status, setStatus] = useState(defaultStatus);
+  const [type, setType] = useState(defaultType);
   const [course, setCourse] = useState(defaultCourse);
   const [category, setCategory] = useState(defaultCategory);
   const [joined, setJoined] = useState(defaultJoined);
@@ -61,6 +68,10 @@ export function StudentRecordsFilterBar({
   useEffect(() => {
     setStatus(defaultStatus);
   }, [defaultStatus]);
+
+  useEffect(() => {
+    setType(defaultType);
+  }, [defaultType]);
 
   useEffect(() => {
     setCourse(defaultCourse);
@@ -99,7 +110,7 @@ export function StudentRecordsFilterBar({
     };
   }, []);
 
-  const updateFilters = (nextQ: string, nextStatus: string, nextCourse: string, nextCategory: string, nextJoined: string) => {
+  const updateFilters = (nextQ: string, nextStatus: string, nextType: string, nextCourse: string, nextCategory: string, nextJoined: string) => {
     const params = new URLSearchParams(searchParams?.toString() ?? "");
 
     if (!nextQ.trim()) {
@@ -112,6 +123,12 @@ export function StudentRecordsFilterBar({
       params.delete("status");
     } else {
       params.set("status", nextStatus);
+    }
+
+    if (nextType === "all") {
+      params.delete("type");
+    } else {
+      params.set("type", nextType);
     }
 
     if (!nextCourse) {
@@ -132,7 +149,6 @@ export function StudentRecordsFilterBar({
       params.set("joined", nextJoined);
     }
 
-    params.delete("type");
     params.delete("price");
     params.set("page", "1");
     params.set("pageSize", String(pageSize));
@@ -150,7 +166,7 @@ export function StudentRecordsFilterBar({
     }
 
     submitTimerRef.current = window.setTimeout(() => {
-      updateFilters(nextQ, status, course, category, joined);
+      updateFilters(nextQ, status, type, course, category, joined);
     }, 250);
   };
 
@@ -185,7 +201,7 @@ export function StudentRecordsFilterBar({
     const isoDate = formatLocalDate(date);
     setCalendarMonth(new Date(date.getFullYear(), date.getMonth(), date.getDate()));
     setJoined(isoDate);
-    updateFilters(q, status, course, category, isoDate);
+    updateFilters(q, status, type, course, category, isoDate);
     setIsCalendarOpen(false);
   };
 
@@ -213,15 +229,15 @@ export function StudentRecordsFilterBar({
         <div className="min-w-[142px] shrink-0">
           <CourseSelect
             name="course"
-            label="Course"
-            placeholder="Course"
+            label="Course name"
+            placeholder="Course name"
             defaultValue={course}
             compact
             syncUrl={false}
             onValueChange={(nextValue) => {
               const normalizedValue = nextValue === "all" ? "" : nextValue;
               setCourse(normalizedValue);
-              updateFilters(q, status, normalizedValue, category, joined);
+              updateFilters(q, status, type, normalizedValue, category, joined);
             }}
             triggerClassName="!min-h-[38px] !w-[142px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
             menuClassName="!min-w-[142px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
@@ -240,7 +256,7 @@ export function StudentRecordsFilterBar({
             onValueChange={(nextValue) => {
               const normalizedValue = nextValue === "all" ? "all" : nextValue;
               setCategory(normalizedValue);
-              updateFilters(q, status, course, normalizedValue, joined);
+              updateFilters(q, status, type, course, normalizedValue, joined);
             }}
             triggerClassName="!min-h-[38px] !w-[150px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
             menuClassName="!min-w-[150px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
@@ -335,9 +351,9 @@ export function StudentRecordsFilterBar({
                   onClick={() => {
                     setIsCalendarOpen(false);
                     setJoined("all");
-                    updateFilters(q, status, course, category, "all");
+                    updateFilters(q, status, type, course, category, "all");
                   }}
-                  className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                  className="rounded-full border border-red-200 bg-red-50 px-3 py-1.5 font-medium text-red-700 transition hover:bg-red-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200 dark:hover:bg-red-500/15"
                 >
                   Clear
                 </button>
@@ -347,13 +363,32 @@ export function StudentRecordsFilterBar({
                     const today = new Date();
                     selectCalendarDate(today);
                   }}
-                  className="rounded-full bg-slate-100 px-3 py-1.5 font-medium text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                  className="rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 font-medium text-indigo-700 shadow-[0_8px_20px_rgba(99,102,241,0.10)] backdrop-blur-sm transition hover:border-indigo-300 hover:bg-indigo-100/70 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200 dark:hover:border-indigo-400/50 dark:hover:bg-indigo-500/15"
                 >
                   Today
                 </button>
               </div>
             </div>
           )}
+        </div>
+
+        <div className="min-w-[120px] shrink-0">
+          <CourseSelect
+            name="type"
+            label="Type"
+            placeholder="All"
+            defaultValue={type}
+            compact
+            syncUrl={false}
+            onValueChange={(nextValue) => {
+              const normalizedValue = nextValue === "all" ? "all" : nextValue;
+              setType(normalizedValue);
+              updateFilters(q, status, normalizedValue, course, category, joined);
+            }}
+            triggerClassName="!min-h-[38px] !w-[120px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+            menuClassName="!min-w-[120px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
+            options={[{ value: "all", label: "All" }, ...typeOptions]}
+          />
         </div>
 
         <div className="min-w-[120px] shrink-0">
@@ -367,15 +402,11 @@ export function StudentRecordsFilterBar({
             onValueChange={(nextValue) => {
               const normalizedValue = nextValue === "all" ? "all" : nextValue;
               setStatus(normalizedValue);
-              updateFilters(q, normalizedValue, course, category, joined);
+              updateFilters(q, normalizedValue, type, course, category, joined);
             }}
             triggerClassName="!min-h-[38px] !w-[120px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
             menuClassName="!min-w-[120px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
-            options={[
-              { value: "all", label: "All" },
-              { value: "active", label: "Active" },
-              { value: "inactive", label: "Inactive" },
-            ]}
+            options={[{ value: "all", label: "All" }, ...statusOptions]}
           />
         </div>
       </div>

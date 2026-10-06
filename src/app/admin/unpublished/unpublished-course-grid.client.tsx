@@ -231,7 +231,12 @@ function UnpublishedCourseCard({
           Unpublished
         </span>
         <span className="shrink-0 rounded-full bg-indigo-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-200">
-          ₹{Number(course.price).toLocaleString("en-IN")}
+          {new Intl.NumberFormat("en-IN", {
+            style: "currency",
+            currency: "INR",
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          }).format(Number(course.price ?? 0))}
         </span>
       </div>
 

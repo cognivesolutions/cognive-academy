@@ -11,6 +11,7 @@ import { CourseSelect } from "@/app/admin/components/course-select";
 import { PaginationDots } from "@/components/pagination-dots";
 import { PaginationPageSizeSelect } from "@/app/admin/components/pagination-page-size-select";
 import { PlacedOnDateFilter } from "@/app/admin/students/[studentId]/orders/placed-on-date-filter.client";
+import { StudentOrderExportActions } from "./student-order-export-actions.client";
 
 export const dynamic = "force-dynamic";
 
@@ -140,13 +141,13 @@ export default async function StudentOrdersPage({
     ),
   ];
 
-  const priceOptions = [
-    { value: "all", label: "All" },
-    ...Array.from(new Set(orders.map((order) => String(Number(order.amount ?? 0))))).map((amountValue) => ({
-      value: amountValue,
-      label: `₹${Number(amountValue).toLocaleString("en-IN")}`,
-    })),
-  ];
+  const formatCurrencyInr = (value: number | string | null) =>
+    new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(Number(value ?? 0));
 
   const statusOptions = [
     { value: "all", label: "All" },
@@ -164,7 +165,7 @@ export default async function StudentOrdersPage({
       order.user.email ?? "",
       order.course.title,
       String(Number(order.amount ?? 0)),
-      `₹${Number(order.amount ?? 0).toLocaleString("en-IN")}`,
+      formatCurrencyInr(order.amount),
       order.status,
       formatPlacedDate(order.createdAt),
       normalizePlacedOnValue(formatPlacedDate(order.createdAt)),
@@ -237,7 +238,7 @@ export default async function StudentOrdersPage({
         <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Admin</p>
-            <h1 className="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">Student dashboard</h1>
+            <h1 className="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">Student purchases</h1>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
             <AdminModeToggle />
@@ -251,32 +252,32 @@ export default async function StudentOrdersPage({
             <div className="mb-4 flex items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-700">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-indigo-600 dark:text-indigo-300">Orders overview</p>
-                <h2 className="mt-1.5 text-xl font-black tracking-tight text-slate-900 dark:text-white">Course orders</h2>
+                <h2 className="mt-1.5 text-xl font-black tracking-tight text-slate-900 dark:text-white">Student purchases</h2>
               </div>
               <div className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200">
                 {filteredOrders.length} records
               </div>
             </div>
 
-            <div className="mb-5 grid gap-3 lg:grid-cols-4">
-              <div className="rounded-[22px] border border-slate-200 bg-gradient-to-br from-indigo-50 via-white to-white p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-[0_18px_32px_rgba(99,102,241,0.10)] dark:border-slate-700 dark:from-indigo-950/20 dark:via-slate-900 dark:to-slate-900">
+            <div className="mb-5 mt-2 grid gap-3 lg:grid-cols-4">
+              <div className="rounded-[22px] border border-slate-200 bg-gradient-to-br from-indigo-50 via-white to-white p-4 ring-1 ring-slate-100/80 transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-[0_18px_32px_rgba(99,102,241,0.10)] dark:border-slate-700 dark:from-indigo-950/20 dark:via-slate-900 dark:to-slate-900 dark:ring-slate-800">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Students</p>
                 <p className="mt-4 text-2xl font-black tracking-tight text-indigo-600 dark:text-indigo-300">{totalStudents}</p>
               </div>
 
-              <div className="rounded-[22px] border border-slate-200 bg-gradient-to-br from-emerald-50 via-white to-white p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-[0_18px_32px_rgba(16,185,129,0.10)] dark:border-slate-700 dark:from-emerald-950/20 dark:via-slate-900 dark:to-slate-900">
+              <div className="rounded-[22px] border border-slate-200 bg-gradient-to-br from-emerald-50 via-white to-white p-4 ring-1 ring-slate-100/80 transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-[0_18px_32px_rgba(16,185,129,0.10)] dark:border-slate-700 dark:from-emerald-950/20 dark:via-slate-900 dark:to-slate-900 dark:ring-slate-800">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Paid orders</p>
                 <p className="mt-4 text-2xl font-black tracking-tight text-emerald-600 dark:text-emerald-300">{activeAccessCount}</p>
               </div>
 
-              <div className="rounded-[22px] border border-slate-200 bg-gradient-to-br from-amber-50 via-white to-white p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-200 hover:shadow-[0_18px_32px_rgba(245,158,11,0.10)] dark:border-slate-700 dark:from-amber-950/20 dark:via-slate-900 dark:to-slate-900">
+              <div className="rounded-[22px] border border-slate-200 bg-gradient-to-br from-amber-50 via-white to-white p-4 ring-1 ring-slate-100/80 transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-200 hover:shadow-[0_18px_32px_rgba(245,158,11,0.10)] dark:border-slate-700 dark:from-amber-950/20 dark:via-slate-900 dark:to-slate-900 dark:ring-slate-800">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Pending</p>
                 <p className="mt-4 text-2xl font-black tracking-tight text-amber-600 dark:text-amber-300">{pendingAccessCount}</p>
               </div>
 
-              <div className="rounded-[22px] border border-slate-200 bg-gradient-to-br from-violet-50 via-white to-white p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-[0_18px_32px_rgba(139,92,246,0.10)] dark:border-slate-700 dark:from-violet-950/20 dark:via-slate-900 dark:to-slate-900">
+              <div className="rounded-[22px] border border-slate-200 bg-gradient-to-br from-violet-50 via-white to-white p-4 ring-1 ring-slate-100/80 transition-all duration-200 hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-[0_18px_32px_rgba(139,92,246,0.10)] dark:border-slate-700 dark:from-violet-950/20 dark:via-slate-900 dark:to-slate-900 dark:ring-slate-800">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Revenue</p>
-                <p className="mt-4 text-2xl font-black tracking-tight text-violet-600 dark:text-violet-300">₹{totalRevenue.toLocaleString("en-IN")}</p>
+                <p className="mt-4 text-2xl font-black tracking-tight text-violet-600 dark:text-violet-300">{formatCurrencyInr(totalRevenue)}</p>
               </div>
             </div>
 
@@ -346,11 +347,11 @@ export default async function StudentOrdersPage({
                     <table className="min-w-full divide-y divide-slate-200 text-left dark:divide-slate-700">
                       <thead className="bg-slate-50 dark:bg-slate-800/80">
                         <tr>
-                          <th className="px-4 py-3 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Student</th>
-                          <th className="px-4 py-3 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Course</th>
-                          <th className="px-4 py-3 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Status</th>
-                          <th className="px-4 py-3 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Placed on</th>
-                          <th className="px-4 py-3 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Price</th>
+                          <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Student</th>
+                          <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Course</th>
+                          <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Status</th>
+                          <th className="px-3 py-2.5 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Placed on</th>
+                          <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Price</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-700 dark:bg-slate-900">
@@ -366,22 +367,22 @@ export default async function StudentOrdersPage({
                                   : "text-slate-600 dark:text-slate-300";
 
                           return (
-                            <tr key={order.id} className="align-middle transition-all duration-200 hover:bg-slate-50 dark:hover:bg-slate-800/80">
-                              <td className="px-4 py-4 align-middle text-left">
-                                <Link href={`/admin/students/${order.user.id}`} className="font-semibold text-slate-900 hover:text-indigo-600 dark:text-white dark:hover:text-indigo-300">
+                            <tr key={order.id} className="align-middle transition-colors duration-200 hover:bg-indigo-50/90 hover:shadow-[inset_0_0_0_1px_rgba(99,102,241,0.12)] dark:hover:bg-slate-800/80">
+                              <td className="px-3 py-2 align-middle text-left">
+                                <Link href={`/admin/students/${order.user.id}`} className="text-[13px] font-semibold tracking-[-0.01em] text-slate-900 hover:text-indigo-600 dark:text-white dark:hover:text-indigo-300">
                                   {order.user.name ?? "Unnamed student"}
                                 </Link>
                               </td>
-                              <td className="px-4 py-4 align-middle text-left text-sm text-slate-700 dark:text-slate-200">{order.course.title}</td>
-                              <td className="px-4 py-4 align-middle text-left leading-[1.35]">
+                              <td className="px-3 py-2 align-middle text-left text-[12.5px] text-slate-700 dark:text-slate-200">{order.course.title}</td>
+                              <td className="px-3 py-2 align-middle text-left leading-[1.35]">
                                 <span className={`text-[10px] font-semibold uppercase tracking-[0.12em] leading-none ${statusTone}`}>
                                   {order.status}
                                 </span>
                               </td>
-                              <td className="px-4 py-4 align-middle text-center text-sm text-slate-600 dark:text-slate-300">
+                              <td className="px-3 py-2 align-middle text-center text-[12.5px] text-slate-700 dark:text-slate-200">
                                 {formatPlacedDate(order.createdAt)}
                               </td>
-                              <td className="px-4 py-4 align-middle text-left text-sm text-slate-700 dark:text-slate-200">₹{Number(order.amount ?? 0).toLocaleString("en-IN")}</td>
+                              <td className="px-3 py-2 align-middle text-left text-[12.5px] text-slate-700 dark:text-slate-200">{formatCurrencyInr(order.amount)}</td>
                             </tr>
                           );
                         })}
@@ -390,25 +391,39 @@ export default async function StudentOrdersPage({
                   </div>
                 </div>
 
-                <div className="mt-5 flex items-center justify-end gap-1.5 text-sm text-slate-600 dark:text-slate-300">
-                  <div className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-300">
-                    <span>Records per page</span>
-                    <PaginationPageSizeSelect defaultValue={String(pageSize === "all" ? "all" : pageSize)} />
+                <div className="mt-4 flex items-center justify-between gap-3 text-sm text-slate-600 dark:text-slate-300">
+                  <div className="flex items-center gap-2">
+                    <StudentOrderExportActions
+                      rows={paginatedOrders.map((order) => ({
+                        student: order.user.name ?? "Unnamed student",
+                        course: order.course.title,
+                        status: order.status,
+                        placedOn: formatPlacedDate(order.createdAt),
+                        price: formatCurrencyInr(order.amount),
+                      }))}
+                    />
                   </div>
 
-                  <div className="flex items-center gap-0.5">
-                    <span className="min-w-[88px] text-right text-xs font-medium text-slate-600 dark:text-slate-300">
-                      {filteredOrders.length === 0 ? 0 : firstVisible}-{lastVisible} of {filteredOrders.length}
-                    </span>
+                  <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+                      <span>Records per page</span>
+                      <PaginationPageSizeSelect defaultValue={String(pageSize === "all" ? "all" : pageSize)} />
+                    </div>
 
-                    <PaginationDots
-                      currentPage={safePage - 1}
-                      totalPages={totalPages}
-                      showSinglePage={true}
-                      pageHrefs={Array.from({ length: totalPages }, (_, index) => buildPageHref(index + 1))}
-                      previousHref={safePage > 1 ? buildPageHref(safePage - 1) : undefined}
-                      nextHref={safePage < totalPages ? buildPageHref(safePage + 1) : undefined}
-                    />
+                    <div className="flex items-center gap-0.5">
+                      <span className="min-w-[88px] text-right text-xs font-medium text-slate-600 dark:text-slate-300">
+                        {filteredOrders.length === 0 ? 0 : firstVisible}-{lastVisible} of {filteredOrders.length}
+                      </span>
+
+                      <PaginationDots
+                        currentPage={safePage - 1}
+                        totalPages={totalPages}
+                        showSinglePage={true}
+                        pageHrefs={Array.from({ length: totalPages }, (_, index) => buildPageHref(index + 1))}
+                        previousHref={safePage > 1 ? buildPageHref(safePage - 1) : undefined}
+                        nextHref={safePage < totalPages ? buildPageHref(safePage + 1) : undefined}
+                      />
+                    </div>
                   </div>
                 </div>
               </>
