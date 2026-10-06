@@ -255,7 +255,7 @@ export default async function StudentOrdersPage({
                 <h2 className="mt-1.5 text-xl font-black tracking-tight text-slate-900 dark:text-white">Student purchases</h2>
               </div>
               <div className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200">
-                {filteredOrders.length} records
+                {filteredOrders.length} purchases
               </div>
             </div>
 
