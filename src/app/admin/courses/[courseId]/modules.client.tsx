@@ -7,6 +7,7 @@ export default function ModuleManagement({ courseId, modules }: { courseId: stri
   const [title, setTitle] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
+  const [draggedModuleId, setDraggedModuleId] = useState<string | null>(null);
 
   function startEdit(m: { id: string; title: string }) {
     setEditingId(m.id);
@@ -25,26 +26,30 @@ export default function ModuleManagement({ courseId, modules }: { courseId: stri
     window.location.reload();
   }
 
-  async function reorder(direction: "up" | "down", index: number) {
-    // swap positions locally and then send updates
-    const copy = [...local];
-    const target = direction === "up" ? index - 1 : index + 1;
-    if (target < 0 || target >= copy.length) return;
-    const tmp = copy[index];
-    copy[index] = copy[target];
-    copy[target] = tmp;
-    // reassign positions
-    copy.forEach((c, i) => (c.position = i + 1));
-    setLocal(copy);
-
-    // send batch update to server
-    const updates = copy.map((c) => ({ id: c.id, title: c.title, position: c.position }));
+  async function persistModuleOrder(next: { id: string; title: string; position: number }[]) {
+    const updates = next.map((module) => ({ id: module.id, title: module.title, position: module.position }));
     const res = await fetch(`/api/admin/modules`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "batchUpdate", courseId, updates }),
     });
     if (!res.ok) alert("Reorder failed");
+  }
+
+  function reorderModules(fromIndex: number, toIndex: number) {
+    if (fromIndex === toIndex) return;
+    const copy = [...local];
+    const [item] = copy.splice(fromIndex, 1);
+    copy.splice(toIndex, 0, item);
+    const next = copy.map((module, index) => ({ ...module, position: index + 1 }));
+    setLocal(next);
+    void persistModuleOrder(next);
+  }
+
+  async function reorder(direction: "up" | "down", index: number) {
+    const target = direction === "up" ? index - 1 : index + 1;
+    if (target < 0 || target >= local.length) return;
+    reorderModules(index, target);
   }
 
   async function createModule() {
@@ -71,9 +76,26 @@ export default function ModuleManagement({ courseId, modules }: { courseId: stri
 
   return (
     <div className="space-y-3">
+      <div className="mb-3 flex items-center justify-between gap-3 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+        <span>Drag to reorder</span>
+        <span>{local.length} modules</span>
+      </div>
+
       <div className="space-y-2">
         {local.map((m, idx) => (
-          <div key={m.id} className="flex items-center justify-between gap-3 rounded-[18px] border border-slate-200 bg-slate-50/80 p-3 shadow-[0_8px_20px_rgba(15,23,42,0.025)] transition hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800/80 dark:hover:border-slate-600">
+          <div
+            key={m.id}
+            draggable
+            onDragStart={() => setDraggedModuleId(m.id)}
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={() => {
+              if (!draggedModuleId) return;
+              const fromIndex = local.findIndex((module) => module.id === draggedModuleId);
+              if (fromIndex >= 0) reorderModules(fromIndex, idx);
+              setDraggedModuleId(null);
+            }}
+            className="flex items-center justify-between gap-3 rounded-[18px] border border-slate-200 bg-slate-50/80 p-3 shadow-[0_8px_20px_rgba(15,23,42,0.025)] transition hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800/80 dark:hover:border-slate-600"
+          >
             <div className="min-w-0 flex-1">
               {editingId === m.id ? (
                 <div className="space-y-2">

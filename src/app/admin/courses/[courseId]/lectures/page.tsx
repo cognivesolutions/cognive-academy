@@ -142,17 +142,71 @@ export default async function LecturesPage({ params, searchParams }: Props) {
                 {mod.lectures.length === 0 ? (
                   <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-400">No lectures yet.</div>
                 ) : (
-                  mod.lectures.map((lec) => (
-                    <div key={lec.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2.5 dark:border-slate-700 dark:bg-slate-800/70">
-                      <div className="min-w-0 flex-1">
-                        <div className="text-sm font-semibold tracking-[-0.01em] text-slate-900 dark:text-white">{lec.title}</div>
-                        <div className="mt-1 truncate text-[11px] text-slate-500 dark:text-slate-400">{lec.liveSessionUrl ?? "No live URL"}</div>
+                  mod.lectures.map((lec) => {
+                    const lectureVideoUrl = lec.hlsUrl?.trim() || lec.videoUrl?.trim();
+                    const hasLiveSession = Boolean(lec.liveSessionUrl?.trim());
+                    const hasRecording = Boolean(lectureVideoUrl);
+
+                    return (
+                      <div key={lec.id} className="rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2.5 dark:border-slate-700 dark:bg-slate-800/70">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm font-semibold tracking-[-0.01em] text-slate-900 dark:text-white">{lec.title}</div>
+                            <div className="mt-1 flex flex-wrap items-center gap-2">
+                              {hasLiveSession ? (
+                                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
+                                  Live
+                                </span>
+                              ) : null}
+                              {hasRecording ? (
+                                <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200">
+                                  Recorded
+                                </span>
+                              ) : null}
+                              {lec.isPreview ? (
+                                <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+                                  Preview
+                                </span>
+                              ) : null}
+                              {!hasLiveSession && !hasRecording && !lec.isPreview ? (
+                                <span className="rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-600 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-300">
+                                  Draft
+                                </span>
+                              ) : null}
+                            </div>
+                            <div className="mt-2 truncate text-[11px] text-slate-500 dark:text-slate-400">
+                              {lec.liveSessionUrl ?? "No live URL"}
+                            </div>
+                            {lectureVideoUrl ? (
+                              <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-900">
+                                <video
+                                  src={lectureVideoUrl}
+                                  controls
+                                  preload="metadata"
+                                  className="block h-24 w-full object-cover"
+                                />
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="flex flex-shrink-0 items-center gap-2">
+                            {lectureVideoUrl ? (
+                              <a
+                                href={lectureVideoUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:border-emerald-400/40 dark:hover:bg-emerald-500/15"
+                              >
+                                Recorded video URL
+                              </a>
+                            ) : null}
+                            <Link href={`/admin/courses/${course.id}/lectures/${lec.id}`} className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:border-indigo-200 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-500/40 dark:hover:text-indigo-200">
+                              Edit
+                            </Link>
+                          </div>
+                        </div>
                       </div>
-                      <Link href={`/admin/courses/${course.id}/lectures/${lec.id}`} className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:border-indigo-200 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-500/40 dark:hover:text-indigo-200">
-                        Edit
-                      </Link>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </section>

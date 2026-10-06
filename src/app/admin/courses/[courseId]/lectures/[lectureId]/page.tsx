@@ -8,18 +8,22 @@ import { LectureUploadForm } from "@/app/admin/components/lecture-upload-form.cl
 
 export const dynamic = "force-dynamic";
 
-type Props = { params: { courseId: string; lectureId: string } };
+type Props = {
+  params: Promise<{ courseId?: string; lectureId?: string }> | { courseId?: string; lectureId?: string };
+};
 
 export default async function LectureEditPage({ params }: Props) {
+  const resolvedParams = await Promise.resolve(params ?? { courseId: undefined, lectureId: undefined });
+  const courseId = resolvedParams.courseId;
+  const lectureId = resolvedParams.lectureId;
+
   const session = await auth();
   if (!session?.user?.id) {
-    const callbackUrl = `/admin/courses/${params?.courseId}/lectures/${params?.lectureId}`;
+    const callbackUrl = `/admin/courses/${courseId ?? ""}/lectures/${lectureId ?? ""}`;
     redirect(`/admin/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }
   if (session.user.role !== "ADMIN") redirect("/");
 
-  const lectureId = params?.lectureId;
-  const courseId = params?.courseId;
   if (!lectureId || !courseId) redirect("/admin");
 
   const lecture = await prisma.lecture.findUnique({ where: { id: lectureId } });
@@ -33,7 +37,7 @@ export default async function LectureEditPage({ params }: Props) {
             <h1 className="text-2xl font-black">Edit lecture — {lecture.title}</h1>
             <p className="text-sm text-slate-600">Set a live session URL to enable Join Live buttons for this lecture.</p>
           </div>
-          <BackButton href={`/admin/courses/${params.courseId}/lectures`} />
+          <BackButton href={`/admin/courses/${courseId}/lectures`} />
         </div>
 
         <div className="mb-6">
@@ -42,7 +46,7 @@ export default async function LectureEditPage({ params }: Props) {
 
         <LectureUploadForm
           mode="edit"
-          courseId={params.courseId}
+          courseId={courseId}
           lectureId={lecture.id}
           defaultTitle={lecture.title ?? ""}
           defaultPosition={lecture.position ?? 1}

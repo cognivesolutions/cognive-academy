@@ -3,27 +3,82 @@
 import React, { useEffect, useMemo, useState } from "react";
 
 import ConfirmDialog from "@/components/confirm-dialog";
+import { AdminTableFilterBar } from "@/app/admin/components/admin-table-filter-bar";
 
-type Lecture = { id: string; title: string; position: number; liveSessionUrl?: string | null };
+type Lecture = {
+  id: string;
+  title: string;
+  position: number;
+  liveSessionUrl?: string | null;
+  videoUrl?: string | null;
+  hlsUrl?: string | null;
+  isPreview?: boolean;
+  moduleId?: string;
+};
+
 type Module = { id: string; title: string; lectures: Lecture[] };
+type PendingAction = { type: "publish" | "unpublish" | "delete" | "save"; ids: string[]; items?: Lecture[] } | null;
 
 export default function BulkEditor({ modules, courseId }: { modules: Module[]; courseId: string }) {
-  const [local, setLocal] = useState<Module[]>(() => modules.map((m) => ({ ...m, lectures: [...m.lectures] })));
+  const [local, setLocal] = useState<Module[]>(() =>
+    modules.map((module) => ({
+      ...module,
+      lectures: module.lectures.map((lecture) => ({
+        ...lecture,
+        moduleId: module.id,
+        isPreview: Boolean(lecture.isPreview),
+        videoUrl: lecture.videoUrl ?? null,
+        hlsUrl: lecture.hlsUrl ?? null,
+      })),
+    })),
+  );
   const [submitting, setSubmitting] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
   const [dragging, setDragging] = useState<{ modIndex: number; lecIndex: number } | null>(null);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [feedback, setFeedback] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [moduleFilter, setModuleFilter] = useState("all");
+  const [moduleMenuOpen, setModuleMenuOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
+  const [recentDeletion, setRecentDeletion] = useState<{ items: Lecture[] } | null>(null);
+  const moduleFilterRef = React.useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (moduleFilterRef.current && !moduleFilterRef.current.contains(event.target as Node)) {
+        setModuleMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (!feedback) return;
-    const timeout = window.setTimeout(() => setFeedback(null), 3000);
+    const timeout = window.setTimeout(() => setFeedback(null), 3200);
     return () => window.clearTimeout(timeout);
   }, [feedback]);
 
   const clearFeedback = () => setFeedback(null);
+
+  const courseSummary = useMemo(() => {
+    const summary = { total: 0, live: 0, recorded: 0, preview: 0, draft: 0 };
+
+    local.forEach((module) => {
+      module.lectures.forEach((lecture) => {
+        summary.total += 1;
+        if (lecture.liveSessionUrl?.trim()) summary.live += 1;
+        if (lecture.hlsUrl?.trim() || lecture.videoUrl?.trim()) summary.recorded += 1;
+        if (lecture.isPreview) summary.preview += 1;
+        if (!lecture.liveSessionUrl?.trim() && !lecture.hlsUrl?.trim() && !lecture.videoUrl?.trim() && !lecture.isPreview) {
+          summary.draft += 1;
+        }
+      });
+    });
+
+    return summary;
+  }, [local]);
 
   const filteredModules = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -50,6 +105,7 @@ export default function BulkEditor({ modules, courseId }: { modules: Module[]; c
     setSelected((s) => ({ ...s, [id]: !s[id] }));
     clearFeedback();
   };
+
   const selectAll = () => {
     const all: Record<string, boolean> = {};
     visibleLectureIds.forEach((id) => {
@@ -58,6 +114,7 @@ export default function BulkEditor({ modules, courseId }: { modules: Module[]; c
     setSelected((prev) => ({ ...prev, ...all }));
     clearFeedback();
   };
+
   const clearAll = () => {
     setSelected({});
     clearFeedback();
@@ -65,11 +122,17 @@ export default function BulkEditor({ modules, courseId }: { modules: Module[]; c
 
   function swapLectures(src: { modIndex: number; lecIndex: number }, dest: { modIndex: number; lecIndex: number }) {
     setLocal((prev) => {
-      const copy = JSON.parse(JSON.stringify(prev)) as Module[];
-      const srcArr = copy[src.modIndex].lectures;
-      const [item] = srcArr.splice(src.lecIndex, 1);
-      const destArr = copy[dest.modIndex].lectures;
-      destArr.splice(dest.lecIndex, 0, item);
+      const copy = prev.map((module) => ({ ...module, lectures: [...module.lectures] }));
+      const sourceModule = copy[src.modIndex];
+      const targetModule = copy[dest.modIndex];
+      if (!sourceModule || !targetModule) return prev;
+
+      const [item] = sourceModule.lectures.splice(src.lecIndex, 1);
+      if (!item) return prev;
+      targetModule.lectures.splice(dest.lecIndex, 0, { ...item, moduleId: targetModule.id });
+
+      sourceModule.lectures = sourceModule.lectures.map((lecture, index) => ({ ...lecture, position: index + 1, moduleId: sourceModule.id }));
+      targetModule.lectures = targetModule.lectures.map((lecture, index) => ({ ...lecture, position: index + 1, moduleId: targetModule.id }));
       return copy;
     });
   }
@@ -87,9 +150,7 @@ export default function BulkEditor({ modules, courseId }: { modules: Module[]; c
   function handleDrop(e: React.DragEvent, modIndex: number, lecIndex: number) {
     e.preventDefault();
     if (!dragging) return;
-    // if dropping after the last item, adjust index
-    const targetIndex = lecIndex;
-    swapLectures(dragging, { modIndex, lecIndex: targetIndex });
+    swapLectures(dragging, { modIndex, lecIndex });
     setDragging(null);
   }
 
@@ -97,10 +158,15 @@ export default function BulkEditor({ modules, courseId }: { modules: Module[]; c
     e.preventDefault();
     if (!dragging) return;
     setLocal((prev) => {
-      const copy = JSON.parse(JSON.stringify(prev)) as Module[];
-      const srcArr = copy[dragging.modIndex].lectures;
-      const [item] = srcArr.splice(dragging.lecIndex, 1);
-      copy[modIndex].lectures.push(item);
+      const copy = prev.map((module) => ({ ...module, lectures: [...module.lectures] }));
+      const sourceModule = copy[dragging.modIndex];
+      const targetModule = copy[modIndex];
+      if (!sourceModule || !targetModule) return prev;
+      const [item] = sourceModule.lectures.splice(dragging.lecIndex, 1);
+      if (!item) return prev;
+      targetModule.lectures.push({ ...item, moduleId: targetModule.id, position: targetModule.lectures.length + 1 });
+      sourceModule.lectures = sourceModule.lectures.map((lecture, index) => ({ ...lecture, position: index + 1, moduleId: sourceModule.id }));
+      targetModule.lectures = targetModule.lectures.map((lecture, index) => ({ ...lecture, position: index + 1, moduleId: targetModule.id }));
       return copy;
     });
     setDragging(null);
@@ -108,15 +174,16 @@ export default function BulkEditor({ modules, courseId }: { modules: Module[]; c
 
   function updateField(modIndex: number, lecIndex: number, field: keyof Lecture, value: any) {
     setLocal((prev) => {
-      const copy = JSON.parse(JSON.stringify(prev)) as Module[];
-      // @ts-ignore
-      copy[modIndex].lectures[lecIndex][field] = value;
+      const copy = prev.map((module) => ({ ...module, lectures: [...module.lectures] }));
+      const lecture = copy[modIndex]?.lectures[lecIndex];
+      if (!lecture) return prev;
+      Object.assign(lecture, { [field]: value });
       return copy;
     });
   }
 
   function openConfirm() {
-    setPendingAction({ type: "save", ids: Object.keys(selected).filter((id) => selected[id]) || [] });
+    setPendingAction({ type: "save", ids: Object.keys(selected).filter((id) => selected[id]) });
   }
 
   async function confirmSubmit() {
@@ -126,7 +193,7 @@ export default function BulkEditor({ modules, courseId }: { modules: Module[]; c
       for (const mod of local) {
         for (let i = 0; i < mod.lectures.length; i++) {
           const lec = mod.lectures[i];
-          updates.push({ id: lec.id, title: lec.title, position: i + 1, liveSessionUrl: lec.liveSessionUrl });
+          updates.push({ id: lec.id, title: lec.title, position: i + 1, liveSessionUrl: lec.liveSessionUrl ?? null });
         }
       }
 
@@ -137,15 +204,15 @@ export default function BulkEditor({ modules, courseId }: { modules: Module[]; c
       });
 
       if (!res.ok) throw new Error("Bulk update failed");
-      window.location.reload();
+      setFeedback("Lecture changes saved.");
     } catch (err) {
       console.error(err);
+      setFeedback("Unable to save lecture changes.");
+    } finally {
       setSubmitting(false);
-      setShowConfirm(false);
+      setPendingAction(null);
     }
   }
-
-  const [pendingAction, setPendingAction] = useState<{ type: "publish" | "unpublish" | "delete" | "save"; ids: string[] } | null>(null);
 
   async function batchAction(type: "publish" | "unpublish" | "delete") {
     const ids = Object.keys(selected).filter((id) => selected[id]);
@@ -153,86 +220,209 @@ export default function BulkEditor({ modules, courseId }: { modules: Module[]; c
       setFeedback("Select at least one lecture to continue.");
       return;
     }
+
+    const items = local.flatMap((module) => module.lectures.filter((lecture) => ids.includes(lecture.id)));
     clearFeedback();
-    setPendingAction({ type, ids });
+    setPendingAction({ type, ids, items });
   }
 
   async function executePendingAction() {
     if (!pendingAction) return;
-    const { type, ids } = pendingAction;
+    const { type, ids, items = [] } = pendingAction;
 
     if (type === "save") {
       await confirmSubmit();
       return;
     }
 
-    const res = await fetch(`/api/admin/lectures`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: type === "publish" ? "bulkPublish" : type === "unpublish" ? "bulkUnpublish" : "bulkDelete", ids }),
-    });
+    try {
+      const res = await fetch(`/api/admin/lectures`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: type === "publish" ? "bulkPublish" : type === "unpublish" ? "bulkUnpublish" : "bulkDelete",
+          ids,
+        }),
+      });
 
-    if (!res.ok) {
+      if (!res.ok) throw new Error("Bulk action failed");
+
+      if (type === "publish") {
+        setLocal((prev) => prev.map((module) => ({
+          ...module,
+          lectures: module.lectures.map((lecture) => ids.includes(lecture.id) ? { ...lecture, isPreview: false } : lecture),
+        })));
+        setFeedback("Selected lectures published.");
+      } else if (type === "unpublish") {
+        setLocal((prev) => prev.map((module) => ({
+          ...module,
+          lectures: module.lectures.map((lecture) => ids.includes(lecture.id) ? { ...lecture, isPreview: true } : lecture),
+        })));
+        setFeedback("Selected lectures unpublished.");
+      } else {
+        setLocal((prev) => prev
+          .map((module) => ({ ...module, lectures: module.lectures.filter((lecture) => !ids.includes(lecture.id)) }))
+          .filter((module) => module.lectures.length > 0 || true));
+
+        setRecentDeletion({ items });
+        setFeedback("Lecture deleted. Undo available.");
+      }
+
+      setSelected({});
+    } catch (error) {
+      console.error(error);
+      setFeedback("This action failed. Please try again.");
+    } finally {
       setPendingAction(null);
-      return;
     }
+  }
 
-    setPendingAction(null);
-    window.location.reload();
+  async function handleUndoDelete() {
+    if (!recentDeletion) return;
+
+    try {
+      const res = await fetch("/api/admin/lectures", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "bulkRestore",
+          items: recentDeletion.items,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Restore failed");
+
+      const restored = recentDeletion.items.map((item) => ({
+        ...item,
+        moduleId: item.moduleId ?? local[0]?.id,
+        isPreview: Boolean(item.isPreview),
+        position: item.position ?? 1,
+      }));
+
+      setLocal((prev) => {
+        const copy = prev.map((module) => ({ ...module, lectures: [...module.lectures] }));
+        restored.forEach((item) => {
+          const targetModule = copy.find((module) => module.id === item.moduleId) ?? copy[0];
+          if (!targetModule) return;
+          targetModule.lectures.push({ ...item, moduleId: targetModule.id });
+          targetModule.lectures = targetModule.lectures
+            .map((lecture, index) => ({ ...lecture, position: index + 1, moduleId: targetModule.id }))
+            .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+        });
+        return copy;
+      });
+
+      setRecentDeletion(null);
+      setFeedback("Deleted lecture restored.");
+    } catch (error) {
+      console.error(error);
+      setFeedback("Restore failed.");
+    }
   }
 
   return (
     <div className="space-y-4">
       {feedback ? (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] font-medium text-amber-800 shadow-sm dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200" aria-live="polite">
-          {feedback}
+        <div className="flex items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] font-medium text-amber-800 shadow-sm dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200" aria-live="polite">
+          <span>{feedback}</span>
+          {recentDeletion ? (
+            <button type="button" onClick={handleUndoDelete} className="rounded-full border border-amber-300 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-800 dark:border-amber-500/40 dark:bg-slate-900 dark:text-amber-200">
+              Undo
+            </button>
+          ) : null}
         </div>
       ) : null}
 
-      <div className="flex flex-col gap-3 rounded-[20px] border border-slate-200 bg-slate-50/80 p-2.5 shadow-[0_8px_20px_rgba(15,23,42,0.02)] dark:border-slate-700 dark:bg-slate-800/80">
-        <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setSearchQuery("");
-                setModuleFilter("all");
-              }}
-              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white/80 px-3 py-1.5 text-[11px] font-semibold text-slate-700 shadow-[0_8px_20px_rgba(15,23,42,0.04)] backdrop-blur-sm transition duration-200 hover:border-indigo-200 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-200 dark:hover:border-indigo-500/40 dark:hover:text-indigo-200"
-            >
-              Remove filter
-            </button>
-
-            <label className="relative min-w-[150px] flex-1 lg:min-w-[180px]">
-              <span className="sr-only">Module filter</span>
-              <select
-                value={moduleFilter}
-                onChange={(event) => setModuleFilter(event.target.value)}
-                className="w-full appearance-none rounded-full border border-slate-200 bg-white/90 px-3 py-2 text-[11px] font-semibold text-slate-700 shadow-[0_8px_20px_rgba(15,23,42,0.04)] outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100"
-              >
-                <option value="all">Module</option>
-                {local.map((mod) => (
-                  <option key={mod.id} value={mod.id}>{mod.title}</option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          <div className="ml-auto flex w-full max-w-md items-center gap-2">
-            <div className="relative w-full">
-              <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 dark:text-slate-500">
-                🔎
-              </span>
-              <input
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Type to search..."
-                className="w-full rounded-full border border-slate-200 bg-white/90 py-2 pl-9 pr-3 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:placeholder:text-slate-500"
-              />
-            </div>
-          </div>
+      <div className="grid gap-3 md:grid-cols-5">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/70">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Total</div>
+          <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">{courseSummary.total}</div>
+        </div>
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/30 dark:bg-emerald-500/10">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-200">Live</div>
+          <div className="mt-2 text-2xl font-black text-emerald-700 dark:text-emerald-200">{courseSummary.live}</div>
+        </div>
+        <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-3 dark:border-indigo-500/30 dark:bg-indigo-500/10">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-700 dark:text-indigo-200">Recorded</div>
+          <div className="mt-2 text-2xl font-black text-indigo-700 dark:text-indigo-200">{courseSummary.recorded}</div>
+        </div>
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-500/30 dark:bg-amber-500/10">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-700 dark:text-amber-200">Preview</div>
+          <div className="mt-2 text-2xl font-black text-amber-700 dark:text-amber-200">{courseSummary.preview}</div>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/70">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Draft</div>
+          <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">{courseSummary.draft}</div>
         </div>
       </div>
+
+      <AdminTableFilterBar
+        hasActiveFilters={Boolean(searchQuery.trim() || moduleFilter !== "all")}
+        clearFiltersHref={undefined}
+        clearFiltersLabel="Remove filter"
+        leftControls={
+          <div ref={moduleFilterRef} className="relative min-w-[170px] flex-1 lg:min-w-[190px]">
+            <button
+              type="button"
+              aria-expanded={moduleMenuOpen}
+              onClick={() => setModuleMenuOpen((open) => !open)}
+              className="flex h-[38px] w-full items-center gap-2 rounded-full border border-slate-200 bg-slate-100/90 px-3 pr-8 text-left text-[11px] font-semibold text-slate-700 shadow-[inset_0_1px_0_rgba(15,23,42,0.06)] transition duration-200 hover:border-indigo-200 hover:text-indigo-700 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:shadow-none dark:hover:border-indigo-500/40 dark:hover:text-indigo-200"
+            >
+              <span className="flex-1 truncate">{moduleFilter === "all" ? "Module" : local.find((mod) => mod.id === moduleFilter)?.title ?? "Module"}</span>
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 20 20"
+                fill="none"
+                className={`h-4 w-4 shrink-0 text-slate-500 transition-transform duration-200 dark:text-slate-300 ${moduleMenuOpen ? "rotate-180" : "rotate-0"}`}
+              >
+                <path d="M5.5 7.5L10 12l4.5-4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+
+            {moduleMenuOpen ? (
+              <div className="absolute left-0 right-0 top-full z-20 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)] ring-1 ring-slate-700/10 dark:border-slate-700 dark:bg-slate-950">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setModuleFilter("all");
+                    setModuleMenuOpen(false);
+                  }}
+                  className={`flex w-full items-center justify-between px-3 py-2.5 text-left text-sm transition ${moduleFilter === "all" ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100" : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"}`}
+                >
+                  <span>All modules</span>
+                </button>
+                {local.map((mod) => (
+                  <button
+                    key={mod.id}
+                    type="button"
+                    onClick={() => {
+                      setModuleFilter(mod.id);
+                      setModuleMenuOpen(false);
+                    }}
+                    className={`flex w-full items-center justify-between px-3 py-2.5 text-left text-sm transition ${moduleFilter === mod.id ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100" : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"}`}
+                  >
+                    <span>{mod.title}</span>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        }
+        rightControls={
+          <div className="flex h-[38px] w-[220px] items-center gap-2 rounded-full border border-slate-200 bg-slate-100/80 px-3 text-sm text-slate-900 shadow-[inset_0_1px_0_rgba(15,23,42,0.06)] transition duration-200 focus-within:border-indigo-400 focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:shadow-none dark:focus-within:bg-slate-950/60">
+            <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-400">
+              <circle cx="8.5" cy="8.5" r="5" stroke="currentColor" strokeWidth="1.7" />
+              <path d="M12.8 12.8L17 17" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+            </svg>
+            <input
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Type to search..."
+              className="w-full border-0 bg-transparent text-[0.92rem] text-slate-900 placeholder:text-slate-500 outline-none dark:text-slate-100 dark:placeholder:text-slate-400"
+            />
+          </div>
+        }
+      />
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-slate-200 bg-slate-50/80 p-2.5 shadow-[0_8px_20px_rgba(15,23,42,0.02)] dark:border-slate-700 dark:bg-slate-800/80">
         <div className="flex items-center gap-2.5">
@@ -314,7 +504,7 @@ export default function BulkEditor({ modules, courseId }: { modules: Module[]; c
                       if (li > 0) swapLectures({ modIndex: mi, lecIndex: li }, { modIndex: mi, lecIndex: li - 1 });
                     }} className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-[10px] font-semibold text-slate-700 opacity-100 shadow-sm transition hover:border-indigo-200 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-500/40 dark:hover:text-indigo-200" aria-label="Move lecture up">▲</button>
                     <button type="button" onClick={() => {
-                      swapLectures({ modIndex: mi, lecIndex: li }, { modIndex: mi, lecIndex: li + 1 });
+                      if (li < mod.lectures.length - 1) swapLectures({ modIndex: mi, lecIndex: li }, { modIndex: mi, lecIndex: li + 1 });
                     }} className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-[10px] font-semibold text-slate-700 opacity-100 shadow-sm transition hover:border-indigo-200 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-500/40 dark:hover:text-indigo-200" aria-label="Move lecture down">▼</button>
                   </div>
                 </div>
@@ -337,11 +527,9 @@ export default function BulkEditor({ modules, courseId }: { modules: Module[]; c
         onConfirm={async () => {
           if (!pendingAction) return;
           if (pendingAction.type === "save") {
-            setPendingAction(null);
             await confirmSubmit();
             return;
           }
-
           await executePendingAction();
         }}
         onCancel={() => setPendingAction(null)}
