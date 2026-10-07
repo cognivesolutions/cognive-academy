@@ -17,6 +17,7 @@ export async function GET(request: Request) {
   const orderId = searchParams.get("order_id");
   const signature = searchParams.get("signature");
   const courseSlug = searchParams.get("course_slug") ?? "";
+  const courseType = searchParams.get("course_type") ?? "";
 
   if (paymentId && razorpay) {
     try {
@@ -117,6 +118,10 @@ export async function GET(request: Request) {
 
   if (courseSlug) {
     target.searchParams.set("course_slug", courseSlug);
+  }
+
+  if (courseType) {
+    target.searchParams.set("course_type", courseType);
   }
 
   return NextResponse.redirect(target);

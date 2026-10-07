@@ -310,6 +310,7 @@ export default async function CourseDetailPage({
                         price: Number(basePrice),
                         offerPrice: promotionalOfferPrice ?? null,
                         isPromotional: Boolean(courseData.isPromotional),
+                        isLive: Boolean(courseData.isLive),
                         currency: courseData.currency,
                         promoCode: courseData.promoCode ?? "",
                       }}

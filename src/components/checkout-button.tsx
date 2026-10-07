@@ -16,6 +16,7 @@ type CheckoutCourse = {
   price: number;
   offerPrice?: number | null;
   isPromotional?: boolean | null;
+  isLive?: boolean | null;
   currency: string;
   promoCode?: string | null;
 };
@@ -55,6 +56,56 @@ export default function CheckoutButton({
       </a>
     );
   }
+
+  const ensureFinalizingScreen = () => {
+    if (typeof document === "undefined") {
+      return null;
+    }
+
+    let overlay = document.getElementById("payment-finalizing-screen") as HTMLDivElement | null;
+
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.id = "payment-finalizing-screen";
+      overlay.style.position = "fixed";
+      overlay.style.inset = "0";
+      overlay.style.zIndex = "99999";
+      overlay.style.display = "flex";
+      overlay.style.alignItems = "center";
+      overlay.style.justifyContent = "center";
+      overlay.style.background = "rgba(2, 8, 18, 0.88)";
+      overlay.style.padding = "24px";
+      overlay.style.setProperty("backdrop-filter", "blur(8px)");
+      overlay.style.setProperty("-webkit-backdrop-filter", "blur(8px)");
+      overlay.style.pointerEvents = "all";
+      overlay.style.visibility = "hidden";
+      overlay.style.opacity = "0";
+      overlay.style.transition = "opacity 120ms ease";
+      overlay.innerHTML = `
+        <div style="width:min(100%, 700px); min-height: 300px; border-radius: 26px; border: 1px solid rgba(45, 212, 191, 0.42); background: rgba(5, 22, 30, 0.86); box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.08), 0 25px 60px rgba(10, 66, 95, 0.24), inset 0 0 42px rgba(45,212,191,0.04); display:flex; align-items:center; justify-content:center; padding: 12px 18px;">
+          <div style="width: min(100%, 500px); text-align: center;">
+            <div style="width: 58px; height: 58px; border-radius: 9999px; background: rgba(45, 212, 191, 0.14); border: 1px solid rgba(45, 212, 191, 0.18); margin: 0 auto 16px; display:flex; align-items:center; justify-content:center; color: #B8F9EA; font-size: 2rem; font-weight: 800; line-height: 1;">✓</div>
+            <p style="margin: 0; letter-spacing: 0.24em; text-transform: uppercase; color: #9ae6d5; font-weight: 700; font-size: 11px; opacity: 0.96;">Payment confirmed</p>
+            <h2 style="margin: 18px 0 12px; font-size: clamp(2.2rem, 2.5vw, 3.8rem); line-height: 0.94; letter-spacing: -0.075em; color: #f8fafc; font-weight: 900; font-family: Georgia, 'Times New Roman', serif;">Finalizing your enrollment...</h2>
+            <p style="margin: 0; color: rgba(226, 232, 240, 0.8); font-size: 1rem; line-height: 1.55; font-weight: 500;">We are preparing your course access details. This will finish in a moment.</p>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+    }
+
+    return overlay;
+  };
+
+  const showFinalizingScreen = () => {
+    const overlay = ensureFinalizingScreen();
+    if (!overlay) {
+      return;
+    }
+
+    overlay.style.visibility = "visible";
+    overlay.style.opacity = "1";
+  };
 
   async function handleCheckout() {
     try {
@@ -115,12 +166,14 @@ export default function CheckoutButton({
           }
 
           params.set("course_slug", course.slug);
+          params.set("course_type", course.isLive ? "live" : "self-paced");
 
           const route = params.size > 0
             ? `/api/checkout/callback?${params.toString()}`
             : "/dashboard";
 
-          window.location.href = route;
+          showFinalizingScreen();
+          window.location.replace(route);
         },
         theme: {
           color: "#4f46e5",

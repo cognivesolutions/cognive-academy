@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import CoursePreviewDialog from "@/components/course-preview-dialog";
+import MasterVideoPlayer from "@/components/video-player/master-video-player";
 
 type LectureStatus = "not_started" | "inprogress" | "completed";
 
@@ -52,6 +52,7 @@ export function SelfPacedContinueLearningCard({
       }
     | null
   >(null);
+  const [isPlayerOpen, setIsPlayerOpen] = useState(false);
 
   const syncProgress = async () => {
     const flattened = modules.flatMap((module, moduleIndex) =>
@@ -141,13 +142,25 @@ export function SelfPacedContinueLearningCard({
         </div>
 
         {activeLecture?.lecture.hlsUrl ? (
-          <CoursePreviewDialog
-            videoUrl={activeLecture.lecture.hlsUrl}
-            title={activeLecture.lecture.title}
-            triggerLabel="Continue lecture"
-            onOpen={() => void handleCardAction()}
-            triggerClassName="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_12px_22px_rgba(16,185,129,0.22)] transition-all duration-200 hover:brightness-[1.02]"
-          />
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                setIsPlayerOpen(true);
+                void handleCardAction();
+              }}
+              className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_12px_22px_rgba(16,185,129,0.22)] transition-all duration-200 hover:brightness-[1.02]"
+            >
+              Continue lecture
+            </button>
+            <MasterVideoPlayer
+              isOpen={isPlayerOpen}
+              onClose={() => setIsPlayerOpen(false)}
+              videoUrl={activeLecture.lecture.hlsUrl}
+              title={activeLecture.lecture.title}
+              autoPlay
+            />
+          </>
         ) : null}
       </div>
     </div>

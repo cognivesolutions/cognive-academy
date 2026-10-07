@@ -1,2 +1,0 @@
-Set-Location "C:\Users\vishwajeet.singh\Documents\Visual Studio Code\cognive-academy"
-node -e "const { PrismaClient } = require('@prisma/client'); (async () => { const prisma = new PrismaClient(); try { const rows = await prisma.course.findMany({ select: { id: true, title: true, isNew: true, isPromotional: true, isBestValue: true, featured: true, isPublished: true }, orderBy: { createdAt: 'desc' }, take: 8 }); console.log(JSON.stringify(rows, null, 2)); } finally { await prisma.$disconnect(); } })();"

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import CoursePreviewDialog from "@/components/course-preview-dialog";
+import MasterVideoPlayer from "@/components/video-player/master-video-player";
 
 type LectureStatus = "not_started" | "inprogress" | "completed";
 
@@ -36,6 +36,7 @@ export function SelfPacedLectureActions({
   };
 }) {
   const [status, setStatus] = useState<LectureStatus>("not_started");
+  const [isPlayerOpen, setIsPlayerOpen] = useState(false);
 
   useEffect(() => {
     const loadProgress = async () => {
@@ -107,23 +108,47 @@ export function SelfPacedLectureActions({
 
   if (status === "inprogress") {
     return (
-      <CoursePreviewDialog
-        videoUrl={lecture.hlsUrl ?? undefined}
-        title={lecture.title}
-        triggerLabel="Continue lecture"
-        onOpen={() => void handleAction()}
-        triggerClassName="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_12px_22px_rgba(16,185,129,0.22)] transition-all duration-200 hover:brightness-[1.02]"
-      />
+      <>
+        <button
+          type="button"
+          onClick={() => {
+            setIsPlayerOpen(true);
+            void handleAction();
+          }}
+          className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_12px_22px_rgba(16,185,129,0.22)] transition-all duration-200 hover:brightness-[1.02]"
+        >
+          Continue lecture
+        </button>
+        <MasterVideoPlayer
+          isOpen={isPlayerOpen}
+          onClose={() => setIsPlayerOpen(false)}
+          videoUrl={lecture.hlsUrl ?? undefined}
+          title={lecture.title}
+          autoPlay
+        />
+      </>
     );
   }
 
   return (
-    <CoursePreviewDialog
-      videoUrl={lecture.hlsUrl ?? undefined}
-      title={lecture.title}
-      triggerLabel="Watch recording"
-      onOpen={() => void handleAction()}
-      triggerClassName="inline-flex items-center justify-center rounded-full border border-slate-200 bg-slate-100 px-3.5 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-100 dark:hover:border-slate-600 dark:hover:bg-slate-700/90"
-    />
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          setIsPlayerOpen(true);
+          void handleAction();
+        }}
+        className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-slate-100 px-3.5 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-100 dark:hover:border-slate-600 dark:hover:bg-slate-700/90"
+      >
+        Watch recording
+      </button>
+      <MasterVideoPlayer
+        isOpen={isPlayerOpen}
+        onClose={() => setIsPlayerOpen(false)}
+        videoUrl={lecture.hlsUrl ?? undefined}
+        title={lecture.title}
+        autoPlay
+      />
+    </>
   );
 }

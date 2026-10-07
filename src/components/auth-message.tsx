@@ -38,7 +38,7 @@ export function AuthMessage({ message, durationMs = 5000 }: AuthMessageProps) {
         isLeaving ? "translate-y-[-6px] scale-[0.995] opacity-0" : "translate-y-0 scale-100 opacity-100"
       }`}
     >
-      <span className="inline-flex h-5 w-7 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
+      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold leading-none text-white">
         ×
       </span>
       <span>{message}</span>
