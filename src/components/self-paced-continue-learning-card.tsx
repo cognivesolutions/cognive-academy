@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 
-import MasterVideoPlayer from "@/components/video-player/master-video-player";
+import VideoPlayer from "@/components/video/video-player";
+import { resolveLectureVideoUrl } from "@/lib/temp-video-assets";
 
 type LectureStatus = "not_started" | "inprogress" | "completed";
 
@@ -15,6 +16,7 @@ type Lecture = {
   id: string;
   title: string;
   hlsUrl?: string | null;
+  videoUrl?: string | null;
 };
 
 type ModuleWithLectures = {
@@ -141,7 +143,7 @@ export function SelfPacedContinueLearningCard({
           <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-200/90">{moduleLabel}</p>
         </div>
 
-        {activeLecture?.lecture.hlsUrl ? (
+        {activeLecture ? (
           <>
             <button
               type="button"
@@ -153,12 +155,13 @@ export function SelfPacedContinueLearningCard({
             >
               Continue lecture
             </button>
-            <MasterVideoPlayer
+            <VideoPlayer
               isOpen={isPlayerOpen}
               onClose={() => setIsPlayerOpen(false)}
-              videoUrl={activeLecture.lecture.hlsUrl}
+              videoUrl={resolveLectureVideoUrl(activeLecture.lecture.hlsUrl ?? activeLecture.lecture.videoUrl, activeLecture.lecture)}
               title={activeLecture.lecture.title}
-              autoPlay
+              autoPlay={false}
+              resumeKey={`${courseId}:${activeLecture.lecture.id}`}
             />
           </>
         ) : null}

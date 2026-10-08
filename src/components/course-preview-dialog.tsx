@@ -15,7 +15,7 @@ import {
   X,
 } from "lucide-react";
 
-import MasterVideoPlayer from "@/components/video-player/master-video-player";
+import VideoPlayer from "@/components/video/video-player";
 
 const DEFAULT_PREVIEW_VIDEO =
   "https://www.pexels.com/download/video/8084496/";
@@ -443,7 +443,7 @@ export default function CoursePreviewDialog({
         </button>
 
         {open ? (
-          <MasterVideoPlayer
+          <VideoPlayer
             isOpen={open}
             onClose={closePreview}
             videoUrl={previewUrl}

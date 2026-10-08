@@ -4,12 +4,13 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
 const VALID_STATUSES = new Set(["not_started", "inprogress", "completed"]);
+export const COMPLETION_THRESHOLD_PERCENT = 92;
 
-function normalizeStatus(status: string | undefined, watchedPercent: number) {
+export function normalizeStatus(status: string | undefined, watchedPercent: number) {
   const value = typeof status === "string" ? status.toLowerCase() : "not_started";
 
   if (VALID_STATUSES.has(value)) {
-    if (value === "completed" || watchedPercent >= 90) {
+    if (value === "completed" || watchedPercent >= COMPLETION_THRESHOLD_PERCENT) {
       return "completed";
     }
 
@@ -21,7 +22,7 @@ function normalizeStatus(status: string | undefined, watchedPercent: number) {
   return "not_started";
 }
 
-function normalizeWatchedPercent(value: unknown) {
+export function normalizeWatchedPercent(value: unknown) {
   const parsed = Number(value ?? 0);
   if (!Number.isFinite(parsed)) {
     return 0;

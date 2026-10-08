@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 
-import MasterVideoPlayer from "@/components/video-player/master-video-player";
+import VideoPlayer from "@/components/video/video-player";
+import { resolveLectureVideoUrl } from "@/lib/temp-video-assets";
 
 type LectureStatus = "not_started" | "inprogress" | "completed";
 
@@ -33,10 +34,12 @@ export function SelfPacedLectureActions({
     id: string;
     title: string;
     hlsUrl?: string | null;
+    videoUrl?: string | null;
   };
 }) {
   const [status, setStatus] = useState<LectureStatus>("not_started");
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
+  const effectiveVideoUrl = resolveLectureVideoUrl(lecture.hlsUrl ?? lecture.videoUrl, lecture);
 
   useEffect(() => {
     const loadProgress = async () => {
@@ -75,9 +78,18 @@ export function SelfPacedLectureActions({
     window.dispatchEvent(new CustomEvent("self-paced-progress-updated", { detail: { courseId } }));
   };
 
-  const handleAction = async () => {
-    if (!lecture.hlsUrl) return;
+  const handleVideoProgressUpdate = async (watchedPercent: number) => {
+    if (watchedPercent >= 92) {
+      await updateStatus("completed", watchedPercent);
+      return;
+    }
 
+    if (watchedPercent > 0) {
+      await updateStatus("inprogress", watchedPercent);
+    }
+  };
+
+  const handleAction = async () => {
     const progress = await fetchProgress(courseId);
     const current = progress[lecture.id];
 
@@ -85,15 +97,10 @@ export function SelfPacedLectureActions({
       return;
     }
 
-    if (!current || current.status === "not_started") {
-      await updateStatus("inprogress", 45);
-      return;
-    }
-
-    await updateStatus("completed", 92);
+    await updateStatus("inprogress", current?.watchedPercent ?? 0);
   };
 
-  if (!lecture.hlsUrl) {
+  if (!effectiveVideoUrl) {
     return <span className="text-sm text-slate-500 dark:text-slate-400">Not scheduled</span>;
   }
 
@@ -119,12 +126,14 @@ export function SelfPacedLectureActions({
         >
           Continue lecture
         </button>
-        <MasterVideoPlayer
+        <VideoPlayer
           isOpen={isPlayerOpen}
           onClose={() => setIsPlayerOpen(false)}
-          videoUrl={lecture.hlsUrl ?? undefined}
+          videoUrl={effectiveVideoUrl}
           title={lecture.title}
-          autoPlay
+          autoPlay={false}
+          resumeKey={`${courseId}:${lecture.id}`}
+          onProgressUpdate={handleVideoProgressUpdate}
         />
       </>
     );
@@ -142,12 +151,14 @@ export function SelfPacedLectureActions({
       >
         Watch recording
       </button>
-      <MasterVideoPlayer
+      <VideoPlayer
         isOpen={isPlayerOpen}
         onClose={() => setIsPlayerOpen(false)}
-        videoUrl={lecture.hlsUrl ?? undefined}
+        videoUrl={effectiveVideoUrl}
         title={lecture.title}
-        autoPlay
+        autoPlay={false}
+        resumeKey={`${courseId}:${lecture.id}`}
+        onProgressUpdate={handleVideoProgressUpdate}
       />
     </>
   );
