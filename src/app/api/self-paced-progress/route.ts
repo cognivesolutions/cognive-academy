@@ -4,7 +4,8 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
 const VALID_STATUSES = new Set(["not_started", "inprogress", "completed"]);
-export const COMPLETION_THRESHOLD_PERCENT = 92;
+export const COMPLETION_THRESHOLD_PERCENT = 90;
+export const COMPLETION_FINAL_SECONDS = 10;
 
 export function normalizeStatus(status: string | undefined, watchedPercent: number) {
   const value = typeof status === "string" ? status.toLowerCase() : "not_started";
@@ -117,6 +118,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Lecture does not belong to the selected course" }, { status: 400 });
     }
 
+    const existingRecord = await prisma.lectureProgress.findUnique({
+      where: {
+        userId_lectureId: {
+          userId: session.user.id,
+          lectureId,
+        },
+      },
+      select: {
+        watchedPercent: true,
+        status: true,
+      },
+    });
+
+    const maxWatchedPercent = Math.max(existingRecord?.watchedPercent ?? 0, watchedPercent);
+    const normalizedStatus = normalizeStatus(existingRecord?.status ?? body?.status, maxWatchedPercent);
+    const finalStatus = normalizedStatus === "completed" || status === "completed" ? "completed" : normalizedStatus;
+
     const record = await prisma.lectureProgress.upsert({
       where: {
         userId_lectureId: {
@@ -125,15 +143,15 @@ export async function POST(request: Request) {
         },
       },
       update: {
-        status,
-        watchedPercent,
+        status: finalStatus,
+        watchedPercent: maxWatchedPercent,
       },
       create: {
         userId: session.user.id,
         courseId,
         lectureId,
-        status,
-        watchedPercent,
+        status: finalStatus,
+        watchedPercent: maxWatchedPercent,
       },
       select: {
         lectureId: true,

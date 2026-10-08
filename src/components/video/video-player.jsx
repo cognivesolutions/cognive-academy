@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  ChevronDown,
   Maximize2,
   Minimize2,
   Minus,
@@ -77,8 +78,11 @@ export default function VideoPlayer({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
   const [isPlayerHovered, setIsPlayerHovered] = useState(false);
+  const [isPlaybackMenuOpen, setIsPlaybackMenuOpen] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1);
   const videoRef = useRef(null);
   const hostRef = useRef(null);
+  const idleTimerRef = useRef(null);
   const lastReportedProgressRef = useRef(-1);
 
   const previewUrl = useMemo(() => {
@@ -110,10 +114,14 @@ export default function VideoPlayer({
     }
 
     if (typeof onProgressUpdate === "function") {
-      const delta = Math.abs(normalizedProgress - lastReportedProgressRef.current);
-      if (normalizedProgress >= 92 || delta >= 0.5) {
-        lastReportedProgressRef.current = normalizedProgress;
-        onProgressUpdate(normalizedProgress);
+      const nextTrackedProgress = Math.max(lastReportedProgressRef.current, normalizedProgress);
+      const delta = nextTrackedProgress - lastReportedProgressRef.current;
+      const remainingTime = video.duration ? Math.max(0, video.duration - video.currentTime) : 0;
+      const isNearCompletion = remainingTime <= 10 || normalizedProgress >= 90;
+
+      if (isNearCompletion || delta >= 0.5) {
+        lastReportedProgressRef.current = nextTrackedProgress;
+        onProgressUpdate(nextTrackedProgress);
       }
     }
   };
@@ -140,6 +148,13 @@ export default function VideoPlayer({
   useEffect(() => {
     applyVolumeState(videoRef.current);
   }, [volume, isMuted]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.playbackRate = playbackRate;
+  }, [playbackRate, isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -272,24 +287,33 @@ export default function VideoPlayer({
 
   useEffect(() => {
     if (!isOpen) {
+      if (idleTimerRef.current) {
+        window.clearTimeout(idleTimerRef.current);
+        idleTimerRef.current = null;
+      }
       setControlsVisible(true);
       return;
     }
 
-    if (isPlayerHovered) {
+    if (isPlaybackMenuOpen || isPlayerHovered) {
       setControlsVisible(true);
 
-      const idleTimer = window.setTimeout(() => {
-        setIsPlayerHovered(false);
-        setControlsVisible(false);
-      }, isPlaying ? 1200 : isFullscreen ? 3500 : 1800);
+      if (idleTimerRef.current) {
+        window.clearTimeout(idleTimerRef.current);
+        idleTimerRef.current = null;
+      }
 
-      return () => window.clearTimeout(idleTimer);
+      return () => {
+        if (idleTimerRef.current) {
+          window.clearTimeout(idleTimerRef.current);
+          idleTimerRef.current = null;
+        }
+      };
     }
 
     setControlsVisible(false);
     return undefined;
-  }, [isOpen, isFullscreen, isPlayerHovered, isPlaying]);
+  }, [isOpen, isFullscreen, isPlayerHovered, isPlaying, isPlaybackMenuOpen]);
 
   const currentTime = duration ? (progress / 100) * duration : 0;
   const currentVolumePercent = volume > 0 ? Math.round(volume * 100) : 0;
@@ -297,6 +321,8 @@ export default function VideoPlayer({
   const shouldShowTopBar = isPlayerHovered || controlsVisible;
   const shouldShowCenterControls = !isPlaying ? true : isPlayerHovered || controlsVisible;
   const shouldShowBottomControls = isPlayerHovered || controlsVisible;
+
+  const playbackOptions = [2, 1.5, 1.25, 1, 0.75, 0.5];
 
   const volumeTrackStyle = {
     background: `linear-gradient(to right, #4f46e5 0%, #4f46e5 ${currentVolumePercent}%, rgba(148,163,184,0.8) ${currentVolumePercent}%, rgba(148,163,184,0.8) 100%)`,
@@ -310,15 +336,19 @@ export default function VideoPlayer({
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/75 backdrop-blur-sm pointer-events-auto select-none ${
-        isFullscreen ? "p-0" : "p-3 sm:p-4"
+      className={`fixed inset-0 z-[99999] flex items-center justify-center bg-slate-950/75 backdrop-blur-sm pointer-events-auto select-none ${
+        isFullscreen ? "p-0" : "px-3 sm:px-4"
       }`}
+      style={{
+        paddingTop: isFullscreen ? 0 : "max(88px, 9vh)",
+        paddingBottom: isFullscreen ? 0 : "max(56px, 6vh)",
+      }}
       onClick={onClose}
       onMouseDown={(event) => event.stopPropagation()}
     >
       <div
         ref={hostRef}
-        className={`relative z-[10000] flex flex-col overflow-hidden border border-slate-200 bg-white text-slate-900 shadow-[0_30px_90px_rgba(2,6,23,0.2)] dark:border-slate-700 dark:bg-slate-950 dark:text-white isolate ${
+        className={`relative z-[100000] flex flex-col overflow-hidden border border-slate-200 bg-white text-slate-900 shadow-[0_30px_90px_rgba(2,6,23,0.2)] dark:border-slate-700 dark:bg-slate-950 dark:text-white isolate ${
           isFullscreen
             ? "h-screen w-screen rounded-none border-0 shadow-none"
             : "w-full max-w-5xl rounded-[28px]"
@@ -337,8 +367,17 @@ export default function VideoPlayer({
         }}
         onMouseLeave={(event) => {
           event.stopPropagation();
+          if (isPlaybackMenuOpen) {
+            setIsPlayerHovered(true);
+            setControlsVisible(true);
+            return;
+          }
           setIsPlayerHovered(false);
           setControlsVisible(false);
+          if (idleTimerRef.current) {
+            window.clearTimeout(idleTimerRef.current);
+            idleTimerRef.current = null;
+          }
         }}
       >
         <div
@@ -460,8 +499,8 @@ export default function VideoPlayer({
             </span>
           </div>
 
-          <div className="relative z-20 flex items-center gap-2 sm:gap-3">
-            <div className="relative z-30 flex items-center gap-1.5 sm:gap-2">
+          <div className="relative z-20 grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-3">
+            <div className="relative z-30 flex items-center justify-self-start gap-1.5 sm:gap-2">
               <button
                 type="button"
                 className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
@@ -537,56 +576,139 @@ export default function VideoPlayer({
               </button>
             </div>
 
-            <div className={`relative z-30 flex items-center ${isFullscreen ? "ml-140 gap-10" : "ml-38 gap-5"}`}>
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  skipTime(-10);
-                }}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
-                aria-label="Skip back 10 seconds"
-              >
-                <SkipBack className="h-4 w-4" />
-              </button>
+            <div className="relative z-30 flex min-w-0 items-center justify-self-center">
+              <div className={`flex items-center ${isFullscreen ? "gap-10" : "gap-5"}`}>
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    skipTime(-10);
+                  }}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
+                  aria-label="Skip back 10 seconds"
+                >
+                  <SkipBack className="h-4 w-4" />
+                </button>
 
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  void togglePlay();
-                }}
-                className="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-500 text-white shadow-[0_12px_28px_rgba(79,70,229,0.45)] transition hover:bg-indigo-400"
-                aria-label={isPlaying ? "Pause video" : "Play video"}
-                style={{ marginLeft: "0rem", transform: "none" }}
-              >
-                {isPlaying ? <Pause className="h-5 w-5 fill-current" /> : <Play className="ml-1 h-5 w-5 fill-current" />}
-              </button>
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    void togglePlay();
+                  }}
+                  className="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-500 text-white shadow-[0_12px_28px_rgba(79,70,229,0.45)] transition hover:bg-indigo-400"
+                  aria-label={isPlaying ? "Pause video" : "Play video"}
+                  style={{ marginLeft: "0rem", transform: "none" }}
+                >
+                  {isPlaying ? <Pause className="h-5 w-5 fill-current" /> : <Play className="ml-1 h-5 w-5 fill-current" />}
+                </button>
 
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  skipTime(10);
-                }}
-                className="ml-0 flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
-                aria-label="Skip forward 10 seconds"
-              >
-                <SkipForward className="h-4 w-4" />
-              </button>
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    skipTime(10);
+                  }}
+                  className="ml-0 flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
+                  aria-label="Skip forward 10 seconds"
+                >
+                  <SkipForward className="h-4 w-4" />
+                </button>
+              </div>
             </div>
 
-            <button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                void handleFullscreen();
-              }}
-              className="ml-auto flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
-              aria-label={isFullscreen ? "Exit fullscreen" : "Toggle fullscreen"}
-            >
-              {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-            </button>
+            <div className="relative z-30 flex items-center justify-self-end gap-2">
+              <div
+                className="relative"
+                onMouseEnter={() => {
+                  setIsPlayerHovered(true);
+                  setIsPlaybackMenuOpen(true);
+                }}
+                onMouseLeave={(event) => {
+                  const nextTarget = event.relatedTarget;
+                  if (nextTarget && event.currentTarget.contains(nextTarget)) {
+                    return;
+                  }
+
+                  setIsPlaybackMenuOpen(false);
+                  setIsPlayerHovered(false);
+                  setControlsVisible(false);
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setIsPlaybackMenuOpen((open) => !open);
+                    setIsPlayerHovered(true);
+                  }}
+                  className="flex h-10 min-w-[84px] items-center justify-between gap-2 rounded-full border border-slate-200 bg-white/90 px-3 pr-2 text-[13px] font-medium text-slate-800 shadow-[0_5px_18px_rgba(15,23,42,0.04)] outline-none transition-all duration-200 hover:bg-white focus:border-indigo-300 focus:bg-white focus:shadow-[0_0_0_3px_rgba(99,102,241,0.1),0_8px_20px_rgba(79,70,229,0.08)] dark:border-slate-700 dark:bg-slate-900/85 dark:text-slate-100 dark:hover:bg-slate-900 dark:focus:border-indigo-500 dark:focus:bg-slate-900 dark:focus:shadow-[0_0_0_3px_rgba(129,140,248,0.12),0_8px_20px_rgba(99,102,241,0.12)]"
+                  aria-label="Playback speed"
+                  aria-expanded={isPlaybackMenuOpen}
+                >
+                  <span>{`${playbackRate}x`}</span>
+                  <ChevronDown className="h-3.5 w-3.5 text-slate-600 dark:text-slate-200" />
+                </button>
+
+                {isPlaybackMenuOpen ? (
+                  <div
+                    className="absolute right-0 bottom-full z-[100001] mb-0 w-[84px] overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-[0_20px_45px_rgba(15,23,42,0.18)] dark:border-slate-700 dark:bg-slate-900"
+                    onMouseEnter={() => {
+                      setIsPlayerHovered(true);
+                      setControlsVisible(true);
+                      setIsPlaybackMenuOpen(true);
+                    }}
+                    onMouseLeave={(event) => {
+                      const nextTarget = event.relatedTarget;
+                      if (nextTarget && event.currentTarget.parentElement?.contains(nextTarget)) {
+                        return;
+                      }
+
+                      setIsPlaybackMenuOpen(false);
+                      setIsPlayerHovered(false);
+                      setControlsVisible(false);
+                    }}
+                  >
+                    {playbackOptions.map((rate) => (
+                      <button
+                        key={rate}
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setPlaybackRate(rate);
+                          setIsPlaybackMenuOpen(false);
+                          setIsPlayerHovered(true);
+                          const video = videoRef.current;
+                          if (video) {
+                            video.playbackRate = rate;
+                          }
+                        }}
+                        className={`flex w-full items-center justify-between px-3 py-2 text-sm transition ${
+                          playbackRate === rate
+                            ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-300"
+                            : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+                        }`}
+                      >
+                        <span>{`${rate}x`}</span>
+                        {playbackRate === rate ? <span className="text-xs font-semibold">●</span> : null}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  void handleFullscreen();
+                }}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
+                aria-label={isFullscreen ? "Exit fullscreen" : "Toggle fullscreen"}
+              >
+                {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              </button>
+            </div>
           </div>
         </div>
       </div>

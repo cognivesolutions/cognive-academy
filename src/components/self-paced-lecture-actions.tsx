@@ -79,7 +79,7 @@ export function SelfPacedLectureActions({
   };
 
   const handleVideoProgressUpdate = async (watchedPercent: number) => {
-    if (watchedPercent >= 92) {
+    if (watchedPercent >= 90) {
       await updateStatus("completed", watchedPercent);
       return;
     }
