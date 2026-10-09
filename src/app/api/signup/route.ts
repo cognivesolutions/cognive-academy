@@ -1,7 +1,26 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 
+import { getNextUserBusinessId } from "@/lib/id-generator";
 import { prisma } from "@/lib/prisma";
+
+async function hasUserBusinessIdColumn() {
+  try {
+    const rows = await prisma.$queryRaw<Array<{ exists: boolean }>>`
+      SELECT EXISTS(
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'users'
+          AND column_name = 'userId'
+      ) AS "exists";
+    `;
+
+    return Boolean(rows[0]?.exists);
+  } catch {
+    return false;
+  }
+}
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phoneRegex = /^[0-9+()\-\s]{10,15}$/;
@@ -75,9 +94,12 @@ export async function POST(request: Request) {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
+    const supportsUserId = await hasUserBusinessIdColumn();
+    const userId = supportsUserId ? await getNextUserBusinessId(prisma) : undefined;
 
     const user = await prisma.user.create({
       data: {
+        ...(userId ? { userId } : {}),
         name,
         email,
         phone,
@@ -91,6 +113,7 @@ export async function POST(request: Request) {
       success: true,
       user: {
         id: user.id,
+        userId: user.userId,
         email: user.email,
         name: user.name,
       },

@@ -19,6 +19,7 @@ export default async function ProfilePage() {
       email: true,
       phone: true,
       bio: true,
+      avatarUrl: true,
       role: true,
       emailVerifiedAt: true,
       phoneVerifiedAt: true,

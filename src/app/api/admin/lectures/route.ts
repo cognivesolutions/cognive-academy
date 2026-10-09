@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { getNextLectureBusinessId, getNextModuleBusinessId } from "@/lib/id-generator";
 import { prisma } from "@/lib/prisma";
 
 function parseFormData(formData: FormData) {
@@ -68,11 +69,17 @@ export async function POST(request: Request) {
 
         let fallbackModuleId = course?.modules[0]?.id ?? null;
         if (!fallbackModuleId && courseId) {
+          const moduleId = await getNextModuleBusinessId(prisma);
+
           const createdModule = await prisma.module.create({
-            data: { courseId, title: "Module 1", position: 1 },
+            data: { moduleId, courseId, title: "Module 1", position: 1 },
           });
           fallbackModuleId = createdModule.id;
         }
+
+        const lectureIds = await Promise.all(
+          items.map(async () => getNextLectureBusinessId(prisma)),
+        );
 
         await prisma.$transaction(
           items.map((item: {
@@ -83,7 +90,7 @@ export async function POST(request: Request) {
             videoUrl?: string | null;
             hlsUrl?: string | null;
             isPreview?: boolean | null;
-          }) => {
+          }, index: number) => {
             const moduleId = item.moduleId || fallbackModuleId;
             if (!moduleId) {
               throw new Error("Cannot restore lecture without a module id");
@@ -91,6 +98,7 @@ export async function POST(request: Request) {
 
             return prisma.lecture.create({
               data: {
+                lectureId: lectureIds[index],
                 moduleId,
                 title: item.title || "Untitled lecture",
                 position: item.position ?? 0,
@@ -118,12 +126,17 @@ export async function POST(request: Request) {
 
       let moduleId = course.modules && course.modules.length > 0 ? course.modules[0].id : undefined;
       if (!moduleId) {
-        const mod = await prisma.module.create({ data: { courseId: payload.courseId, title: "Module 1", position: 1 } });
+        const nextModuleId = await getNextModuleBusinessId(prisma);
+
+        const mod = await prisma.module.create({ data: { moduleId: nextModuleId, courseId: payload.courseId, title: "Module 1", position: 1 } });
         moduleId = mod.id;
       }
 
+      const lectureId = await getNextLectureBusinessId(prisma);
+
       await prisma.lecture.create({
         data: {
+          lectureId,
           moduleId,
           title: payload.title || "Untitled lecture",
           position: payload.position || 0,

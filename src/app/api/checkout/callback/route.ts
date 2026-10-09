@@ -1,6 +1,7 @@
 import Razorpay from "razorpay";
 import { NextResponse } from "next/server";
 
+import { getNextEnrollmentBusinessId, getNextOrderBusinessId } from "@/lib/id-generator";
 import { prisma } from "@/lib/prisma";
 
 const razorpay =
@@ -48,8 +49,11 @@ export async function GET(request: Request) {
           });
         } else {
           const amountInRupees = Number(payment.amount ?? 0) / 100;
+          const nextOrderId = await getNextOrderBusinessId(prisma);
+
           const createdOrder = await prisma.order.create({
             data: {
+              orderId: nextOrderId,
               userId,
               courseId,
               amount: amountInRupees,
@@ -61,6 +65,8 @@ export async function GET(request: Request) {
               razorpaySignature: signature ?? null,
             },
           });
+
+          const enrollmentId = await getNextEnrollmentBusinessId(prisma);
 
           await prisma.enrollment.upsert({
             where: {
@@ -75,6 +81,7 @@ export async function GET(request: Request) {
               grantedAt: new Date(),
             },
             create: {
+              enrollmentId,
               userId,
               courseId,
               orderId: createdOrder.id,
@@ -94,8 +101,11 @@ export async function GET(request: Request) {
         });
 
         if (!existingEnrollment) {
+          const enrollmentId = await getNextEnrollmentBusinessId(prisma);
+
           await prisma.enrollment.create({
             data: {
+              enrollmentId,
               userId,
               courseId,
               orderId: orderRecord?.id ?? null,

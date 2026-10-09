@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import Razorpay from "razorpay";
 
+import { getNextEnrollmentBusinessId, getNextOrderBusinessId } from "@/lib/id-generator";
 import { prisma } from "@/lib/prisma";
 
 const razorpay =
@@ -58,8 +59,11 @@ export async function POST(request: Request) {
         });
 
         if (!existingEnrollment) {
+          const enrollmentId = await getNextEnrollmentBusinessId(prisma);
+
           await prisma.enrollment.create({
             data: {
+              enrollmentId,
               userId,
               courseId,
               orderId: order?.id ?? null,
@@ -133,8 +137,11 @@ export async function POST(request: Request) {
     const safeAmount = Number(amount ?? effectiveAmount ?? basePrice ?? 0);
     const amountInPaise = Math.round(safeAmount * 100);
 
+    const orderId = await getNextOrderBusinessId(prisma);
+
     const orderRecord = await prisma.order.create({
       data: {
+        orderId,
         userId,
         courseId: course.id,
         amount: safeAmount,

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { getNextEnrollmentBusinessId } from "@/lib/id-generator";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
@@ -29,6 +30,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: "Course not found." }, { status: 404 });
     }
 
+    const enrollmentId = await getNextEnrollmentBusinessId(prisma);
+
     const enrollment = await prisma.enrollment.upsert({
       where: {
         userId_courseId: {
@@ -41,6 +44,7 @@ export async function POST(request: Request) {
         grantedAt: accessGranted ? new Date() : undefined,
       },
       create: {
+        enrollmentId,
         userId: studentId,
         courseId,
         accessGranted,

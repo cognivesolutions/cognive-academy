@@ -58,14 +58,32 @@ function getLogoutRedirectPath() {
   return window.location.pathname.startsWith("/admin") ? "/admin/login" : "/login";
 }
 
+function readLocalProfileOverride() {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const rawValue = window.localStorage.getItem("cognive-profile-sync");
+    if (!rawValue) return null;
+
+    const parsed = JSON.parse(rawValue) as { name?: string; avatarUrl?: string };
+    if (!parsed || (!parsed.name && !parsed.avatarUrl)) return null;
+
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
 export function UserMenu() {
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const overrideProfile = readLocalProfileOverride();
 
-  const displayName = session?.user?.name?.trim() || session?.user?.email?.split("@")[0] || "Student";
+  const displayName = overrideProfile?.name?.trim() || session?.user?.name?.trim() || session?.user?.email?.split("@")[0] || "Student";
+  const avatarSrc = overrideProfile?.avatarUrl || session?.user?.image || undefined;
   const initials = displayName
     .split(" ")
     .map((part) => part[0])
@@ -100,15 +118,19 @@ export function UserMenu() {
   }, [open]);
 
   return (
-    <div ref={menuRef} className="relative flex items-center justify-end">
+    <div ref={menuRef} className="relative flex items-center justify-end mr-2">
       <button
         ref={buttonRef}
         type="button"
         onClick={() => setOpen((current) => !current)}
         aria-label="Account menu"
-        className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 via-violet-600 to-sky-500 text-sm font-black text-white shadow-[0_10px_25px_rgba(79,70,229,0.25)] ring-2 ring-indigo-100/70 transition hover:scale-[1.02] dark:ring-slate-700/80"
+        className="mt-2 ml-[-0px] flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-indigo-600 via-violet-600 to-sky-500 text-sm font-black text-white shadow-[0_10px_25px_rgba(79,70,229,0.25)] ring-2 ring-indigo-100/70 transition hover:scale-[1.02] dark:ring-slate-700/80"
       >
-        {initials}
+        {avatarSrc ? (
+          <img src={avatarSrc} alt={displayName} className="h-full w-full object-cover" />
+        ) : (
+          initials
+        )}
       </button>
 
       {open ? (

@@ -3,6 +3,7 @@ import path from "path";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { getNextCourseBusinessId } from "@/lib/id-generator";
 import { prisma } from "@/lib/prisma";
 
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "course-thumbnails");
@@ -293,9 +294,11 @@ export async function POST(request: Request) {
     }
 
     const finalImageUrl = await saveUploadedImage(payload.imageFile, payload.imageUrl || null);
+    const courseId = await getNextCourseBusinessId(prisma);
 
     await prisma.course.create({
       data: {
+        courseId,
         title: rawTitle,
         slug,
         category,

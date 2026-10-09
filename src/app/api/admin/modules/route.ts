@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { getNextModuleBusinessId } from "@/lib/id-generator";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
@@ -16,7 +17,10 @@ export async function POST(req: Request) {
 
     if (action === "create") {
       if (!courseId || !title) return NextResponse.json({ success: false, message: "Missing" }, { status: 400 });
-      const mod = await prisma.module.create({ data: { courseId, title, position } });
+
+      const moduleId = await getNextModuleBusinessId(prisma);
+
+      const mod = await prisma.module.create({ data: { moduleId, courseId, title, position } });
       return NextResponse.redirect(new URL(`/admin/courses/${courseId}/lectures?success=Module created`, req.url));
     }
 

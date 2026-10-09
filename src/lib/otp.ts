@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { Resend } from "resend";
 import twilio from "twilio";
 
+import { getNextOtpVerificationBusinessId } from "@/lib/id-generator";
 import { prisma } from "@/lib/prisma";
 
 export type OtpPurpose = "EMAIL_VERIFICATION" | "MOBILE_VERIFICATION" | "PASSWORD_RESET";
@@ -40,8 +41,11 @@ export async function createOtpRecord({
   const code = generateOtpCode();
   const expiryPeriodMs = otpExpiryMinutes * 60 * 1000;
 
+  const otpVerificationId = await getNextOtpVerificationBusinessId(prisma);
+
   const savedOtp = await prisma.otpVerification.create({
     data: {
+      otpVerificationId,
       userId: userId ?? null,
       email: email ? email.trim().toLowerCase() : null,
       phone: phone ? phone.trim() : null,

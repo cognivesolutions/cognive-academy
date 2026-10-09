@@ -1,6 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface ProfileUser {
   id: string;
@@ -8,9 +14,8 @@ interface ProfileUser {
   email: string;
   phone?: string | null;
   bio?: string | null;
+  avatarUrl?: string | null;
   role: string;
-  emailVerifiedAt?: Date | string | null;
-  phoneVerifiedAt?: Date | string | null;
   emailNotifications: boolean;
   courseReminders: boolean;
   marketingEmails: boolean;
@@ -18,8 +23,17 @@ interface ProfileUser {
 }
 
 export function ProfileEditor({ user }: { user: ProfileUser }) {
+  const router = useRouter();
+  const { update } = useSession();
+  const cropRef = useRef<HTMLDivElement | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(user.name ?? "");
+  const [email, setEmail] = useState(user.email ?? "");
+  const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl ?? "");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [showCropEditor, setShowCropEditor] = useState(false);
+  const [crop, setCrop] = useState({ x: 0.15, y: 0.15, size: 0.7 });
+  const [isDraggingCrop, setIsDraggingCrop] = useState(false);
   const [phone, setPhone] = useState(user.phone ?? "");
   const [bio, setBio] = useState(user.bio ?? "");
   const [emailNotifications, setEmailNotifications] = useState(user.emailNotifications ?? true);
@@ -29,21 +43,22 @@ export function ProfileEditor({ user }: { user: ProfileUser }) {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [savingNotifications, setSavingNotifications] = useState(false);
   const [profileMessage, setProfileMessage] = useState<string | null>(null);
   const [accountMessage, setAccountMessage] = useState<string | null>(null);
-  const [emailVerified, setEmailVerified] = useState(Boolean(user.emailVerifiedAt));
-  const [phoneVerified, setPhoneVerified] = useState(Boolean(user.phoneVerifiedAt));
-  const [emailOtpCode, setEmailOtpCode] = useState("");
-  const [phoneOtpCode, setPhoneOtpCode] = useState("");
-  const [emailOtpLoading, setEmailOtpLoading] = useState(false);
-  const [phoneOtpLoading, setPhoneOtpLoading] = useState(false);
-  const [verificationMessage, setVerificationMessage] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+
+  const displayName = isEditing ? (user.name ?? "") : (name || user.name || "");
+  const displayAvatarUrl = isEditing ? (user.avatarUrl ?? "") : (avatarUrl || user.avatarUrl || "");
 
   const initials = useMemo(() => {
-    const label = name?.trim() || user.email || "S";
+    const label = displayName?.trim() || user.email || "S";
     return label.charAt(0).toUpperCase();
-  }, [name, user.email]);
+  }, [displayName, user.email]);
 
   const profileCompletion = useMemo(() => {
     let score = 35;
@@ -54,140 +69,6 @@ export function ProfileEditor({ user }: { user: ProfileUser }) {
     return Math.min(score, 100);
   }, [bio, name, phone, user.email]);
 
-  const accountOverview = [
-    { label: "Account status", value: "Active" },
-    { label: "Role", value: user.role },
-    { label: "Email verification", value: emailVerified ? "Verified" : "Pending" },
-  ];
-
-  async function handleSendEmailOtp() {
-    setEmailOtpLoading(true);
-    setVerificationMessage(null);
-
-    try {
-      const response = await fetch("/api/auth/send-email-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: user.email }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data?.message ?? "Unable to send email OTP.");
-      }
-
-      setVerificationMessage("A verification code has been sent to your email.");
-    } catch (error) {
-      setVerificationMessage(error instanceof Error ? error.message : "Unable to send email OTP.");
-    } finally {
-      setEmailOtpLoading(false);
-    }
-  }
-
-  async function handleVerifyEmailOtp() {
-    if (!emailOtpCode.trim()) {
-      setVerificationMessage("Please enter the email verification code.");
-      return;
-    }
-
-    setEmailOtpLoading(true);
-    setVerificationMessage(null);
-
-    try {
-      const response = await fetch("/api/auth/verify-email-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: user.email, code: emailOtpCode.trim() }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data?.message ?? "Unable to verify email OTP.");
-      }
-
-      setEmailVerified(true);
-      setEmailOtpCode("");
-      setVerificationMessage("Email verified successfully.");
-    } catch (error) {
-      setVerificationMessage(error instanceof Error ? error.message : "Unable to verify email OTP.");
-    } finally {
-      setEmailOtpLoading(false);
-    }
-  }
-
-  async function handleSendPhoneOtp() {
-    const normalizedPhone = (phone || user.phone || "").trim();
-
-    if (!normalizedPhone) {
-      setVerificationMessage("Please add a mobile number before sending a verification code.");
-      return;
-    }
-
-    setPhoneOtpLoading(true);
-    setVerificationMessage(null);
-
-    try {
-      const response = await fetch("/api/auth/send-mobile-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: normalizedPhone }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data?.message ?? "Unable to send mobile OTP.");
-      }
-
-      setVerificationMessage("A verification code has been sent to your mobile number.");
-    } catch (error) {
-      setVerificationMessage(error instanceof Error ? error.message : "Unable to send mobile OTP.");
-    } finally {
-      setPhoneOtpLoading(false);
-    }
-  }
-
-  async function handleVerifyPhoneOtp() {
-    const normalizedPhone = (phone || user.phone || "").trim();
-
-    if (!normalizedPhone) {
-      setVerificationMessage("Please add a mobile number before verifying it.");
-      return;
-    }
-
-    if (!phoneOtpCode.trim()) {
-      setVerificationMessage("Please enter the mobile verification code.");
-      return;
-    }
-
-    setPhoneOtpLoading(true);
-    setVerificationMessage(null);
-
-    try {
-      const response = await fetch("/api/auth/verify-mobile-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: normalizedPhone, code: phoneOtpCode.trim() }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data?.message ?? "Unable to verify mobile OTP.");
-      }
-
-      setPhoneVerified(true);
-      setPhoneOtpCode("");
-      setVerificationMessage("Mobile number verified successfully.");
-    } catch (error) {
-      setVerificationMessage(error instanceof Error ? error.message : "Unable to verify mobile OTP.");
-    } finally {
-      setPhoneOtpLoading(false);
-    }
-  }
-
   const notificationOptions = [
     { key: "emailNotifications", label: "Email notifications", description: "Course updates and platform announcements", value: emailNotifications, onChange: setEmailNotifications },
     { key: "courseReminders", label: "Course reminders", description: "Upcoming live sessions and deadlines", value: courseReminders, onChange: setCourseReminders },
@@ -195,15 +76,185 @@ export function ProfileEditor({ user }: { user: ProfileUser }) {
     { key: "securityAlerts", label: "Security alerts", description: "Important account and sign-in updates", value: securityAlerts, onChange: setSecurityAlerts },
   ];
 
+  const passwordChecks = [
+    {
+      label: "At least 8 characters",
+      valid: newPassword.length >= 8,
+    },
+    {
+      label: "Mix of letters, numbers, and symbols",
+      valid:
+        /[A-Z]/.test(newPassword) &&
+        /[a-z]/.test(newPassword) &&
+        /\d/.test(newPassword) &&
+        /[^A-Za-z0-9]/.test(newPassword),
+    },
+  ];
+
+  const confirmPasswordWarning = confirmPassword.length > 0 && confirmPassword !== newPassword;
+
+  useEffect(() => {
+    if (currentPassword || newPassword || confirmPassword) {
+      setPasswordError(null);
+    }
+  }, [currentPassword, newPassword, confirmPassword]);
+
+  useEffect(() => {
+    if (!showCurrentPassword) return;
+
+    const timer = window.setTimeout(() => setShowCurrentPassword(false), 2200);
+    return () => window.clearTimeout(timer);
+  }, [showCurrentPassword]);
+
+  useEffect(() => {
+    if (!showNewPassword) return;
+
+    const timer = window.setTimeout(() => setShowNewPassword(false), 2200);
+    return () => window.clearTimeout(timer);
+  }, [showNewPassword]);
+
+  useEffect(() => {
+    if (!showConfirmPassword) return;
+
+    const timer = window.setTimeout(() => setShowConfirmPassword(false), 2200);
+    return () => window.clearTimeout(timer);
+  }, [showConfirmPassword]);
+
+  useEffect(() => {
+    if (!profileMessage && !accountMessage && !passwordError) return;
+
+    const timer = window.setTimeout(() => {
+      if (profileMessage) {
+        setProfileMessage(null);
+      }
+      if (accountMessage) {
+        setAccountMessage(null);
+      }
+      if (passwordError) {
+        setPasswordError(null);
+      }
+    }, 3000);
+
+    return () => window.clearTimeout(timer);
+  }, [profileMessage, accountMessage, passwordError]);
+
+  function clamp(value: number, min: number, max: number) {
+    return Math.min(Math.max(value, min), max);
+  }
+
+  function handleCropDrag(event: React.PointerEvent<HTMLDivElement>) {
+    if (!cropRef.current || !isDraggingCrop) return;
+
+    const bounds = cropRef.current.getBoundingClientRect();
+    const relativeX = (event.clientX - bounds.left) / bounds.width;
+    const relativeY = (event.clientY - bounds.top) / bounds.height;
+
+    const nextX = clamp(relativeX - crop.size / 2, 0, 1 - crop.size);
+    const nextY = clamp(relativeY - crop.size / 2, 0, 1 - crop.size);
+
+    setCrop((current) => ({ ...current, x: nextX, y: nextY }));
+  }
+
+  function handleCropPointerDown(event: React.PointerEvent<HTMLDivElement>) {
+    if (!cropRef.current) return;
+
+    event.preventDefault();
+    setIsDraggingCrop(true);
+    event.currentTarget.setPointerCapture(event.pointerId);
+    handleCropDrag(event);
+  }
+
+  function handleCropPointerMove(event: React.PointerEvent<HTMLDivElement>) {
+    handleCropDrag(event);
+  }
+
+  function handleCropPointerUp(event: React.PointerEvent<HTMLDivElement>) {
+    setIsDraggingCrop(false);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  }
+
+  async function createCroppedAvatarFile(file: File, cropArea = crop): Promise<File | null> {
+    return new Promise((resolve, reject) => {
+      const objectUrl = URL.createObjectURL(file);
+      const image = new Image();
+
+      image.onload = () => {
+        try {
+          const maxDimension = Math.min(image.naturalWidth, image.naturalHeight);
+          const cropSize = Math.max(1, Math.round(maxDimension * cropArea.size));
+          const x = Math.max(0, Math.round(image.naturalWidth * cropArea.x));
+          const y = Math.max(0, Math.round(image.naturalHeight * cropArea.y));
+
+          const canvas = document.createElement("canvas");
+          canvas.width = 512;
+          canvas.height = 512;
+
+          const context = canvas.getContext("2d");
+          if (!context) {
+            URL.revokeObjectURL(objectUrl);
+            resolve(null);
+            return;
+          }
+
+          context.fillStyle = "#ffffff";
+          context.fillRect(0, 0, canvas.width, canvas.height);
+          context.drawImage(
+            image,
+            clamp(x, 0, Math.max(0, image.naturalWidth - cropSize)),
+            clamp(y, 0, Math.max(0, image.naturalHeight - cropSize)),
+            cropSize,
+            cropSize,
+            0,
+            0,
+            512,
+            512,
+          );
+
+          canvas.toBlob(
+            (blob) => {
+              URL.revokeObjectURL(objectUrl);
+              if (!blob) {
+                reject(new Error("Unable to generate the cropped avatar."));
+                return;
+              }
+
+              resolve(new File([blob], "avatar.jpg", { type: "image/jpeg" }));
+            },
+            "image/jpeg",
+            0.9,
+          );
+        } catch (error) {
+          URL.revokeObjectURL(objectUrl);
+          reject(error);
+        }
+      };
+
+      image.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error("Unable to load the selected profile image."));
+      };
+
+      image.src = objectUrl;
+    });
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
     const trimmedPhone = phone.trim();
     const trimmedBio = bio.trim();
 
     if (trimmedName.length > 60) {
       setProfileMessage("Name cannot be longer than 60 characters.");
+      return;
+    }
+
+    if (!trimmedEmail || !emailRegex.test(trimmedEmail)) {
+      setProfileMessage("Please enter a valid email address.");
       return;
     }
 
@@ -221,20 +272,32 @@ export function ProfileEditor({ user }: { user: ProfileUser }) {
     setProfileMessage(null);
 
     try {
+      const formData = new FormData();
+      formData.append("name", trimmedName);
+      formData.append("email", trimmedEmail);
+      formData.append("phone", trimmedPhone);
+      formData.append("bio", trimmedBio);
+      formData.append("notifications", JSON.stringify({
+        emailNotifications,
+        courseReminders,
+        marketingEmails,
+        securityAlerts,
+      }));
+
+      if (avatarFile) {
+        const croppedAvatarFile = await createCroppedAvatarFile(avatarFile);
+        if (croppedAvatarFile) {
+          formData.append("avatarFile", croppedAvatarFile);
+        }
+      }
+
+      if (!avatarFile && !avatarUrl && user.avatarUrl) {
+        formData.append("removeAvatar", "true");
+      }
+
       const response = await fetch("/api/profile", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: trimmedName,
-          phone: trimmedPhone,
-          bio: trimmedBio,
-          notifications: {
-            emailNotifications,
-            courseReminders,
-            marketingEmails,
-            securityAlerts,
-          },
-        }),
+        body: formData,
       });
 
       const data = await response.json();
@@ -243,10 +306,39 @@ export function ProfileEditor({ user }: { user: ProfileUser }) {
         throw new Error(data?.error ?? "Unable to save profile changes.");
       }
 
+      const nextAvatarUrl = data?.user?.avatarUrl ?? (avatarFile ? URL.createObjectURL(avatarFile) : avatarUrl);
+
       setIsEditing(false);
       setName(trimmedName);
+      setEmail(trimmedEmail);
       setPhone(trimmedPhone);
       setBio(trimmedBio);
+      setAvatarUrl(nextAvatarUrl || "");
+      setAvatarFile(null);
+
+      if (typeof update === "function") {
+        await update({
+          name: trimmedName,
+          email: trimmedEmail,
+          avatarUrl: nextAvatarUrl || null,
+          image: nextAvatarUrl || null,
+          user: {
+            name: trimmedName,
+            email: trimmedEmail,
+            image: nextAvatarUrl || null,
+          },
+        });
+      }
+
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("cognive-profile-sync", JSON.stringify({
+          name: trimmedName,
+          email: trimmedEmail,
+          avatarUrl: nextAvatarUrl || "",
+        }));
+      }
+
+      router.refresh();
       setProfileMessage("Profile updated successfully.");
     } catch (error) {
       setProfileMessage(error instanceof Error ? error.message : "Unable to save profile changes.");
@@ -259,21 +351,22 @@ export function ProfileEditor({ user }: { user: ProfileUser }) {
     event.preventDefault();
 
     if (!currentPassword || !newPassword || !confirmPassword) {
-      setAccountMessage("Please fill in your current password, new password, and confirmation.");
+      setPasswordError("Please fill in your current password, new password, and confirmation.");
       return;
     }
 
-    if (newPassword.length < 8) {
-      setAccountMessage("New password must be at least 8 characters long.");
+    if (!passwordRegex.test(newPassword)) {
+      setPasswordError("New password must be at least 8 characters and include uppercase, lowercase, number, and special character.");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setAccountMessage("New password and confirmation do not match.");
+      setPasswordError("New password and confirmation do not match.");
       return;
     }
 
     setSaving(true);
+    setPasswordError(null);
     setAccountMessage(null);
 
     try {
@@ -303,10 +396,48 @@ export function ProfileEditor({ user }: { user: ProfileUser }) {
       setNewPassword("");
       setConfirmPassword("");
       setAccountMessage("Password updated successfully.");
+      setPasswordError(null);
     } catch (error) {
-      setAccountMessage(error instanceof Error ? error.message : "Unable to update password.");
+      const message = error instanceof Error ? error.message : "Unable to update password.";
+      const readableMessage = message === "Current password is incorrect"
+        ? "The current password you entered is incorrect. Please try again."
+        : message;
+      setPasswordError(readableMessage);
+      setAccountMessage(null);
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleNotificationPreferencesSubmit() {
+    setSavingNotifications(true);
+    setAccountMessage(null);
+
+    try {
+      const response = await fetch("/api/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          notifications: {
+            emailNotifications,
+            courseReminders,
+            marketingEmails,
+            securityAlerts,
+          },
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error ?? "Unable to update notification preferences.");
+      }
+
+      setAccountMessage("Notification preferences updated successfully.");
+    } catch (error) {
+      setAccountMessage(error instanceof Error ? error.message : "Unable to update notification preferences.");
+    } finally {
+      setSavingNotifications(false);
     }
   }
 
@@ -315,14 +446,18 @@ export function ProfileEditor({ user }: { user: ProfileUser }) {
       <div className="rounded-[32px] border border-slate-200 bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(248,250,252,0.94))] p-5 shadow-[0_24px_60px_rgba(15,23,42,0.06)] transition-colors duration-300 dark:border-slate-700 dark:bg-[linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(17,24,39,0.9))] dark:shadow-[0_28px_70px_rgba(15,23,42,0.36)] sm:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-5">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 via-violet-600 to-sky-500 text-2xl font-black text-white shadow-[0_16px_32px_rgba(99,102,241,0.28)]">
-              {initials}
+            <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-indigo-600 via-violet-600 to-sky-500 text-2xl font-black text-white shadow-[0_16px_32px_rgba(99,102,241,0.28)]">
+              {displayAvatarUrl ? (
+                <img src={displayAvatarUrl} alt={displayName || user.email} className="h-full w-full object-cover" />
+              ) : (
+                initials
+              )}
             </div>
 
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-indigo-600 dark:text-indigo-300">Profile</p>
               <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900 dark:text-white">
-                {name || "Student"}
+                {displayName || "Student"}
               </h1>
               <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                 <span className="rounded-full bg-slate-100 px-2.5 py-1 dark:bg-slate-800">{user.role}</span>
@@ -336,124 +471,11 @@ export function ProfileEditor({ user }: { user: ProfileUser }) {
             <button
               type="button"
               onClick={() => setIsEditing(true)}
-              className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(15,23,42,0.18)] transition hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
+              className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(99,102,241,0.35)] transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_18px_36px_rgba(99,102,241,0.42)] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
             >
               Edit profile
             </button>
           ) : null}
-        </div>
-
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
-          {accountOverview.map((item) => (
-            <div key={item.label} className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-800/80">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{item.label}</div>
-              <div className="mt-2 text-lg font-bold text-slate-900 dark:text-white">{item.value}</div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-8 rounded-[26px] border border-slate-200 bg-white/80 p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900/80">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Account verification</p>
-              <h2 className="mt-1 text-lg font-bold text-slate-900 dark:text-white">Verify your account before login</h2>
-            </div>
-            <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${emailVerified && phoneVerified ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300" : "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"}`}>
-              {emailVerified && phoneVerified ? "Verified" : "Pending"}
-            </span>
-          </div>
-
-          {verificationMessage ? (
-            <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
-              {verificationMessage}
-            </div>
-          ) : null}
-
-          <div className="grid gap-4 lg:grid-cols-2">
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/70">
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-sm font-semibold text-slate-900 dark:text-white">Email verification</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">{emailVerified ? "Verified" : "Not verified"}</div>
-                </div>
-                {!emailVerified ? (
-                  <button type="button" onClick={handleSendEmailOtp} disabled={emailOtpLoading} className="rounded-full bg-indigo-600 px-3 py-1.5 text-[10px] font-semibold text-white transition hover:bg-indigo-500 disabled:opacity-70">
-                    {emailOtpLoading ? "Sending..." : "Send OTP"}
-                  </button>
-                ) : null}
-              </div>
-
-              {!emailVerified ? (
-                <div className="mt-3 flex gap-2">
-                  <input
-                    type="text"
-                    value={emailOtpCode}
-                    onChange={(event) => setEmailOtpCode(event.target.value)}
-                    placeholder="6-digit code"
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-                  />
-                  <button type="button" onClick={handleVerifyEmailOtp} disabled={emailOtpLoading} className="rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-700 disabled:opacity-70 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white">
-                    Verify
-                  </button>
-                </div>
-              ) : (
-                <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
-                  Your email is verified.
-                </div>
-              )}
-            </div>
-
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/70">
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-sm font-semibold text-slate-900 dark:text-white">Mobile verification</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">{phoneVerified ? "Verified" : "Not verified"}</div>
-                </div>
-                {!phoneVerified ? (
-                  <button type="button" onClick={handleSendPhoneOtp} disabled={phoneOtpLoading} className="rounded-full bg-indigo-600 px-3 py-1.5 text-[10px] font-semibold text-white transition hover:bg-indigo-500 disabled:opacity-70">
-                    {phoneOtpLoading ? "Sending..." : "Send OTP"}
-                  </button>
-                ) : null}
-              </div>
-
-              {!phoneVerified ? (
-                <div className="mt-3 flex gap-2">
-                  <input
-                    type="text"
-                    value={phoneOtpCode}
-                    onChange={(event) => setPhoneOtpCode(event.target.value)}
-                    placeholder="6-digit code"
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-                  />
-                  <button type="button" onClick={handleVerifyPhoneOtp} disabled={phoneOtpLoading} className="rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-700 disabled:opacity-70 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white">
-                    Verify
-                  </button>
-                </div>
-              ) : (
-                <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
-                  Your mobile number is verified.
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-8 rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-violet-50 to-sky-50 p-4 dark:border-indigo-500/20 dark:from-indigo-500/5 dark:via-violet-500/5 dark:to-sky-500/5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <div className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Profile completion</div>
-              <div className="mt-2 text-xl font-black text-slate-900 dark:text-white">{profileCompletion}%</div>
-            </div>
-            <div className="text-sm text-slate-600 dark:text-slate-300">
-              {name ? "Personal details are ready" : "Add your name"}
-            </div>
-          </div>
-          <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-indigo-100 dark:bg-slate-700">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 transition-all duration-300"
-              style={{ width: `${profileCompletion}%` }}
-            />
-          </div>
         </div>
 
       </div>
@@ -478,6 +500,114 @@ export function ProfileEditor({ user }: { user: ProfileUser }) {
           ) : null}
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/80">
+              <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-indigo-600 via-violet-600 to-sky-500 text-xl font-black text-white">
+                {avatarUrl ? <img src={avatarUrl} alt={name || user.email} className="h-full w-full object-cover" /> : initials}
+              </div>
+
+              <div className="flex-1">
+                <div className="text-sm font-medium text-slate-900 dark:text-white">Profile photo</div>
+                <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">Upload a clear photo for your student profile.</div>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <label className="inline-flex cursor-pointer items-center justify-center rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-indigo-500">
+                    Upload photo
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0] ?? null;
+                        if (!file) return;
+                        setAvatarFile(file);
+                        setShowCropEditor(true);
+                        setAvatarUrl(URL.createObjectURL(file));
+                        setCrop({ x: 0.15, y: 0.15, size: 0.7 });
+                      }}
+                    />
+                  </label>
+                  {avatarUrl ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAvatarFile(null);
+                        setAvatarUrl("");
+                        setShowCropEditor(false);
+                      }}
+                      className="rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                    >
+                      Remove photo
+                    </button>
+                  ) : null}
+                </div>
+
+                {avatarFile && showCropEditor ? (
+                  <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900/80">
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Adjust crop</div>
+                        <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">Drag the square to position your profile photo.</div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setCrop({ x: 0.15, y: 0.15, size: 0.7 })}
+                        className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                      >
+                        Reset
+                      </button>
+                    </div>
+
+                    <div
+                      ref={cropRef}
+                      onPointerDown={handleCropPointerDown}
+                      onPointerMove={handleCropPointerMove}
+                      onPointerUp={handleCropPointerUp}
+                      onPointerLeave={handleCropPointerUp}
+                      className="relative mx-auto aspect-square w-full max-w-[260px] cursor-move overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-inner dark:border-slate-700 dark:bg-slate-800"
+                    >
+                      <img
+                        src={avatarUrl}
+                        alt="Selected avatar preview"
+                        className="pointer-events-none h-full w-full select-none object-cover"
+                      />
+
+                      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,transparent_calc(100%_-_28px),rgba(15,23,42,0.72)_100%)]" />
+
+                      <div
+                        className="pointer-events-none absolute rounded-xl border-2 border-indigo-500 bg-white/10 shadow-[0_0_0_9999px_rgba(15,23,42,0.38)]"
+                        style={{
+                          left: `${crop.x * 100}%`,
+                          top: `${crop.y * 100}%`,
+                          width: `${crop.size * 100}%`,
+                          height: `${crop.size * 100}%`,
+                        }}
+                      />
+                    </div>
+
+                    <div className="mt-4 flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAvatarFile(null);
+                          setAvatarUrl(user.avatarUrl ?? "");
+                          setShowCropEditor(false);
+                        }}
+                        className="rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowCropEditor(false)}
+                        className="rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-indigo-500"
+                      >
+                        OK
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+
             <div className="grid gap-6 md:grid-cols-2">
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
                 Full name
@@ -489,6 +619,19 @@ export function ProfileEditor({ user }: { user: ProfileUser }) {
               </label>
 
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                Email
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="Enter your email address"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-400 focus:bg-white dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                />
+              </label>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
                 Phone
                 <input
                   value={phone}
@@ -497,6 +640,8 @@ export function ProfileEditor({ user }: { user: ProfileUser }) {
                   className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-400 focus:bg-white dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                 />
               </label>
+
+              <div className="hidden md:block" />
             </div>
 
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -510,26 +655,30 @@ export function ProfileEditor({ user }: { user: ProfileUser }) {
               />
             </label>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsEditing(false);
+                  setName(user.name ?? "");
+                  setEmail(user.email ?? "");
+                  setPhone(user.phone ?? "");
+                  setBio(user.bio ?? "");
+                  setAvatarUrl(user.avatarUrl ?? "");
+                  setAvatarFile(null);
+                  setShowCropEditor(false);
+                  setProfileMessage(null);
+                }}
+                className="rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+              >
+                Cancel
+              </button>
               <button
                 type="submit"
                 disabled={saving}
                 className="rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(99,102,241,0.25)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {saving ? "Saving..." : "Save changes"}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsEditing(false);
-                  setName(user.name ?? "");
-                  setPhone(user.phone ?? "");
-                  setBio(user.bio ?? "");
-                  setProfileMessage(null);
-                }}
-                className="rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
-              >
-                Cancel
               </button>
             </div>
           </form>
@@ -539,20 +688,18 @@ export function ProfileEditor({ user }: { user: ProfileUser }) {
           <div className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.05)] dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-[0_20px_42px_rgba(15,23,42,0.28)]">
             <div className="mb-5 flex items-center justify-between gap-3">
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">Profile details</h2>
-              <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                Public info
-              </span>
+
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/80">
                 <div className="text-sm text-slate-500 dark:text-slate-400">Full name</div>
-                <div className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">{name || "Not provided"}</div>
+                <div className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">{displayName || "Not provided"}</div>
               </div>
 
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/80">
                 <div className="text-sm text-slate-500 dark:text-slate-400">Email</div>
-                <div className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">{user.email}</div>
+                <div className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">{email || user.email}</div>
               </div>
 
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/80">
@@ -580,63 +727,115 @@ export function ProfileEditor({ user }: { user: ProfileUser }) {
               <h2 className="mt-1 text-base font-semibold text-slate-900 dark:text-white">Security & notifications</h2>
             </div>
 
-            {accountMessage ? (
-              <div
-                className={`mb-3 rounded-xl border px-3 py-2 text-xs ${
-                  accountMessage.includes("success")
-                    ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200"
-                    : "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
-                }`}
-              >
-                {accountMessage}
-              </div>
-            ) : null}
-
             <div className="space-y-2.5">
-              <form onSubmit={handlePasswordSubmit} className="rounded-xl border border-slate-200 bg-slate-50/80 p-3 dark:border-slate-700 dark:bg-slate-800/60">
-                <div className="mb-2 flex items-center justify-between gap-3">
-                  <div className="text-sm font-medium text-slate-900 dark:text-white">Change password</div>
-
-                  <button
-                    type="submit"
-                    disabled={saving}
-                    className="rounded-full bg-slate-900 px-2.5 py-1.5 text-[10px] font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
-                  >
-                    {saving ? "Saving..." : "Update password"}
-                  </button>
+              {accountMessage ? (
+                <div
+                  className={`rounded-xl border px-3 py-2 text-xs ${
+                    accountMessage.includes("success")
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200"
+                      : "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
+                  }`}
+                >
+                  {accountMessage}
                 </div>
+              ) : null}
+
+              <form onSubmit={handlePasswordSubmit} className="rounded-xl border border-slate-200 bg-slate-50/80 p-3 dark:border-slate-700 dark:bg-slate-800/60">
+                <div className="mb-2 text-sm font-medium text-slate-900 dark:text-white">Change password</div>
 
                 <div className="space-y-2">
                   <label className="block text-[9px] font-medium uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
                     Current password
-                    <input
-                      type="password"
-                      value={currentPassword}
-                      onChange={(event) => setCurrentPassword(event.target.value)}
-                      className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-sm text-slate-900 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-indigo-500/20"
-                    />
+                    <div className="relative mt-1">
+                      <input
+                        type={showCurrentPassword ? "text" : "password"}
+                        value={currentPassword}
+                        onChange={(event) => setCurrentPassword(event.target.value)}
+                        className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 pr-9 text-sm text-slate-900 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-indigo-500/20"
+                      />
+                      <button
+                        type="button"
+                        aria-label={showCurrentPassword ? "Hide current password" : "Show current password"}
+                        onClick={() => setShowCurrentPassword((currentValue) => !currentValue)}
+                        className="absolute inset-y-0 right-2.5 flex items-center text-slate-500 transition hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                      >
+                        {showCurrentPassword ? "🙈" : "👁️"}
+                      </button>
+                    </div>
                   </label>
 
                   <div className="grid gap-2 sm:grid-cols-2">
                     <label className="block text-[9px] font-medium uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
                       New password
-                      <input
-                        type="password"
-                        value={newPassword}
-                        onChange={(event) => setNewPassword(event.target.value)}
-                        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-sm text-slate-900 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-indigo-500/20"
-                      />
+                      <div className="relative mt-1">
+                        <input
+                          type={showNewPassword ? "text" : "password"}
+                          value={newPassword}
+                          onChange={(event) => setNewPassword(event.target.value)}
+                          className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 pr-9 text-sm text-slate-900 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-indigo-500/20"
+                        />
+                        <button
+                          type="button"
+                          aria-label={showNewPassword ? "Hide new password" : "Show new password"}
+                          onClick={() => setShowNewPassword((currentValue) => !currentValue)}
+                          className="absolute inset-y-0 right-2.5 flex items-center text-slate-500 transition hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                        >
+                          {showNewPassword ? "🙈" : "👁️"}
+                        </button>
+                      </div>
                     </label>
 
                     <label className="block text-[9px] font-medium uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
                       Confirm
-                      <input
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(event) => setConfirmPassword(event.target.value)}
-                        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-sm text-slate-900 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-indigo-500/20"
-                      />
+                      <div className="relative mt-1">
+                        <input
+                          type={showConfirmPassword ? "text" : "password"}
+                          value={confirmPassword}
+                          onChange={(event) => setConfirmPassword(event.target.value)}
+                          className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 pr-9 text-sm text-slate-900 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-indigo-500/20"
+                        />
+                        <button
+                          type="button"
+                          aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                          onClick={() => setShowConfirmPassword((currentValue) => !currentValue)}
+                          className="absolute inset-y-0 right-2.5 flex items-center text-slate-500 transition hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                        >
+                          {showConfirmPassword ? "🙈" : "👁️"}
+                        </button>
+                      </div>
                     </label>
+                  </div>
+
+                  {newPassword.length > 0 ? (
+                    <div className="grid gap-1.5 rounded-xl border border-slate-200 bg-white p-2.5 dark:border-slate-700 dark:bg-slate-900/80">
+                      {passwordChecks.map((check) => (
+                        <div key={check.label} className="flex items-center gap-2 text-[11px]">
+                          <span className={`inline-flex h-4 w-4 items-center justify-center rounded-full border text-[9px] font-bold ${check.valid ? "border-emerald-500 bg-emerald-500 text-white" : "border-slate-300 bg-white text-slate-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-500"}`}>
+                            {check.valid ? "✓" : "•"}
+                          </span>
+                          <span className={check.valid ? "text-emerald-700 dark:text-emerald-300" : "text-slate-500 dark:text-slate-400"}>
+                            {check.label}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+
+                  {(confirmPasswordWarning || passwordError) ? (
+                    <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-2.5 py-2 text-[10px] font-medium text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
+                      <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[9px] font-bold text-white">!</span>
+                      {passwordError ?? "Passwords do not match."}
+                    </div>
+                  ) : null}
+
+                  <div className="flex justify-end pt-2">
+                    <button
+                      type="submit"
+                      disabled={saving}
+                      className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-white shadow-[0_10px_22px_rgba(99,102,241,0.28)] transition-all duration-200 hover:scale-[1.01] hover:shadow-[0_12px_26px_rgba(99,102,241,0.36)] disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      {saving ? "Saving..." : "Update password"}
+                    </button>
                   </div>
                 </div>
               </form>
@@ -663,6 +862,17 @@ export function ProfileEditor({ user }: { user: ProfileUser }) {
                       </button>
                     </label>
                   ))}
+                </div>
+
+                <div className="mt-3 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleNotificationPreferencesSubmit}
+                    disabled={savingNotifications}
+                    className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-white shadow-[0_10px_22px_rgba(99,102,241,0.28)] transition-all duration-200 hover:scale-[1.01] hover:shadow-[0_12px_26px_rgba(99,102,241,0.36)] disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {savingNotifications ? "Saving..." : "Save preferences"}
+                  </button>
                 </div>
               </div>
             </div>

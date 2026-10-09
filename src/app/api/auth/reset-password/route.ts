@@ -50,10 +50,14 @@ export async function POST(request: Request) {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
+    const recentPasswordHashes = [user.passwordHash, ...(user.recentPasswordHashes ?? [])].filter((hash): hash is string => Boolean(hash)).slice(0, 3);
 
     await prisma.user.update({
       where: { id: user.id },
-      data: { passwordHash },
+      data: {
+        passwordHash,
+        recentPasswordHashes,
+      },
     });
 
     return NextResponse.json({

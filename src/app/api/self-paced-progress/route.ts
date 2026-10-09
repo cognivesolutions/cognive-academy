@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { getNextLectureProgressBusinessId } from "@/lib/id-generator";
 import { prisma } from "@/lib/prisma";
 
 const VALID_STATUSES = new Set(["not_started", "inprogress", "completed"]);
@@ -135,6 +136,8 @@ export async function POST(request: Request) {
     const normalizedStatus = normalizeStatus(existingRecord?.status ?? body?.status, maxWatchedPercent);
     const finalStatus = normalizedStatus === "completed" || status === "completed" ? "completed" : normalizedStatus;
 
+    const lectureProgressId = await getNextLectureProgressBusinessId(prisma);
+
     const record = await prisma.lectureProgress.upsert({
       where: {
         userId_lectureId: {
@@ -147,6 +150,7 @@ export async function POST(request: Request) {
         watchedPercent: maxWatchedPercent,
       },
       create: {
+        lectureProgressId,
         userId: session.user.id,
         courseId,
         lectureId,
