@@ -217,6 +217,16 @@ export default async function ManageCoursesPage({
       formatParam === "0"
   );
 
+  const sortOptionsWithAllFirst = <T extends { value: string; label: string }>(options: T[]) =>
+    [...options].sort((a, b) => {
+      const aIsAll = a.value === "all" || a.value === "" || a.label === "All";
+      const bIsAll = b.value === "all" || b.value === "" || b.label === "All";
+
+      if (aIsAll && !bIsAll) return -1;
+      if (!aIsAll && bIsAll) return 1;
+      return a.label.localeCompare(b.label);
+    });
+
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
       <div className="mx-auto max-w-6xl px-5 py-8">
@@ -275,14 +285,14 @@ export default async function ManageCoursesPage({
                       hideLabel
                       placeholder="All"
                       defaultValue={categoryParam || "all"}
-                      options={[
+                      options={sortOptionsWithAllFirst([
                         { value: "all", label: "All" },
                         { value: "Software Development", label: "Software Development" },
                         { value: "AI Engineering", label: "AI Engineering" },
                         { value: "Data Engineering", label: "Data Engineering" },
                         { value: "Data Analytics", label: "Data Analytics" },
                         { value: "Data Structure & Algorithms", label: "DSA" },
-                      ]}
+                      ])}
                       triggerClassName="!h-[38px] !min-h-[38px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
                       menuClassName="!min-w-[140px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
                     />
@@ -295,12 +305,12 @@ export default async function ManageCoursesPage({
                       hideLabel
                       placeholder="All"
                       defaultValue={levelParam || "all"}
-                      options={[
+                      options={sortOptionsWithAllFirst([
                         { value: "all", label: "All" },
                         { value: "Beginner", label: "Beginner" },
                         { value: "Intermediate", label: "Intermediate" },
                         { value: "Advanced", label: "Advanced" },
-                      ]}
+                      ])}
                       triggerClassName="!h-[38px] !min-h-[38px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
                       menuClassName="!min-w-[120px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
                     />
@@ -313,11 +323,11 @@ export default async function ManageCoursesPage({
                       hideLabel
                       placeholder="All"
                       defaultValue={formatParam === "true" || formatParam === "false" ? formatParam : "all"}
-                      options={[
+                      options={sortOptionsWithAllFirst([
                         { value: "all", label: "All" },
                         { value: "true", label: "Live" },
                         { value: "false", label: "Recorded" },
-                      ]}
+                      ])}
                       triggerClassName="!h-[38px] !min-h-[38px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
                       menuClassName="!min-w-[120px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
                     />
@@ -330,11 +340,11 @@ export default async function ManageCoursesPage({
                       hideLabel
                       placeholder="All"
                       defaultValue={languageParam || "all"}
-                      options={[
+                      options={sortOptionsWithAllFirst([
                         { value: "all", label: "All" },
                         { value: "en", label: "English" },
                         { value: "hi", label: "Hindi" },
-                      ]}
+                      ])}
                       triggerClassName="!h-[38px] !min-h-[38px] !w-[120px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
                       menuClassName="!min-w-[120px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
                     />
@@ -347,11 +357,11 @@ export default async function ManageCoursesPage({
                       hideLabel
                       placeholder="All"
                       defaultValue={publishedParam === "true" || publishedParam === "false" ? publishedParam : "all"}
-                      options={[
+                      options={sortOptionsWithAllFirst([
                         { value: "all", label: "All" },
                         { value: "true", label: "Published" },
                         { value: "false", label: "Unpublished" },
-                      ]}
+                      ])}
                       triggerClassName="!h-[38px] !min-h-[38px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
                       menuClassName="!min-w-[132px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
                     />

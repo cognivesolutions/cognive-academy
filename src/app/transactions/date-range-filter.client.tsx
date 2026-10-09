@@ -3,8 +3,10 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-type PlacedOnDateFilterProps = {
+type DateRangeFilterFieldProps = {
+  name: "startDate" | "endDate";
   defaultValue?: string;
+  label: string;
 };
 
 const parseLocalDate = (value: string) => {
@@ -27,7 +29,7 @@ const formatIstDate = (date: Date) =>
     year: "numeric",
   }).format(date);
 
-export function PlacedOnDateFilter({ defaultValue = "" }: PlacedOnDateFilterProps) {
+export function TransactionsDateRangeFilterField({ name, defaultValue = "", label }: DateRangeFilterFieldProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -66,9 +68,9 @@ export function PlacedOnDateFilter({ defaultValue = "" }: PlacedOnDateFilterProp
     const params = new URLSearchParams(searchParams?.toString() ?? "");
 
     if (!nextValue) {
-      params.delete("placedOn");
+      params.delete(name);
     } else {
-      params.set("placedOn", nextValue);
+      params.set(name, nextValue);
     }
 
     params.set("page", "1");
@@ -77,7 +79,7 @@ export function PlacedOnDateFilter({ defaultValue = "" }: PlacedOnDateFilterProp
     router.replace(targetUrl, { scroll: false });
   };
 
-  const label = selectedDate ? formatIstDate(parseLocalDate(selectedDate)) : "Placed on";
+  const labelText = selectedDate ? formatIstDate(parseLocalDate(selectedDate)) : label;
   const monthLabel = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(calendarMonth);
   const monthStart = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1);
   const monthStartOffset = (monthStart.getDay() + 6) % 7;
@@ -97,15 +99,15 @@ export function PlacedOnDateFilter({ defaultValue = "" }: PlacedOnDateFilterProp
   };
 
   return (
-    <div className="relative min-w-[120px] shrink-0" ref={calendarRef}>
+    <div className="relative z-30 min-w-[120px] shrink-0" ref={calendarRef}>
       <button
         type="button"
         onClick={() => setIsCalendarOpen((open) => !open)}
         className="relative flex h-[38px] w-[120px] cursor-pointer items-center justify-between gap-2 rounded-full border border-slate-200 bg-white/90 px-2 text-sm text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] transition duration-200 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-        aria-label="Placed on filter"
+        aria-label={label}
       >
         <span className="pointer-events-none flex-1 truncate text-left text-slate-700 dark:text-slate-100">
-          {label}
+          {labelText}
         </span>
         <svg
           aria-hidden="true"
@@ -119,7 +121,7 @@ export function PlacedOnDateFilter({ defaultValue = "" }: PlacedOnDateFilterProp
       </button>
 
       {isCalendarOpen && (
-        <div className="absolute left-0 top-full z-[60] mt-2 w-[280px] overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_16px_40px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[0_16px_40px_rgba(2,6,23,0.5)]">
+        <div className="absolute left-0 top-full z-[80] mt-2 w-[280px] overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_16px_40px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[0_16px_40px_rgba(2,6,23,0.5)]">
           <div className="mb-3 flex items-center justify-between gap-3 text-slate-700 dark:text-slate-200">
             <button
               type="button"

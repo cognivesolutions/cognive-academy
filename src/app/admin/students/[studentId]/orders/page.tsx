@@ -49,7 +49,7 @@ export default async function StudentOrderHistoryPage({ params, searchParams }: 
           currency: true,
           status: true,
           createdAt: true,
-          course: { select: { id: true, title: true } },
+          course: { select: { id: true, title: true, category: true } },
         },
       },
     },
@@ -60,9 +60,15 @@ export default async function StudentOrderHistoryPage({ params, searchParams }: 
   }
 
   const q = Array.isArray(resolvedSearchParams.q) ? resolvedSearchParams.q[0] ?? "" : resolvedSearchParams.q ?? "";
+  const courseIdFilter = Array.isArray(resolvedSearchParams.courseId)
+    ? resolvedSearchParams.courseId[0] ?? "all"
+    : resolvedSearchParams.courseId ?? "all";
   const courseFilter = Array.isArray(resolvedSearchParams.course)
     ? resolvedSearchParams.course[0] ?? "all"
     : resolvedSearchParams.course ?? "all";
+  const categoryFilter = Array.isArray(resolvedSearchParams.category)
+    ? resolvedSearchParams.category[0] ?? "all"
+    : resolvedSearchParams.category ?? "all";
   const priceFilter = Array.isArray(resolvedSearchParams.price)
     ? resolvedSearchParams.price[0] ?? "all"
     : resolvedSearchParams.price ?? "all";
@@ -118,10 +124,33 @@ export default async function StudentOrderHistoryPage({ params, searchParams }: 
 
   const placedOnInputValue = normalizePlacedOnValue(placedOnFilter);
 
-  const courseOptions = [
+  const sortOptionsWithAllFirst = <T extends { value: string; label: string }>(options: T[]) =>
+    [...options].sort((a, b) => {
+      const aIsAll = a.value === "all" || a.value === "" || a.label === "All";
+      const bIsAll = b.value === "all" || b.value === "" || b.label === "All";
+
+      if (aIsAll && !bIsAll) return -1;
+      if (!aIsAll && bIsAll) return 1;
+      return a.label.localeCompare(b.label);
+    });
+
+  const courseIdOptions = [
+    { value: "all", label: "All" },
+    ...Array.from(new Set(student.orders.map((order) => order.course.id))).map((courseId) => ({ value: courseId, label: courseId })),
+  ];
+
+  const courseOptions = sortOptionsWithAllFirst([
     { value: "all", label: "All" },
     ...Array.from(new Set(student.orders.map((order) => order.course.title))).map((title) => ({ value: title, label: title })),
-  ];
+  ]);
+
+  const categoryOptions = sortOptionsWithAllFirst([
+    { value: "all", label: "All" },
+    ...Array.from(new Set(student.orders.map((order) => order.course.category ?? "General"))).map((category) => ({
+      value: category,
+      label: category,
+    })),
+  ]);
 
   const priceOptions = [
     { value: "all", label: "All" },
@@ -142,7 +171,9 @@ export default async function StudentOrderHistoryPage({ params, searchParams }: 
   const filteredOrders = student.orders.filter((order) => {
     const orderText = [
       order.id,
+      order.course.id,
       order.course.title,
+      order.course.category ?? "General",
       String(Number(order.amount ?? 0)),
       formatCurrencyInr(order.amount),
       order.status,
@@ -155,20 +186,31 @@ export default async function StudentOrderHistoryPage({ params, searchParams }: 
 
     const orderPlacedValue = normalizePlacedOnValue(formatPlacedDate(order.createdAt));
     const matchesSearch = !searchTerm || orderText.includes(searchTerm);
+    const matchesCourseId = courseIdFilter === "all" || order.course.id === courseIdFilter;
     const matchesCourse = courseFilter === "all" || order.course.title === courseFilter;
+    const matchesCategory = categoryFilter === "all" || (order.course.category ?? "General") === categoryFilter;
     const matchesPrice = priceFilter === "all" || String(Number(order.amount ?? 0)) === priceFilter;
     const matchesStatus = statusFilter === "all" || order.status === statusFilter;
     const matchesPlacedOn = placedOnInputValue === "" || orderPlacedValue === placedOnInputValue;
-    return matchesSearch && matchesCourse && matchesPrice && matchesStatus && matchesPlacedOn;
+    return matchesSearch && matchesCourseId && matchesCourse && matchesCategory && matchesPrice && matchesStatus && matchesPlacedOn;
   });
 
-  const hasActiveFilters = Boolean(q || courseFilter !== "all" || priceFilter !== "all" || statusFilter !== "all" || placedOnFilter !== "all");
+  const hasActiveFilters = Boolean(q || courseIdFilter !== "all" || courseFilter !== "all" || categoryFilter !== "all" || priceFilter !== "all" || statusFilter !== "all" || placedOnFilter !== "all");
   const effectivePageSize = pageSize === "all" ? filteredOrders.length || 1 : pageSize;
   const totalPages = Math.max(1, Math.ceil(filteredOrders.length / effectivePageSize));
   const safePage = Math.min(page, totalPages);
   const firstVisible = filteredOrders.length === 0 ? 0 : (safePage - 1) * effectivePageSize + 1;
   const lastVisible = Math.min(safePage * effectivePageSize, filteredOrders.length);
   const paginatedOrders = filteredOrders.slice((safePage - 1) * effectivePageSize, safePage * effectivePageSize);
+
+  const orderHistoryExportColumns = [
+    "Course ID",
+    "Course Name",
+    "Category",
+    "Amount",
+    "Status",
+    "Placed On",
+  ] as const;
 
   const buildPageHref = (nextPage: number) => {
     const params = new URLSearchParams();
@@ -177,8 +219,16 @@ export default async function StudentOrderHistoryPage({ params, searchParams }: 
       params.set("q", q);
     }
 
+    if (courseIdFilter !== "all") {
+      params.set("courseId", courseIdFilter);
+    }
+
     if (courseFilter !== "all") {
       params.set("course", courseFilter);
+    }
+
+    if (categoryFilter !== "all") {
+      params.set("category", categoryFilter);
     }
 
     if (priceFilter !== "all") {
@@ -243,35 +293,63 @@ export default async function StudentOrderHistoryPage({ params, searchParams }: 
                   clearFiltersHref={`/admin/students/${student.id}/orders`}
                   leftControls={
                     <>
-                      <div className="min-w-[150px]">
+                      <div className="min-w-[130px]">
                         <CourseSelect
-                          name="course"
-                          label="Course"
+                          name="courseId"
+                          label="Course ID"
                           compact
                           hideLabel
-                          placeholder="Course"
-                          defaultValue={courseFilter || "all"}
-                          options={courseOptions}
-                          triggerClassName="!h-[38px] !min-h-[38px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-                          menuClassName="!min-w-[150px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
-                        />
-                      </div>
-
-                      <div className="min-w-[120px]">
-                        <CourseSelect
-                          name="price"
-                          label="Price"
-                          compact
-                          hideLabel
-                          placeholder="Price"
-                          defaultValue={priceFilter || "all"}
-                          options={priceOptions}
+                          placeholder="Course ID"
+                          defaultValue={courseIdFilter || "all"}
+                          options={courseIdOptions}
                           triggerClassName="!h-[38px] !min-h-[38px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
                           menuClassName="!min-w-[120px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
                         />
                       </div>
 
-                      <div className="min-w-[140px]">
+                      <div className="min-w-[136px]">
+                        <CourseSelect
+                          name="course"
+                          label="Course Name"
+                          compact
+                          hideLabel
+                          placeholder="Course Name"
+                          defaultValue={courseFilter || "all"}
+                          options={courseOptions}
+                          triggerClassName="!h-[38px] !min-h-[38px] !w-[130px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                          menuClassName="!min-w-[130px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
+                        />
+                      </div>
+
+                      <div className="min-w-[120px]">
+                        <CourseSelect
+                          name="category"
+                          label="Category"
+                          compact
+                          hideLabel
+                          placeholder="Category"
+                          defaultValue={categoryFilter || "all"}
+                          options={categoryOptions}
+                          triggerClassName="!h-[38px] !min-h-[38px] !w-[120px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                          menuClassName="!min-w-[120px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
+                        />
+                      </div>
+
+                      <div className="min-w-[100px]">
+                        <CourseSelect
+                          name="price"
+                          label="Amount"
+                          compact
+                          hideLabel
+                          placeholder="Amount"
+                          defaultValue={priceFilter || "all"}
+                          options={priceOptions}
+                          triggerClassName="!h-[38px] !min-h-[38px] !w-[100px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                          menuClassName="!min-w-[100px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
+                        />
+                      </div>
+
+                      <div className="min-w-[100px]">
                         <CourseSelect
                           name="status"
                           label="Status"
@@ -280,8 +358,8 @@ export default async function StudentOrderHistoryPage({ params, searchParams }: 
                           placeholder="Status"
                           defaultValue={statusFilter || "all"}
                           options={statusOptions}
-                          triggerClassName="!h-[38px] !min-h-[38px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-                          menuClassName="!min-w-[140px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
+                          triggerClassName="!h-[38px] !min-h-[38px] !w-[100px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                          menuClassName="!min-w-[100px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
                         />
                       </div>
 
@@ -299,13 +377,16 @@ export default async function StudentOrderHistoryPage({ params, searchParams }: 
               ) : (
                 <>
                   <StudentOrderHistoryTable
+                    query={q}
                     orders={paginatedOrders.map((order) => ({
                       id: order.id,
                       amount: Number(order.amount ?? 0),
                       status: order.status,
                       createdAt: order.createdAt,
                       course: {
+                        id: order.course.id,
                         title: order.course.title,
+                        category: order.course.category ?? "General",
                       },
                     }))}
                   />
@@ -315,17 +396,26 @@ export default async function StudentOrderHistoryPage({ params, searchParams }: 
                       <StudentProfileExportActions
                         title={`Course purchase history - ${student.name ?? "Student"}`}
                         filenamePrefix={`course-purchase-history-${student.name ?? "student"}`}
-                        rows={filteredOrders.map((order) => ({
-                          Course: order.course.title,
-                          Amount: formatCurrencyInr(order.amount),
-                          Status: order.status,
-                          "Placed On": new Intl.DateTimeFormat("en-GB", {
-                            timeZone: "Asia/Kolkata",
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                          }).format(new Date(order.createdAt)),
-                        }))}
+                        rows={filteredOrders.map((order) => {
+                          const values = {
+                            "Course ID": order.course.id,
+                            "Course Name": order.course.title,
+                            Category: order.course.category ?? "General",
+                            Amount: formatCurrencyInr(order.amount),
+                            Status: order.status,
+                            "Placed On": new Intl.DateTimeFormat("en-GB", {
+                              timeZone: "Asia/Kolkata",
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                            }).format(new Date(order.createdAt)),
+                          };
+
+                          return orderHistoryExportColumns.reduce<Record<string, string>>((orderedRow, column) => {
+                            orderedRow[column] = String(values[column as keyof typeof values] ?? "");
+                            return orderedRow;
+                          }, {});
+                        })}
                       />
                     </div>
 

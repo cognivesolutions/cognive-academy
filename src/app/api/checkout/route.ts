@@ -138,10 +138,13 @@ export async function POST(request: Request) {
     const amountInPaise = Math.round(safeAmount * 100);
 
     const orderId = await getNextOrderBusinessId(prisma);
+    const year = new Date().getFullYear();
+    const invoiceNumber = `COG-${year}-${String(orderId).replace(/^ORD/, "")}`;
 
     const orderRecord = await prisma.order.create({
       data: {
         orderId,
+        invoiceNumber,
         userId,
         courseId: course.id,
         amount: safeAmount,

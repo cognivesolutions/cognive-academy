@@ -5,7 +5,10 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { utils, writeFile } from "xlsx";
 
+import { adminPdfExportPreset, applyAdminPdfHeaderAndFooter, formatPdfEmailValue, getSafeExcelSheetName, getSingleLinePdfColumnStyles } from "../../pdf-export";
+
 export type StudentManageExportRow = {
+  id: string;
   name: string;
   email: string;
   mobile: string;
@@ -13,6 +16,16 @@ export type StudentManageExportRow = {
   joinedOn: string;
   status: string;
 };
+
+const STUDENT_MANAGE_EXPORT_COLUMNS: string[] = [
+  "Student ID",
+  "Student Name",
+  "Student Email",
+  "Mobile Number",
+  "Course Count",
+  "Joined On",
+  "Status",
+];
 
 export function StudentManageExportActions({ rows }: { rows: StudentManageExportRow[] }) {
   const getExportFileDate = () => {
@@ -23,74 +36,67 @@ export function StudentManageExportActions({ rows }: { rows: StudentManageExport
     return `${day}-${month}-${year}`;
   };
 
+  const getExportRowValues = (row: StudentManageExportRow) => [
+    row.id,
+    row.name,
+    row.email,
+    row.mobile,
+    row.courseCount,
+    row.joinedOn,
+    row.status,
+  ];
+
   const handleExportExcel = () => {
     const worksheet = utils.json_to_sheet(
-      rows.map((row) => ({
-        "Student Name": row.name,
-        "Student Email": row.email,
-        "Mobile Number": row.mobile,
-        "Course Count": row.courseCount,
-        "Joined On": row.joinedOn,
-        "Status": row.status,
-      })),
+      rows.map((row) => {
+        const values = getExportRowValues(row);
+        return STUDENT_MANAGE_EXPORT_COLUMNS.reduce<Record<string, string>>((acc, column, index) => {
+          acc[column] = values[index] ?? "";
+          return acc;
+        }, {});
+      }),
     );
 
     const workbook = utils.book_new();
-    utils.book_append_sheet(workbook, worksheet, "Student Management");
+    utils.book_append_sheet(workbook, worksheet, getSafeExcelSheetName("Student Management"));
     writeFile(workbook, `student-records (${getExportFileDate()}).xlsx`);
   };
 
   const handleExportPdf = () => {
     const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const brandPrimary = [79, 70, 229];
-    const mutedText = [71, 85, 105];
+    const addFooter = applyAdminPdfHeaderAndFooter(doc, { title: "Student management" });
 
-    const addFooter = (pageNumber: number, totalPages: number) => {
-      const footerY = pageHeight - 12;
-      const generatedAt = new Date().toLocaleString("en-IN", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      });
+    const columnStyles = getSingleLinePdfColumnStyles(STUDENT_MANAGE_EXPORT_COLUMNS);
 
-      doc.setDrawColor(226, 232, 240);
-      doc.line(14, footerY - 5, pageWidth - 14, footerY - 5);
-      doc.setTextColor(mutedText[0], mutedText[1], mutedText[2]);
-      doc.setFontSize(8);
-      doc.setFont("helvetica", "normal");
-      doc.text("Cognive Academy", 14, footerY - 1);
-      doc.text(`Generated on: ${generatedAt}`, pageWidth / 2, footerY - 1, { align: "center" });
-      doc.text(`Page ${pageNumber} of ${totalPages}`, pageWidth - 24, footerY - 1, { align: "right" });
-    };
-
-    doc.setFillColor(brandPrimary[0], brandPrimary[1], brandPrimary[2]);
-    doc.rect(0, 0, pageWidth, 18, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
-    doc.text("Cognive Academy", 14, 11.5);
-
-    doc.setTextColor(15, 23, 42);
-    doc.setFontSize(14);
-    doc.text("Student management", 14, 30);
+    if (columnStyles[1]) columnStyles[1] = { ...columnStyles[1], halign: "left" };
+    if (columnStyles[2]) columnStyles[2] = { ...columnStyles[2], halign: "left" };
 
     autoTable(doc, {
-      head: [["Student Name", "Student Email", "Mobile Number", "Course Count", "Joined On", "Status"]],
-      body: rows.map((row) => [row.name, row.email, row.mobile, row.courseCount, row.joinedOn, row.status]),
+      head: [Array.from(STUDENT_MANAGE_EXPORT_COLUMNS)],
+      body: rows.map((row) => [
+        row.id,
+        row.name,
+        formatPdfEmailValue(row.email),
+        row.mobile,
+        row.courseCount,
+        row.joinedOn,
+        row.status,
+      ]),
       startY: 38,
       styles: {
-        fontSize: 8,
-        cellPadding: 3,
+        fontSize: adminPdfExportPreset.table.fontSize,
+        cellPadding: adminPdfExportPreset.table.cellPadding,
+        overflow: adminPdfExportPreset.table.bodyOverflow,
       },
+      columnStyles,
+      tableWidth: doc.internal.pageSize.getWidth() - 24,
       headStyles: {
-        fillColor: [79, 70, 229],
+        fillColor: adminPdfExportPreset.brandPrimary,
         textColor: [255, 255, 255],
         fontStyle: "bold",
+        fontSize: adminPdfExportPreset.table.headFontSize,
+        halign: "center",
+        overflow: adminPdfExportPreset.table.headOverflow,
       },
       alternateRowStyles: {
         fillColor: [248, 250, 252],

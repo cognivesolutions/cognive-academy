@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { Eye, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 import ConfirmDialog from "@/components/confirm-dialog";
 
 export type StudentTableRowData = {
   id: string;
+  userId: string | null;
   name: string | null;
   email: string | null;
   phone: string | null;
@@ -23,12 +24,53 @@ export type StudentTableRowData = {
   }[];
 };
 
-export function StudentTableRow({ student }: { student: StudentTableRowData }) {
+export function StudentTableRow({ student, query = "" }: { student: StudentTableRowData; query?: string }) {
   const router = useRouter();
   const [isActive, setIsActive] = useState(student.isActive);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const purchasedCourseCount = student.enrollments.length;
+
+  const highlightText = (value: string | null | undefined, searchTerm: string): ReactNode => {
+    const text = value ?? "";
+    const trimmedTerm = searchTerm.trim();
+
+    if (!trimmedTerm || !text) {
+      return value ?? "";
+    }
+
+    const lowerText = text.toLowerCase();
+    const lowerTerm = trimmedTerm.toLowerCase();
+    const nodes: ReactNode[] = [];
+    let startIndex = 0;
+
+    while (startIndex < text.length) {
+      const matchIndex = lowerText.indexOf(lowerTerm, startIndex);
+
+      if (matchIndex === -1) {
+        nodes.push(text.slice(startIndex));
+        break;
+      }
+
+      if (matchIndex > startIndex) {
+        nodes.push(text.slice(startIndex, matchIndex));
+      }
+
+      const matchText = text.slice(matchIndex, matchIndex + trimmedTerm.length);
+      nodes.push(
+        <mark
+          key={`${matchIndex}-${startIndex}`}
+          className="rounded-sm bg-yellow-200 px-0.5 py-0.5 font-semibold text-slate-900 shadow-[inset_0_0_0_1px_rgba(202,138,4,0.2)] dark:bg-yellow-300 dark:text-slate-900"
+        >
+          {matchText}
+        </mark>,
+      );
+
+      startIndex = matchIndex + trimmedTerm.length;
+    }
+
+    return nodes.length > 0 ? nodes : value ?? "";
+  };
 
   const handleToggleStatus = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -113,20 +155,25 @@ export function StudentTableRow({ student }: { student: StudentTableRowData }) {
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-[11px] font-bold text-white shadow-[0_8px_18px_rgba(99,102,241,0.22)]">
             {(student.name ?? "U").charAt(0).toUpperCase()}
           </div>
-          <div>
-            <div className="text-[13px] font-semibold tracking-[-0.01em] text-slate-900 dark:text-white">{student.name ?? "Unnamed"}</div>
+          <div className="flex flex-col gap-0.5">
+            <span className="font-mono text-[11px] font-semibold tracking-[0.08em] text-slate-700 dark:text-slate-200">
+              {highlightText(student.userId ?? student.id, query)}
+            </span>
           </div>
         </div>
       </td>
-      <td className="px-3 py-2 align-middle text-left text-[12.5px] text-slate-700 dark:text-slate-200">{student.email ?? "No email"}</td>
-      <td className="px-3 py-2 align-middle text-left text-[12.5px] text-slate-700 dark:text-slate-200">{student.phone ?? "No phone"}</td>
-      <td className="px-3 py-2 align-middle text-center text-[12.5px] font-medium text-slate-700 dark:text-slate-200">
-        {purchasedCourseCount}
+      <td className="px-3 py-2 align-middle text-left text-[12.5px] text-slate-700 dark:text-slate-200">
+        {highlightText(student.name ?? "Unnamed", query)}
       </td>
-      <td className="px-3 py-2 align-middle text-center text-[12.5px] text-slate-700 dark:text-slate-200">{formatJoinedDate(new Date(student.createdAt))}</td>
+      <td className="px-3 py-2 align-middle text-left text-[12.5px] text-slate-700 dark:text-slate-200">{highlightText(student.email ?? "No email", query)}</td>
+      <td className="px-3 py-2 align-middle text-left text-[12.5px] text-slate-700 dark:text-slate-200">{highlightText(student.phone ?? "No phone", query)}</td>
+      <td className="px-3 py-2 align-middle text-center text-[12.5px] font-medium text-slate-700 dark:text-slate-200">
+        {highlightText(String(purchasedCourseCount), query)}
+      </td>
+      <td className="px-3 py-2 align-middle text-center text-[12.5px] text-slate-700 dark:text-slate-200">{highlightText(formatJoinedDate(new Date(student.createdAt)), query)}</td>
       <td className="px-3 py-2 align-middle text-center leading-[1.35]">
         <span className={`text-[12.5px] font-semibold ${isActive ? "text-emerald-600 dark:text-emerald-300" : "text-red-600 dark:text-red-300"}`}>
-          {isActive ? "Active" : "Inactive"}
+          {highlightText(isActive ? "Active" : "Inactive", query)}
         </span>
       </td>
       <td className="px-2 py-2 align-middle text-center">

@@ -52,7 +52,7 @@ export async function proxy(request: Request) {
     if (callbackUrl) {
       return NextResponse.redirect(new URL(callbackUrl, url.origin));
     }
-    return NextResponse.redirect(new URL(session.user.role === "ADMIN" ? "/admin" : "/dashboard", url.origin));
+    return NextResponse.redirect(new URL(session.user.role === "ADMIN" ? "/admin" : "/profile", url.origin));
   }
 
   return NextResponse.next();

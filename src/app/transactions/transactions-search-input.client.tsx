@@ -3,12 +3,15 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-type CourseSearchInputProps = {
+type TransactionsSearchInputProps = {
   defaultValue?: string;
   className?: string;
 };
 
-export function CourseSearchInput({ defaultValue = "", className = "w-[160px] min-w-[160px]" }: CourseSearchInputProps) {
+export function TransactionsSearchInput({
+  defaultValue = "",
+  className = "w-[180px] min-w-[180px] sm:w-[220px] sm:min-w-[220px]",
+}: TransactionsSearchInputProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -38,27 +41,27 @@ export function CourseSearchInput({ defaultValue = "", className = "w-[160px] mi
     const params = new URLSearchParams(searchParams?.toString() ?? "");
 
     if (!nextValue.trim()) {
-      params.delete("q");
+      params.delete("search");
+      params.set("page", "1");
       const targetUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
-      if (submitTimerRef.current) {
-        window.clearTimeout(submitTimerRef.current);
-      }
       router.replace(targetUrl, { scroll: false });
       return;
     }
 
-    params.set("q", nextValue.trim());
+    params.set("search", nextValue.trim());
+    params.set("page", "1");
 
-    const queryString = params.toString();
-    const targetUrl = queryString ? `${pathname}?${queryString}` : pathname;
+    const targetUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
 
     submitTimerRef.current = window.setTimeout(() => {
       router.replace(targetUrl, { scroll: false });
-    }, 300);
+    }, 250);
   };
 
   return (
-    <div className={`flex h-[38px] items-center gap-2 rounded-full border border-slate-200 bg-transparent px-3 py-0 text-[0.92rem] text-slate-900 shadow-none transition duration-200 focus-within:border-indigo-400 focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-950/35 dark:text-slate-100 dark:focus-within:bg-slate-950/50 ${className}`}>
+    <div
+      className={`relative flex h-[38px] items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-3 text-sm text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] transition focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100 dark:shadow-none ${className}`}
+    >
       <svg
         aria-hidden="true"
         viewBox="0 0 20 20"
@@ -69,11 +72,11 @@ export function CourseSearchInput({ defaultValue = "", className = "w-[160px] mi
         <path d="M12.8 12.8L17 17" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
       </svg>
       <input
-        name="q"
+        name="search"
         value={value}
         onChange={handleChange}
         placeholder="Type to search..."
-        className="w-full border-0 bg-transparent text-[0.92rem] text-slate-900 placeholder:text-slate-500 outline-none dark:text-slate-100 dark:placeholder:text-slate-400"
+        className="w-full border-0 bg-transparent text-sm text-slate-700 placeholder:text-slate-400 outline-none dark:text-slate-100 dark:placeholder:text-slate-400"
       />
     </div>
   );

@@ -8,9 +8,11 @@ import { CourseSelect } from "../components/course-select";
 type StudentFilterBarProps = {
   defaultQ?: string;
   defaultStatus?: string;
+  defaultStudentId?: string;
   defaultStudent?: string;
   defaultMobile?: string;
   defaultJoining?: string;
+  studentIdOptions?: Array<{ value: string; label: string }>;
   studentOptions?: Array<{ value: string; label: string }>;
   mobileOptions?: Array<{ value: string; label: string }>;
   statusOptions?: Array<{ value: string; label: string }>;
@@ -19,9 +21,11 @@ type StudentFilterBarProps = {
 export function StudentFilterBar({
   defaultQ = "",
   defaultStatus = "all",
+  defaultStudentId = "all",
   defaultStudent = "all",
   defaultMobile = "all",
   defaultJoining = "all",
+  studentIdOptions = [],
   studentOptions = [],
   mobileOptions = [],
   statusOptions = [
@@ -34,6 +38,7 @@ export function StudentFilterBar({
   const searchParams = useSearchParams();
   const [q, setQ] = useState(defaultQ);
   const [status, setStatus] = useState(defaultStatus);
+  const [studentIdFilter, setStudentIdFilter] = useState(defaultStudentId);
   const [studentFilter, setStudentFilter] = useState(defaultStudent);
   const [mobileFilter, setMobileFilter] = useState(defaultMobile);
   const [joiningFilter, setJoiningFilter] = useState(defaultJoining);
@@ -59,6 +64,10 @@ export function StudentFilterBar({
   useEffect(() => {
     setStatus(defaultStatus);
   }, [defaultStatus]);
+
+  useEffect(() => {
+    setStudentIdFilter(defaultStudentId);
+  }, [defaultStudentId]);
 
   useEffect(() => {
     setStudentFilter(defaultStudent);
@@ -100,6 +109,7 @@ export function StudentFilterBar({
   const updateFilters = (
     nextQ: string,
     nextStatus: string,
+    nextStudentId: string,
     nextStudent: string,
     nextMobile: string,
     nextJoining: string,
@@ -116,6 +126,12 @@ export function StudentFilterBar({
       params.delete("status");
     } else {
       params.set("status", nextStatus);
+    }
+
+    if (nextStudentId === "all") {
+      params.delete("studentId");
+    } else {
+      params.set("studentId", nextStudentId);
     }
 
     if (nextStudent === "all") {
@@ -149,35 +165,41 @@ export function StudentFilterBar({
     }
 
     submitTimerRef.current = window.setTimeout(() => {
-      updateFilters(nextQ, status, studentFilter, mobileFilter, joiningFilter);
+      updateFilters(nextQ, status, studentIdFilter, studentFilter, mobileFilter, joiningFilter);
     }, 250);
   };
 
   const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const nextStatus = event.target.value;
     setStatus(nextStatus);
-    updateFilters(q, nextStatus, studentFilter, mobileFilter, joiningFilter);
+    updateFilters(q, nextStatus, studentIdFilter, studentFilter, mobileFilter, joiningFilter);
+  };
+
+  const handleStudentIdChange = (nextValue: string) => {
+    const normalizedValue = nextValue === "all" ? "all" : nextValue;
+    setStudentIdFilter(normalizedValue);
+    updateFilters(q, status, normalizedValue, studentFilter, mobileFilter, joiningFilter);
   };
 
   const handleStudentChange = (nextValue: string) => {
     const normalizedValue = nextValue === "all" ? "all" : nextValue;
     setStudentFilter(normalizedValue);
-    updateFilters(q, status, normalizedValue, mobileFilter, joiningFilter);
+    updateFilters(q, status, studentIdFilter, normalizedValue, mobileFilter, joiningFilter);
   };
 
   const handleMobileChange = (nextValue: string) => {
     const normalizedValue = nextValue === "all" ? "all" : nextValue;
     setMobileFilter(normalizedValue);
-    updateFilters(q, status, studentFilter, normalizedValue, joiningFilter);
+    updateFilters(q, status, studentIdFilter, studentFilter, normalizedValue, joiningFilter);
   };
 
   const handleJoiningChange = (nextValue: string) => {
     const normalizedValue = nextValue === "all" ? "all" : nextValue;
     setJoiningFilter(normalizedValue);
-    updateFilters(q, status, studentFilter, mobileFilter, normalizedValue);
+    updateFilters(q, status, studentIdFilter, studentFilter, mobileFilter, normalizedValue);
   };
 
-  const isFiltered = Boolean(q || status !== "all" || studentFilter !== "all" || mobileFilter !== "all" || joiningFilter !== "all");
+  const isFiltered = Boolean(q || status !== "all" || studentIdFilter !== "all" || studentFilter !== "all" || mobileFilter !== "all" || joiningFilter !== "all");
   const joinedDateValue = joiningFilter === "all" ? "" : joiningFilter;
   const formatIstDate = (date: Date) =>
     new Intl.DateTimeFormat("en-GB", {
@@ -234,37 +256,68 @@ export function StudentFilterBar({
             </button>
           )}
 
-          <div className="min-w-[160px]">
+          <div className="min-w-[140px]">
             <CourseSelect
-              name="student"
-              label="Student"
+              name="studentId"
+              label="Student ID"
               compact
               hideLabel
-              placeholder="Student"
+              placeholder="Student ID"
+              defaultValue={studentIdFilter}
+              options={[
+                { value: "all", label: "All" },
+                ...studentIdOptions,
+              ].sort((a, b) => {
+                if (a.value === "all") return -1;
+                if (b.value === "all") return 1;
+                return a.label.localeCompare(b.label);
+              })}
+              syncUrl={false}
+              onValueChange={handleStudentIdChange}
+              triggerClassName="!h-[38px] !min-h-[38px] !w-[140px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+              menuClassName="!min-w-[140px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
+            />
+          </div>
+
+          <div className="min-w-[170px]">
+            <CourseSelect
+              name="student"
+              label="Student Name"
+              compact
+              hideLabel
+              placeholder="Student Name"
               defaultValue={studentFilter}
               options={[
                 { value: "all", label: "All" },
                 ...studentOptions,
-              ]}
+              ].sort((a, b) => {
+                if (a.value === "all") return -1;
+                if (b.value === "all") return 1;
+                return a.label.localeCompare(b.label);
+              })}
               syncUrl={false}
               onValueChange={handleStudentChange}
-              triggerClassName="!h-[38px] !min-h-[38px] !w-[160px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-              menuClassName="!min-w-[160px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
+              triggerClassName="!h-[38px] !min-h-[38px] !w-[170px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+              menuClassName="!min-w-[170px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
             />
           </div>
 
           <div className="min-w-[160px]">
             <CourseSelect
               name="mobile"
-              label="Mobile"
+              label="Mobile Number"
               compact
               hideLabel
-              placeholder="Mobile"
+              placeholder="Mobile Number"
               defaultValue={mobileFilter}
               options={[
                 { value: "all", label: "All" },
                 ...mobileOptions,
-              ]}
+              ].sort((a, b) => {
+                if (a.value === "all") return -1;
+                if (b.value === "all") return 1;
+                return a.label.localeCompare(b.label);
+              })}
               syncUrl={false}
               onValueChange={handleMobileChange}
               triggerClassName="!h-[38px] !min-h-[38px] !w-[160px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
@@ -283,12 +336,16 @@ export function StudentFilterBar({
               options={[
                 { value: "all", label: "All" },
                 ...statusOptions,
-              ]}
+              ].sort((a, b) => {
+                if (a.value === "all") return -1;
+                if (b.value === "all") return 1;
+                return a.label.localeCompare(b.label);
+              })}
               syncUrl={false}
               onValueChange={(nextValue) => {
                 const normalizedValue = nextValue === "all" ? "all" : nextValue;
                 setStatus(normalizedValue);
-                updateFilters(q, normalizedValue, studentFilter, mobileFilter, joiningFilter);
+                updateFilters(q, normalizedValue, studentIdFilter, studentFilter, mobileFilter, joiningFilter);
               }}
               triggerClassName="!h-[38px] !min-h-[38px] !w-[120px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
               menuClassName="!min-w-[120px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
@@ -308,7 +365,7 @@ export function StudentFilterBar({
               }}
               tabIndex={0}
               role="button"
-              aria-label="Joined date filter"
+              aria-label="Joined On filter"
             >
               <span className="pointer-events-none flex-1 truncate text-left text-slate-700 dark:text-slate-100">
                 {joinedDateLabel}
@@ -404,7 +461,7 @@ export function StudentFilterBar({
         </div>
 
         <div className="ml-auto flex-shrink-0">
-          <div className="flex h-[38px] min-w-[220px] items-center gap-2 rounded-full border border-slate-200 bg-transparent px-3 py-0 text-[0.92rem] text-slate-900 shadow-none transition duration-200 focus-within:border-indigo-400 focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-950/35 dark:text-slate-100 dark:focus-within:bg-slate-950/50">
+          <div className="flex h-[38px] w-[160px] min-w-[130px] items-center gap-2 rounded-full border border-slate-200 bg-transparent px-3 py-0 text-[0.92rem] text-slate-900 shadow-none transition duration-200 focus-within:border-indigo-400 focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-950/35 dark:text-slate-100 dark:focus-within:bg-slate-950/50">
             <svg
               aria-hidden="true"
               viewBox="0 0 20 20"

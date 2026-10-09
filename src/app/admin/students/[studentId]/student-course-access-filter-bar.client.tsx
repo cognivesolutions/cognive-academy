@@ -10,11 +10,13 @@ type StudentCourseAccessFilterBarProps = {
   defaultQ?: string;
   defaultStatus?: string;
   defaultType?: string;
+  defaultCourseId?: string;
   defaultCourse?: string;
   defaultCategory?: string;
   defaultJoined?: string;
   pageSize?: string | number;
   hasActiveFilters?: boolean;
+  courseIdOptions?: Array<{ value: string; label: string }>;
   courseOptions?: Array<{ value: string; label: string }>;
   categoryOptions?: Array<{ value: string; label: string }>;
   joinedOptions?: Array<{ value: string; label: string }>;
@@ -26,11 +28,13 @@ export function StudentCourseAccessFilterBar({
   defaultQ = "",
   defaultStatus = "all",
   defaultType = "all",
+  defaultCourseId = "all",
   defaultCourse = "",
   defaultCategory = "all",
   defaultJoined = "all",
   pageSize = "10",
   hasActiveFilters = false,
+  courseIdOptions = [],
   courseOptions = [],
   categoryOptions = [],
   joinedOptions = [],
@@ -43,6 +47,7 @@ export function StudentCourseAccessFilterBar({
   const [q, setQ] = useState(defaultQ);
   const [status, setStatus] = useState(defaultStatus);
   const [type, setType] = useState(defaultType);
+  const [courseId, setCourseId] = useState(defaultCourseId);
   const [course, setCourse] = useState(defaultCourse);
   const [category, setCategory] = useState(defaultCategory);
   const [joined, setJoined] = useState(defaultJoined);
@@ -72,6 +77,10 @@ export function StudentCourseAccessFilterBar({
   useEffect(() => {
     setType(defaultType);
   }, [defaultType]);
+
+  useEffect(() => {
+    setCourseId(defaultCourseId);
+  }, [defaultCourseId]);
 
   useEffect(() => {
     setCourse(defaultCourse);
@@ -110,7 +119,7 @@ export function StudentCourseAccessFilterBar({
     };
   }, []);
 
-  const updateFilters = (nextQ: string, nextStatus: string, nextType: string, nextCourse: string, nextCategory: string, nextJoined: string) => {
+  const updateFilters = (nextQ: string, nextStatus: string, nextType: string, nextCourseId: string, nextCourse: string, nextCategory: string, nextJoined: string) => {
     const params = new URLSearchParams(searchParams?.toString() ?? "");
 
     if (!nextQ.trim()) {
@@ -129,6 +138,12 @@ export function StudentCourseAccessFilterBar({
       params.delete("type");
     } else {
       params.set("type", nextType);
+    }
+
+    if (nextCourseId === "all") {
+      params.delete("courseId");
+    } else {
+      params.set("courseId", nextCourseId);
     }
 
     if (!nextCourse) {
@@ -166,7 +181,7 @@ export function StudentCourseAccessFilterBar({
     }
 
     submitTimerRef.current = window.setTimeout(() => {
-      updateFilters(nextQ, status, type, course, category, joined);
+      updateFilters(nextQ, status, type, courseId, course, category, joined);
     }, 250);
   };
 
@@ -197,16 +212,26 @@ export function StudentCourseAccessFilterBar({
     return `${year}-${month}-${day}`;
   };
 
+  const sortOptionsWithAllFirst = <T extends { value: string; label: string }>(options: T[]) =>
+    [...options].sort((a, b) => {
+      const aIsAll = a.value === "all" || a.value === "" || a.label === "All";
+      const bIsAll = b.value === "all" || b.value === "" || b.label === "All";
+
+      if (aIsAll && !bIsAll) return -1;
+      if (!aIsAll && bIsAll) return 1;
+      return a.label.localeCompare(b.label);
+    });
+
   const selectCalendarDate = (date: Date) => {
     const isoDate = formatLocalDate(date);
     setCalendarMonth(new Date(date.getFullYear(), date.getMonth(), date.getDate()));
     setJoined(isoDate);
-    updateFilters(q, status, type, course, category, isoDate);
+    updateFilters(q, status, type, courseId, course, category, isoDate);
     setIsCalendarOpen(false);
   };
 
   return (
-    <div className="mb-4 flex w-full flex-nowrap items-center justify-between gap-2 overflow-visible rounded-full border border-slate-200 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.10),_rgba(255,255,255,0.98)_38%,_rgba(241,245,249,1)_100%)] p-1.5 shadow-[0_18px_32px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.18),_rgba(10,18,31,0.96)_38%,_rgba(2,6,23,1)_100%)] dark:shadow-[0_18px_32px_rgba(15,23,42,0.28)]">
+    <div className="mb-4 flex w-full flex-nowrap items-center gap-2 overflow-visible rounded-full border border-slate-200 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.10),_rgba(255,255,255,0.98)_38%,_rgba(241,245,249,1)_100%)] p-1.5 shadow-[0_18px_32px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.18),_rgba(10,18,31,0.96)_38%,_rgba(2,6,23,1)_100%)] dark:shadow-[0_18px_32px_rgba(15,23,42,0.28)]">
       <div className="flex min-w-0 flex-1 flex-nowrap items-center justify-start gap-2 overflow-visible pr-2">
         {hasActiveFilters ? (
           <Link
@@ -226,26 +251,45 @@ export function StudentCourseAccessFilterBar({
           </button>
         )}
 
-        <div className="min-w-[142px] shrink-0">
+        <div className="min-w-[130px] shrink-0">
+          <CourseSelect
+            name="courseId"
+            label="Course ID"
+            placeholder="Course ID"
+            defaultValue={courseId}
+            compact
+            syncUrl={false}
+            onValueChange={(nextValue) => {
+              const normalizedValue = nextValue === "all" ? "all" : nextValue;
+              setCourseId(normalizedValue);
+              updateFilters(q, status, type, normalizedValue, course, category, joined);
+            }}
+            triggerClassName="!min-h-[38px] !w-[120px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+            menuClassName="!min-w-[120px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
+            options={sortOptionsWithAllFirst([{ value: "all", label: "All" }, ...courseIdOptions])}
+          />
+        </div>
+
+        <div className="min-w-[130px] shrink-0">
           <CourseSelect
             name="course"
-            label="Course name"
-            placeholder="Course name"
+            label="Course Name"
+            placeholder="Course Name"
             defaultValue={course}
             compact
             syncUrl={false}
             onValueChange={(nextValue) => {
               const normalizedValue = nextValue === "all" ? "" : nextValue;
               setCourse(normalizedValue);
-              updateFilters(q, status, type, normalizedValue, category, joined);
+              updateFilters(q, status, type, courseId, normalizedValue, category, joined);
             }}
-            triggerClassName="!min-h-[38px] !w-[142px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-            menuClassName="!min-w-[142px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
-            options={[{ value: "", label: "All" }, ...courseOptions]}
+            triggerClassName="!min-h-[38px] !w-[130px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+            menuClassName="!min-w-[130px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
+            options={sortOptionsWithAllFirst([{ value: "", label: "All" }, ...courseOptions])}
           />
         </div>
 
-        <div className="min-w-[150px] shrink-0">
+        <div className="min-w-[120px] shrink-0">
           <CourseSelect
             name="category"
             label="Category"
@@ -256,18 +300,18 @@ export function StudentCourseAccessFilterBar({
             onValueChange={(nextValue) => {
               const normalizedValue = nextValue === "all" ? "all" : nextValue;
               setCategory(normalizedValue);
-              updateFilters(q, status, type, course, normalizedValue, joined);
+              updateFilters(q, status, type, courseId, course, normalizedValue, joined);
             }}
-            triggerClassName="!min-h-[38px] !w-[150px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-            menuClassName="!min-w-[150px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
-            options={[{ value: "all", label: "All" }, ...categoryOptions]}
+            triggerClassName="!min-h-[38px] !w-[120px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+            menuClassName="!min-w-[120px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
+            options={sortOptionsWithAllFirst([{ value: "all", label: "All" }, ...categoryOptions])}
           />
         </div>
 
-        <div className="relative min-w-[150px] shrink-0" ref={calendarRef}>
+        <div className="relative min-w-[120px] shrink-0" ref={calendarRef}>
           <label className="sr-only" htmlFor="joined-date-filter">Start date</label>
           <div
-            className="relative flex h-[38px] w-[150px] cursor-pointer items-center justify-between gap-2 rounded-full border border-slate-200 bg-white/90 px-3 text-sm text-slate-700 transition duration-200 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100"
+            className="relative flex h-[38px] w-[120px] cursor-pointer items-center justify-between gap-2 rounded-full border border-slate-200 bg-white/90 px-2 text-sm text-slate-700 transition duration-200 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100"
             onClick={() => setIsCalendarOpen((open) => !open)}
             onKeyDown={(event) => {
               if (event.key === "Enter" || event.key === " ") {
@@ -351,7 +395,7 @@ export function StudentCourseAccessFilterBar({
                   onClick={() => {
                     setIsCalendarOpen(false);
                     setJoined("all");
-                    updateFilters(q, status, type, course, category, "all");
+                    updateFilters(q, status, type, courseId, course, category, "all");
                   }}
                   className="rounded-full border border-red-200 bg-red-50 px-3 py-1.5 font-medium text-red-700 transition hover:bg-red-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200 dark:hover:bg-red-500/15"
                 >
@@ -383,11 +427,11 @@ export function StudentCourseAccessFilterBar({
             onValueChange={(nextValue) => {
               const normalizedValue = nextValue === "all" ? "all" : nextValue;
               setType(normalizedValue);
-              updateFilters(q, status, normalizedValue, course, category, joined);
+              updateFilters(q, status, normalizedValue, courseId, course, category, joined);
             }}
             triggerClassName="!min-h-[38px] !w-[120px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
             menuClassName="!min-w-[120px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
-            options={[{ value: "all", label: "All" }, ...typeOptions]}
+            options={sortOptionsWithAllFirst([{ value: "all", label: "All" }, ...typeOptions])}
           />
         </div>
 
@@ -402,17 +446,17 @@ export function StudentCourseAccessFilterBar({
             onValueChange={(nextValue) => {
               const normalizedValue = nextValue === "all" ? "all" : nextValue;
               setStatus(normalizedValue);
-              updateFilters(q, normalizedValue, type, course, category, joined);
+              updateFilters(q, normalizedValue, type, courseId, course, category, joined);
             }}
             triggerClassName="!min-h-[38px] !w-[120px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
             menuClassName="!min-w-[120px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
-            options={[{ value: "all", label: "All" }, ...statusOptions]}
+            options={sortOptionsWithAllFirst([{ value: "all", label: "All" }, ...statusOptions])}
           />
         </div>
       </div>
 
       <div className="ml-auto flex-shrink-0">
-        <div className="flex h-[38px] min-w-[220px] items-center gap-2 rounded-full border border-slate-200 bg-transparent px-3 py-0 text-[0.92rem] text-slate-900 shadow-none transition duration-200 focus-within:border-indigo-400 focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-950/35 dark:text-slate-100 dark:focus-within:bg-slate-950/50">
+        <div className="flex h-[38px] w-[160px] min-w-[160px] items-center gap-2 rounded-full border border-slate-200 bg-transparent px-3 py-0 text-[0.92rem] text-slate-900 shadow-none transition duration-200 focus-within:border-indigo-400 focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-950/35 dark:text-slate-100 dark:focus-within:bg-slate-950/50">
           <svg
             aria-hidden="true"
             viewBox="0 0 20 20"

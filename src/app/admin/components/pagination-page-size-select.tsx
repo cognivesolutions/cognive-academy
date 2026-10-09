@@ -11,7 +11,7 @@ type PaginationPageSizeSelectProps = {
 export function PaginationPageSizeSelect({
   name = "pageSize",
   value,
-  defaultValue = "9",
+  defaultValue = "6",
 }: PaginationPageSizeSelectProps) {
   return (
     <CourseSelect
@@ -19,11 +19,12 @@ export function PaginationPageSizeSelect({
       label=""
       hideLabel
       compact
-      placeholder="9"
+      placeholder="6"
       defaultValue={value ?? defaultValue}
       options={[
         { value: "all", label: "All" },
         { value: "5", label: "5" },
+        { value: "6", label: "6" },
         { value: "9", label: "9" },
         { value: "10", label: "10" },
         { value: "20", label: "20" },

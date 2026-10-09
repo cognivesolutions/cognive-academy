@@ -115,6 +115,9 @@ export default async function StudentDetailPage({
   const q = Array.isArray(resolvedSearchParams.q) ? resolvedSearchParams.q[0] ?? "" : resolvedSearchParams.q ?? "";
   const status = Array.isArray(resolvedSearchParams.status) ? resolvedSearchParams.status[0] ?? "all" : resolvedSearchParams.status ?? "all";
   const selectedType = Array.isArray(resolvedSearchParams.type) ? resolvedSearchParams.type[0] ?? "all" : resolvedSearchParams.type ?? "all";
+  const selectedCourseId = Array.isArray(resolvedSearchParams.courseId)
+    ? resolvedSearchParams.courseId[0] ?? "all"
+    : resolvedSearchParams.courseId ?? "all";
   const selectedCourse = Array.isArray(resolvedSearchParams.course)
     ? resolvedSearchParams.course[0] ?? ""
     : resolvedSearchParams.course ?? "";
@@ -159,17 +162,25 @@ export default async function StudentDetailPage({
     };
   });
 
+  const uniqueCourseIdOptions = Array.from(
+    new Map(
+      recordRows
+        .filter((record) => record.courseId)
+        .map((record) => [record.courseId!, { value: record.courseId!, label: record.courseId! }]),
+    ).values(),
+  ).sort((a, b) => a.label.localeCompare(b.label));
+
   const uniqueCourseOptions = Array.from(
     new Map(
       recordRows.map((record) => [record.title, { value: record.title, label: record.title }]),
     ).values(),
-  );
+  ).sort((a, b) => a.label.localeCompare(b.label));
 
   const uniqueCategoryOptions = Array.from(
     new Map(
       recordRows.map((record) => [record.category, { value: record.category, label: record.category }]),
     ).values(),
-  );
+  ).sort((a, b) => a.label.localeCompare(b.label));
 
   const uniqueJoinedOptions = Array.from(
     new Map(
@@ -183,15 +194,15 @@ export default async function StudentDetailPage({
         return [label, { value: label, label }];
       }),
     ).values(),
-  );
+  ).sort((a, b) => a.label.localeCompare(b.label));
 
   const uniqueTypeOptions = Array.from(
     new Map(recordRows.map((record) => [record.type, { value: record.type, label: record.type }])).values(),
-  );
+  ).sort((a, b) => a.label.localeCompare(b.label));
 
   const uniqueStatusOptions = Array.from(
     new Map(recordRows.map((record) => [record.status, { value: record.status, label: record.status }])).values(),
-  );
+  ).sort((a, b) => a.label.localeCompare(b.label));
 
   const filteredRecords = recordRows.filter((record) => {
     const joinedDateText = new Intl.DateTimeFormat("en-GB", {
@@ -201,13 +212,16 @@ export default async function StudentDetailPage({
       year: "numeric",
     }).format(new Date(record.joinedAt));
 
+    const expiryLabel = record.expiryLabel ?? "No access";
     const searchText = [
+      record.courseId ?? "",
       record.title,
       record.category,
       joinedDateText,
-      record.isActive ? "active" : "inactive",
-      record.status,
+      expiryLabel,
       record.type,
+      record.status,
+      record.isActive ? "active" : "inactive",
     ]
       .join(" ")
       .toLowerCase();
@@ -223,14 +237,15 @@ export default async function StudentDetailPage({
       (status === "inactive" && !record.isActive);
 
     const matchesType = selectedType === "all" || record.type === selectedType;
+    const matchesCourseId = selectedCourseId === "all" || record.courseId === selectedCourseId;
     const matchesCourse = !selectedCourse || record.title === selectedCourse;
     const matchesCategory = selectedCategory === "all" || record.category === selectedCategory;
     const matchesJoined = selectedJoined === "all" || joinedDateText === selectedJoined;
 
-    return matchesQuery && matchesStatus && matchesType && matchesCourse && matchesCategory && matchesJoined;
+    return matchesQuery && matchesStatus && matchesType && matchesCourseId && matchesCourse && matchesCategory && matchesJoined;
   });
 
-  const hasActiveFilters = Boolean(q || status !== "all" || selectedType !== "all" || selectedCourse || selectedCategory !== "all" || selectedJoined !== "all");
+  const hasActiveFilters = Boolean(q || status !== "all" || selectedType !== "all" || selectedCourseId !== "all" || selectedCourse || selectedCategory !== "all" || selectedJoined !== "all");
 
   const effectivePageSize = pageSize === "all" ? filteredRecords.length || 1 : pageSize;
   const totalPages = Math.max(1, Math.ceil(filteredRecords.length / effectivePageSize));
@@ -252,6 +267,10 @@ export default async function StudentDetailPage({
 
     if (selectedType !== "all") {
       params.set("type", selectedType);
+    }
+
+    if (selectedCourseId !== "all") {
+      params.set("courseId", selectedCourseId);
     }
 
     if (selectedCourse) {
@@ -298,6 +317,16 @@ export default async function StudentDetailPage({
       month: "2-digit",
       year: "numeric",
     }).format(date);
+
+  const courseAccessExportColumns = [
+    "Course ID",
+    "Course Name",
+    "Category",
+    "Start Date",
+    "Expiry Date",
+    "Type",
+    "Status",
+  ] as const;
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
@@ -374,11 +403,13 @@ export default async function StudentDetailPage({
                 defaultQ={q}
                 defaultStatus={status}
                 defaultType={selectedType}
+                defaultCourseId={selectedCourseId}
                 defaultCourse={selectedCourse}
                 defaultCategory={selectedCategory}
                 defaultJoined={selectedJoined}
                 pageSize={pageSize === "all" ? "all" : String(pageSize)}
                 hasActiveFilters={hasActiveFilters}
+                courseIdOptions={uniqueCourseIdOptions}
                 courseOptions={uniqueCourseOptions}
                 categoryOptions={uniqueCategoryOptions}
                 joinedOptions={uniqueJoinedOptions}
@@ -391,6 +422,7 @@ export default async function StudentDetailPage({
                   <table className="min-w-full divide-y divide-slate-200 text-left dark:divide-slate-700">
                     <thead className="bg-slate-50 dark:bg-slate-800/80">
                       <tr>
+                        <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Course ID</th>
                         <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Course Name</th>
                         <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Category</th>
                         <th className="px-3 py-2.5 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Start Date</th>
@@ -409,7 +441,7 @@ export default async function StudentDetailPage({
                         </tr>
                       ) : (
                         paginatedRecords.map((record) => (
-                          <StudentCourseAccessTableRow key={record.id} record={record} studentId={student.id} />
+                          <StudentCourseAccessTableRow key={record.id} record={record} studentId={student.id} query={q} />
                         ))
                       )}
                     </tbody>
@@ -422,19 +454,27 @@ export default async function StudentDetailPage({
                   <StudentProfileExportActions
                     title={`Course access - ${student.name ?? "Student"}`}
                     filenamePrefix={`course-access-${student.name ?? "student"}`}
-                    rows={filteredRecords.map((record) => ({
-                      "Course Name": record.title,
-                      Category: record.category,
-                      Type: record.type,
-                      "Start Date": new Intl.DateTimeFormat("en-GB", {
-                        timeZone: "Asia/Kolkata",
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      }).format(new Date(record.joinedAt)),
-                      "Expiry Date": record.expiryLabel,
-                      Status: record.status,
-                    }))}
+                    rows={filteredRecords.map((record) => {
+                      const values = {
+                        "Course ID": record.courseId ?? "—",
+                        "Course Name": record.title,
+                        Category: record.category,
+                        "Start Date": new Intl.DateTimeFormat("en-GB", {
+                          timeZone: "Asia/Kolkata",
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        }).format(new Date(record.joinedAt)),
+                        "Expiry Date": record.expiryLabel,
+                        Type: record.type,
+                        Status: record.status,
+                      };
+
+                      return courseAccessExportColumns.reduce<Record<string, string>>((orderedRow, column) => {
+                        orderedRow[column] = String(values[column as keyof typeof values] ?? "");
+                        return orderedRow;
+                      }, {});
+                    })}
                   />
                 </div>
 

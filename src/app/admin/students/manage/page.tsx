@@ -50,6 +50,9 @@ export default async function AdminStudentsManagePage({
 
   const q = Array.isArray(resolvedSearchParams.q) ? resolvedSearchParams.q[0] : resolvedSearchParams.q ?? "";
   const status = Array.isArray(resolvedSearchParams.status) ? resolvedSearchParams.status[0] : resolvedSearchParams.status ?? "all";
+  const studentIdFilter = Array.isArray(resolvedSearchParams.studentId)
+    ? resolvedSearchParams.studentId[0]
+    : resolvedSearchParams.studentId ?? "all";
   const studentFilter = Array.isArray(resolvedSearchParams.student) ? resolvedSearchParams.student[0] : resolvedSearchParams.student ?? "all";
   const mobileFilter = Array.isArray(resolvedSearchParams.mobile) ? resolvedSearchParams.mobile[0] : resolvedSearchParams.mobile ?? "all";
   const joiningFilter = Array.isArray(resolvedSearchParams.joining) ? resolvedSearchParams.joining[0] : resolvedSearchParams.joining ?? "all";
@@ -76,6 +79,7 @@ export default async function AdminStudentsManagePage({
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
+      userId: true,
       name: true,
       email: true,
       phone: true,
@@ -96,6 +100,7 @@ export default async function AdminStudentsManagePage({
   const matchesActiveFilters = (
     student: (typeof students)[number],
     filters: {
+      studentId: string;
       student: string;
       mobile: string;
       status: string;
@@ -106,17 +111,20 @@ export default async function AdminStudentsManagePage({
     const joinedDateValue = formatIstDateForFilter(joinedDate);
     const statusValue = getStatusValue(student);
 
+    const studentIdValue = student.userId ?? String(student.id);
+    const matchesStudentIdFilter = filters.studentId === "all" || studentIdValue === filters.studentId;
     const matchesStudentFilter = filters.student === "all" || student.id === filters.student;
     const matchesMobileFilter = filters.mobile === "all" || student.phone?.trim() === filters.mobile;
     const matchesStatusFilter = filters.status === "all" || statusValue === filters.status;
     const matchesJoiningFilter = filters.joining === "all" || joinedDateValue === filters.joining;
 
-    return matchesStudentFilter && matchesMobileFilter && matchesStatusFilter && matchesJoiningFilter;
+    return matchesStudentIdFilter && matchesStudentFilter && matchesMobileFilter && matchesStatusFilter && matchesJoiningFilter;
   };
 
-  const buildCascadingOptions = (field: "student" | "mobile" | "status") => {
+  const buildCascadingOptions = (field: "studentId" | "student" | "mobile" | "status") => {
     const candidateUsers = students.filter((student) => {
       const nextFilters = {
+        studentId: field === "studentId" ? "all" : studentIdFilter,
         student: field === "student" ? "all" : studentFilter,
         mobile: field === "mobile" ? "all" : mobileFilter,
         status: field === "status" ? "all" : status,
@@ -126,6 +134,17 @@ export default async function AdminStudentsManagePage({
       return matchesActiveFilters(student, nextFilters);
     });
 
+    if (field === "studentId") {
+      return Array.from(
+        new Map(
+          candidateUsers.map((student) => {
+            const value = student.userId ?? String(student.id);
+            return [value, { value, label: value }];
+          }),
+        ).values(),
+      ).sort((a, b) => a.label.localeCompare(b.label));
+    }
+
     if (field === "student") {
       return Array.from(
         new Map(
@@ -133,7 +152,7 @@ export default async function AdminStudentsManagePage({
             .filter((student) => student.name?.trim())
             .map((student) => [student.id, { value: student.id, label: student.name ?? "Unnamed student" }]),
         ).values(),
-      );
+      ).sort((a, b) => a.label.localeCompare(b.label));
     }
 
     if (field === "mobile") {
@@ -144,7 +163,7 @@ export default async function AdminStudentsManagePage({
             .filter((phone): phone is string => Boolean(phone)),
         ),
       )
-        .sort()
+        .sort((a, b) => a.localeCompare(b))
         .map((phone) => ({ value: phone, label: phone }));
     }
 
@@ -158,13 +177,17 @@ export default async function AdminStudentsManagePage({
           },
         ]),
       ).values(),
-    );
+    ).sort((a, b) => a.label.localeCompare(b.label));
   };
 
+  const studentIdOptions = buildCascadingOptions("studentId");
   const studentOptions = buildCascadingOptions("student");
   const mobileOptions = buildCascadingOptions("mobile");
   const statusOptions = buildCascadingOptions("status");
 
+  const effectiveStudentIdFilter = studentIdFilter !== "all" && !studentIdOptions.some((option) => option.value === studentIdFilter)
+    ? "all"
+    : studentIdFilter;
   const effectiveStudentFilter = studentFilter !== "all" && !studentOptions.some((option) => option.value === studentFilter)
     ? "all"
     : studentFilter;
@@ -181,12 +204,14 @@ export default async function AdminStudentsManagePage({
     const statusLabel = getStatusValue(student);
     const courseCount = student.enrollments.length;
 
+    const studentIdValue = student.userId ?? String(student.id);
+    const matchesStudentIdFilter = effectiveStudentIdFilter === "all" || studentIdValue === effectiveStudentIdFilter;
     const matchesStudentFilter = effectiveStudentFilter === "all" || student.id === effectiveStudentFilter;
     const matchesMobileFilter = effectiveMobileFilter === "all" || student.phone?.trim() === effectiveMobileFilter;
     const matchesStatusFilter = effectiveStatus === "all" || statusLabel === effectiveStatus;
     const matchesJoiningFilter = joiningFilter === "all" || joinedDateValue === joiningFilter;
 
-    if (!matchesStudentFilter || !matchesMobileFilter || !matchesStatusFilter || !matchesJoiningFilter) {
+    if (!matchesStudentIdFilter || !matchesStudentFilter || !matchesMobileFilter || !matchesStatusFilter || !matchesJoiningFilter) {
       return false;
     }
 
@@ -195,6 +220,7 @@ export default async function AdminStudentsManagePage({
     }
 
     const searchableValues = [
+      student.userId ?? String(student.id),
       student.name ?? "",
       student.email ?? "",
       student.phone ?? "",
@@ -205,6 +231,7 @@ export default async function AdminStudentsManagePage({
       formatIstDate(joinedDate, { day: "2-digit", month: "short", year: "numeric" }),
       String(courseCount),
       `${courseCount} course${courseCount === 1 ? "" : "s"}`,
+      student.enrollments.map((enrollment) => enrollment.course?.title ?? "").join(" "),
     ];
 
     return searchableValues.some((value) => value.toLowerCase().includes(normalizedQuery));
@@ -230,6 +257,10 @@ export default async function AdminStudentsManagePage({
 
     if (status !== "all") {
       params.set("status", status);
+    }
+
+    if (effectiveStudentIdFilter !== "all") {
+      params.set("studentId", effectiveStudentIdFilter);
     }
 
     if (effectiveStudentFilter !== "all") {
@@ -332,9 +363,11 @@ export default async function AdminStudentsManagePage({
               <StudentFilterBar
                 defaultQ={q}
                 defaultStatus={effectiveStatus}
+                defaultStudentId={effectiveStudentIdFilter}
                 defaultStudent={effectiveStudentFilter}
                 defaultMobile={effectiveMobileFilter}
                 defaultJoining={joiningFilter}
+                studentIdOptions={studentIdOptions}
                 studentOptions={studentOptions}
                 mobileOptions={mobileOptions}
                 statusOptions={statusOptions}
@@ -346,10 +379,11 @@ export default async function AdminStudentsManagePage({
                 <table className="min-w-full divide-y divide-slate-200 text-left dark:divide-slate-700">
                   <thead className="bg-slate-50 dark:bg-slate-800/80">
                     <tr>
+                      <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Student ID</th>
                       <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Student Name</th>
-                      <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Email</th>
-                      <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Mobile</th>
-                      <th className="px-3 py-2.5 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Course</th>
+                      <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Student Email</th>
+                      <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Mobile Number</th>
+                      <th className="px-3 py-2.5 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Course Count</th>
                       <th className="px-3 py-2.5 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Joined On</th>
                       <th className="px-3 py-2.5 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Status</th>
                       <th className="px-3 py-2.5 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Actions</th>
@@ -363,7 +397,7 @@ export default async function AdminStudentsManagePage({
                         </td>
                       </tr>
                     ) : (
-                      recentStudents.map((student) => <StudentTableRow key={student.id} student={student} />)
+                      recentStudents.map((student) => <StudentTableRow key={student.id} student={student} query={normalizedQuery} />)
                     )}
                   </tbody>
                 </table>
@@ -374,6 +408,7 @@ export default async function AdminStudentsManagePage({
               <div className="flex items-center gap-2">
                 <StudentManageExportActions
                   rows={recentStudents.map((student) => ({
+                    id: student.userId ?? student.id,
                     name: student.name ?? "Unnamed student",
                     email: student.email ?? "N/A",
                     mobile: student.phone ?? "N/A",

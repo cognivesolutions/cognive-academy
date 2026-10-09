@@ -43,6 +43,11 @@ export async function GET(request: Request) {
             where: { id: orderRecord.id },
             data: {
               status: "PAID",
+              invoiceNumber: orderRecord.invoiceNumber ?? (() => {
+                const year = new Date().getFullYear();
+                const fallbackSequence = orderRecord.orderId?.replace(/^ORD/, "") ?? orderRecord.id.slice(0, 8).toUpperCase();
+                return `COG-${year}-${fallbackSequence}`;
+              })(),
               razorpayPaymentId: paymentId,
               razorpaySignature: signature ?? null,
             },
@@ -50,10 +55,13 @@ export async function GET(request: Request) {
         } else {
           const amountInRupees = Number(payment.amount ?? 0) / 100;
           const nextOrderId = await getNextOrderBusinessId(prisma);
+          const year = new Date().getFullYear();
+          const invoiceNumber = `COG-${year}-${String(nextOrderId).replace(/^ORD/, "")}`;
 
           const createdOrder = await prisma.order.create({
             data: {
               orderId: nextOrderId,
+              invoiceNumber,
               userId,
               courseId,
               amount: amountInRupees,

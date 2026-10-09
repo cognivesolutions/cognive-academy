@@ -5,6 +5,8 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { utils, writeFile } from "xlsx";
 
+import { adminPdfExportPreset, applyAdminPdfHeaderAndFooter, formatPdfCurrencyValue, getSafeExcelSheetName, getSingleLinePdfColumnStyles } from "../pdf-export";
+
 const formatCurrencyInr = (value: number | string | null) =>
   new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -39,7 +41,7 @@ export function StudentProfileExportActions({
 
     const worksheet = utils.json_to_sheet(rows);
     const workbook = utils.book_new();
-    utils.book_append_sheet(workbook, worksheet, title);
+    utils.book_append_sheet(workbook, worksheet, getSafeExcelSheetName(title));
     writeFile(workbook, `${filenamePrefix} (${getExportFileDate()}).xlsx`);
   };
 
@@ -49,55 +51,30 @@ export function StudentProfileExportActions({
     }
 
     const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const brandPrimary = [79, 70, 229];
-    const brandDark = [15, 23, 42];
-    const mutedText = [71, 85, 105];
-
     const columns = Object.keys(rows[0]);
-
-    const addFooter = (pageNumber: number, totalPages: number) => {
-      const footerY = pageHeight - 12;
-      const generatedAt = new Date().toLocaleString("en-IN", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      });
-
-      doc.setDrawColor(226, 232, 240);
-      doc.line(14, footerY - 5, pageWidth - 14, footerY - 5);
-      doc.setTextColor(mutedText[0], mutedText[1], mutedText[2]);
-      doc.setFontSize(8);
-      doc.setFont("helvetica", "normal");
-      doc.text("Cognive Academy", 14, footerY - 1);
-      doc.text(`Generated on: ${generatedAt}`, pageWidth / 2, footerY - 1, { align: "center" });
-      doc.text(`Page ${pageNumber} of ${totalPages}`, pageWidth - 24, footerY - 1, { align: "right" });
-    };
-
-    doc.setFillColor(brandPrimary[0], brandPrimary[1], brandPrimary[2]);
-    doc.rect(0, 0, pageWidth, 18, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
-    doc.text("Cognive Academy", 14, 11.5);
-
-    doc.setTextColor(brandDark[0], brandDark[1], brandDark[2]);
-    doc.setFontSize(14);
-    doc.text(title, 14, 30);
+    const addFooter = applyAdminPdfHeaderAndFooter(doc, { title });
 
     autoTable(doc, {
       head: [columns],
-      body: rows.map((row) => columns.map((column) => row[column] ?? "")),
+      body: rows.map((row) => columns.map((column) => {
+        const cellValue = row[column] ?? "";
+        return /amount|price/i.test(column) ? formatPdfCurrencyValue(cellValue) : cellValue;
+      })),
       startY: 38,
-      styles: { fontSize: 8, cellPadding: 3 },
+      styles: {
+        fontSize: adminPdfExportPreset.table.fontSize,
+        cellPadding: adminPdfExportPreset.table.cellPadding,
+        overflow: adminPdfExportPreset.table.bodyOverflow,
+      },
+      columnStyles: getSingleLinePdfColumnStyles(columns),
+      tableWidth: doc.internal.pageSize.getWidth() - 24,
       headStyles: {
-        fillColor: [79, 70, 229],
+        fillColor: adminPdfExportPreset.brandPrimary,
         textColor: [255, 255, 255],
         fontStyle: "bold",
+        fontSize: adminPdfExportPreset.table.headFontSize,
+        halign: "center",
+        overflow: adminPdfExportPreset.table.headOverflow,
       },
       alternateRowStyles: { fillColor: [248, 250, 252] },
       margin: { left: 12, right: 12 },

@@ -11,7 +11,7 @@ import { CourseSelect } from "@/app/admin/components/course-select";
 import { PaginationDots } from "@/components/pagination-dots";
 import { PaginationPageSizeSelect } from "@/app/admin/components/pagination-page-size-select";
 import { PlacedOnDateFilter } from "@/app/admin/students/[studentId]/orders/placed-on-date-filter.client";
-import { StudentOrderExportActions } from "./student-order-export-actions.client";
+import { StudentPurchaseExportActions } from "./student-order-export-actions.client";
 
 export const dynamic = "force-dynamic";
 
@@ -61,15 +61,27 @@ export default async function StudentOrdersPage({
   const studentFilter = Array.isArray(resolvedSearchParams.student)
     ? resolvedSearchParams.student[0] ?? "all"
     : resolvedSearchParams.student ?? "all";
+  const studentIdFilter = Array.isArray(resolvedSearchParams.studentId)
+    ? resolvedSearchParams.studentId[0] ?? "all"
+    : resolvedSearchParams.studentId ?? "all";
   const courseFilter = Array.isArray(resolvedSearchParams.course)
     ? resolvedSearchParams.course[0] ?? "all"
     : resolvedSearchParams.course ?? "all";
+  const courseIdFilter = Array.isArray(resolvedSearchParams.courseId)
+    ? resolvedSearchParams.courseId[0] ?? "all"
+    : resolvedSearchParams.courseId ?? "all";
+  const categoryFilter = Array.isArray(resolvedSearchParams.category)
+    ? resolvedSearchParams.category[0] ?? "all"
+    : resolvedSearchParams.category ?? "all";
   const statusFilter = Array.isArray(resolvedSearchParams.status)
     ? resolvedSearchParams.status[0] ?? "all"
     : resolvedSearchParams.status ?? "all";
   const placedOnFilter = Array.isArray(resolvedSearchParams.placedOn)
     ? resolvedSearchParams.placedOn[0] ?? "all"
     : resolvedSearchParams.placedOn ?? "all";
+  const amountFilter = Array.isArray(resolvedSearchParams.amount)
+    ? resolvedSearchParams.amount[0] ?? "all"
+    : resolvedSearchParams.amount ?? "all";
   const rawPage = Number(Array.isArray(resolvedSearchParams.page) ? resolvedSearchParams.page[0] : resolvedSearchParams.page ?? "1");
   const rawPageSize = Array.isArray(resolvedSearchParams.pageSize)
     ? resolvedSearchParams.pageSize[0] ?? "10"
@@ -104,6 +116,7 @@ export default async function StudentOrdersPage({
         select: {
           id: true,
           title: true,
+          category: true,
         },
       },
     },
@@ -126,6 +139,11 @@ export default async function StudentOrdersPage({
     ),
   ];
 
+  const studentIdOptions = [
+    { value: "all", label: "All" },
+    ...Array.from(new Set(orders.map((order) => order.user.id))).map((id) => ({ value: id, label: id })),
+  ];
+
   const courseOptions = [
     { value: "all", label: "All" },
     ...Array.from(
@@ -139,6 +157,19 @@ export default async function StudentOrdersPage({
         ]),
       ).values(),
     ),
+  ];
+
+  const courseIdOptions = [
+    { value: "all", label: "All" },
+    ...Array.from(new Set(orders.map((order) => order.course.id))).map((id) => ({ value: id, label: id })),
+  ];
+
+  const categoryOptions = [
+    { value: "all", label: "All" },
+    ...Array.from(new Set(orders.map((order) => order.course.category ?? "General"))).map((category) => ({
+      value: category,
+      label: category,
+    })),
   ];
 
   const formatCurrencyInr = (value: number | string | null) =>
@@ -157,13 +188,26 @@ export default async function StudentOrdersPage({
     })),
   ];
 
+  const amountOptions = [
+    { value: "all", label: "All" },
+    ...Array.from(new Set(orders.map((order) => Number(order.amount ?? 0).toFixed(2))))
+      .sort((a, b) => Number(a) - Number(b))
+      .map((amount) => ({
+        value: amount,
+        label: formatCurrencyInr(amount),
+      })),
+  ];
+
   const placedOnInputValue = normalizePlacedOnValue(placedOnFilter);
 
   const filteredOrders = orders.filter((order) => {
     const rowText = [
+      order.user.id,
       order.user.name ?? "",
       order.user.email ?? "",
+      order.course.id,
       order.course.title,
+      order.course.category ?? "General",
       String(Number(order.amount ?? 0)),
       formatCurrencyInr(order.amount),
       order.status,
@@ -174,12 +218,16 @@ export default async function StudentOrdersPage({
       .toLowerCase();
 
     const matchesSearch = !searchTerm || rowText.includes(searchTerm);
+    const matchesStudentId = studentIdFilter === "all" || order.user.id === studentIdFilter;
     const matchesStudent = studentFilter === "all" || order.user.id === studentFilter;
+    const matchesCourseId = courseIdFilter === "all" || order.course.id === courseIdFilter;
     const matchesCourse = courseFilter === "all" || order.course.title === courseFilter;
+    const matchesCategory = categoryFilter === "all" || (order.course.category ?? "General") === categoryFilter;
     const matchesStatus = statusFilter === "all" || order.status === statusFilter;
     const matchesPlacedOn = placedOnInputValue === "" || normalizePlacedOnValue(formatPlacedDate(order.createdAt)) === placedOnInputValue;
+    const matchesAmount = amountFilter === "all" || Number(order.amount ?? 0).toFixed(2) === String(amountFilter);
 
-    return matchesSearch && matchesStudent && matchesCourse && matchesStatus && matchesPlacedOn;
+    return matchesSearch && matchesStudentId && matchesStudent && matchesCourseId && matchesCourse && matchesCategory && matchesStatus && matchesPlacedOn && matchesAmount;
   });
 
   const totalStudents = new Set(orders.map((order) => order.user.id)).size;
@@ -196,10 +244,14 @@ export default async function StudentOrdersPage({
 
   const hasActiveFilters = Boolean(
     q ||
+      studentIdFilter !== "all" ||
       studentFilter !== "all" ||
+      courseIdFilter !== "all" ||
       courseFilter !== "all" ||
+      categoryFilter !== "all" ||
       statusFilter !== "all" ||
-      placedOnFilter !== "all",
+      placedOnFilter !== "all" ||
+      amountFilter !== "all",
   );
 
   const buildPageHref = (nextPage: number) => {
@@ -209,12 +261,24 @@ export default async function StudentOrdersPage({
       params.set("q", q);
     }
 
+if (studentIdFilter !== "all") {
+      params.set("studentId", studentIdFilter);
+    }
+
     if (studentFilter !== "all") {
       params.set("student", studentFilter);
     }
 
+    if (courseIdFilter !== "all") {
+      params.set("courseId", courseIdFilter);
+    }
+
     if (courseFilter !== "all") {
       params.set("course", courseFilter);
+    }
+
+    if (categoryFilter !== "all") {
+      params.set("category", categoryFilter);
     }
 
     if (statusFilter !== "all") {
@@ -223,6 +287,10 @@ export default async function StudentOrdersPage({
 
     if (placedOnFilter !== "all") {
       params.set("placedOn", placedOnFilter);
+    }
+
+    if (amountFilter !== "all") {
+      params.set("amount", amountFilter);
     }
 
     params.set("page", String(nextPage));
@@ -286,51 +354,111 @@ export default async function StudentOrdersPage({
                 hasActiveFilters={hasActiveFilters}
                 clearFiltersHref="/admin/students/orders"
                 leftControls={
-                  <>
-                    <div className="min-w-[150px]">
-                      <CourseSelect
-                        name="student"
-                        label="Student"
-                        compact
-                        hideLabel
-                        placeholder="Student"
-                        defaultValue={studentFilter || "all"}
-                        options={studentOptions}
-                        triggerClassName="!h-[38px] !min-h-[38px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-                        menuClassName="!min-w-[150px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
-                      />
-                    </div>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="min-w-[110px]">
+                        <CourseSelect
+                          name="studentId"
+                          label="Student ID"
+                          compact
+                          hideLabel
+                          placeholder="Student ID"
+                          defaultValue={studentIdFilter || "all"}
+                          options={studentIdOptions}
+                          triggerClassName="!h-[34px] !min-h-[34px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                          menuClassName="!min-w-[110px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
+                        />
+                      </div>
 
-                    <div className="min-w-[160px]">
-                      <CourseSelect
-                        name="course"
-                        label="Course"
-                        compact
-                        hideLabel
-                        placeholder="Course"
-                        defaultValue={courseFilter || "all"}
-                        options={courseOptions}
-                        triggerClassName="!h-[38px] !min-h-[38px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-                        menuClassName="!min-w-[160px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
-                      />
-                    </div>
+                      <div className="min-w-[130px]">
+                        <CourseSelect
+                          name="student"
+                          label="Student Name"
+                          compact
+                          hideLabel
+                          placeholder="Student Name"
+                          defaultValue={studentFilter || "all"}
+                          options={studentOptions}
+                          triggerClassName="!h-[34px] !min-h-[34px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                          menuClassName="!min-w-[130px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
+                        />
+                      </div>
 
-                    <div className="min-w-[140px]">
-                      <CourseSelect
-                        name="status"
-                        label="Status"
-                        compact
-                        hideLabel
-                        placeholder="Status"
-                        defaultValue={statusFilter || "all"}
-                        options={statusOptions}
-                        triggerClassName="!h-[38px] !min-h-[38px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-                        menuClassName="!min-w-[140px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
-                      />
-                    </div>
+                      <div className="min-w-[120px]">
+                        <CourseSelect
+                          name="courseId"
+                          label="Course ID"
+                          compact
+                          hideLabel
+                          placeholder="Course ID"
+                          defaultValue={courseIdFilter || "all"}
+                          options={courseIdOptions}
+                          triggerClassName="!h-[34px] !min-h-[34px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                          menuClassName="!min-w-[110px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
+                        />
+                      </div>
 
-                    <PlacedOnDateFilter defaultValue={placedOnInputValue} />
-                  </>
+                      <div className="min-w-[140px]">
+                        <CourseSelect
+                          name="course"
+                          label="Course Name"
+                          compact
+                          hideLabel
+                          placeholder="Course Name"
+                          defaultValue={courseFilter || "all"}
+                          options={courseOptions}
+                          triggerClassName="!h-[34px] !min-h-[34px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                          menuClassName="!min-w-[140px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
+                        />
+                      </div>
+
+                      <div className="min-w-[120px]">
+                        <CourseSelect
+                          name="category"
+                          label="Category"
+                          compact
+                          hideLabel
+                          placeholder="Category"
+                          defaultValue={categoryFilter || "all"}
+                          options={categoryOptions}
+                          triggerClassName="!h-[34px] !min-h-[34px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                          menuClassName="!min-w-[120px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
+                        />
+                      </div>
+
+                      <div className="min-w-[120px]">
+                        <CourseSelect
+                          name="amount"
+                          label="Amount"
+                          compact
+                          hideLabel
+                          placeholder="Amount"
+                          defaultValue={amountFilter || "all"}
+                          options={amountOptions}
+                          triggerClassName="!h-[34px] !min-h-[34px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                          menuClassName="!min-w-[120px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
+                        />
+                      </div>
+
+                      <div className="min-w-[110px]">
+                        <CourseSelect
+                          name="status"
+                          label="Status"
+                          compact
+                          hideLabel
+                          placeholder="Status"
+                          defaultValue={statusFilter || "all"}
+                          options={statusOptions}
+                          triggerClassName="!h-[34px] !min-h-[34px] !rounded-full !border-slate-200 !bg-white/90 !text-slate-700 !shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:!border-slate-700 dark:!bg-slate-900/70 dark:!text-slate-100 dark:!shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                          menuClassName="!min-w-[110px] !rounded-2xl !border-slate-200 !bg-white !text-slate-700 dark:!border-slate-700 dark:!bg-slate-950 dark:!text-slate-100"
+                        />
+                      </div>
+
+                      <div className="min-w-[120px]">
+                        <PlacedOnDateFilter defaultValue={placedOnInputValue} />
+                      </div>
+                    </div>
+                  </div>
                 }
                 rightControls={<CourseSearchInput defaultValue={q} />}
               />
@@ -347,11 +475,14 @@ export default async function StudentOrdersPage({
                     <table className="min-w-full divide-y divide-slate-200 text-left dark:divide-slate-700">
                       <thead className="bg-slate-50 dark:bg-slate-800/80">
                         <tr>
-                          <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Student</th>
-                          <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Course</th>
+                          <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Student ID</th>
+                          <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Student Name</th>
+                          <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Course ID</th>
+                          <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Course Name</th>
+                          <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Category</th>
+                          <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Amount</th>
                           <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Status</th>
                           <th className="px-3 py-2.5 align-middle text-center text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Placed on</th>
-                          <th className="px-3 py-2.5 align-middle text-left text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Price</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-700 dark:bg-slate-900">
@@ -368,12 +499,16 @@ export default async function StudentOrdersPage({
 
                           return (
                             <tr key={order.id} className="align-middle transition-colors duration-200 hover:bg-indigo-50/90 hover:shadow-[inset_0_0_0_1px_rgba(99,102,241,0.12)] dark:hover:bg-slate-800/80">
+                              <td className="px-3 py-2 align-middle text-left text-[12.5px] text-slate-700 dark:text-slate-200">{order.user.id}</td>
                               <td className="px-3 py-2 align-middle text-left">
                                 <Link href={`/admin/students/${order.user.id}`} className="text-[13px] font-semibold tracking-[-0.01em] text-slate-900 hover:text-indigo-600 dark:text-white dark:hover:text-indigo-300">
                                   {order.user.name ?? "Unnamed student"}
                                 </Link>
                               </td>
+                              <td className="px-3 py-2 align-middle text-left text-[12.5px] text-slate-700 dark:text-slate-200">{order.course.id}</td>
                               <td className="px-3 py-2 align-middle text-left text-[12.5px] text-slate-700 dark:text-slate-200">{order.course.title}</td>
+                              <td className="px-3 py-2 align-middle text-left text-[12.5px] text-slate-700 dark:text-slate-200">{order.course.category ?? "General"}</td>
+                              <td className="px-3 py-2 align-middle text-left text-[12.5px] text-slate-700 dark:text-slate-200">{formatCurrencyInr(order.amount)}</td>
                               <td className="px-3 py-2 align-middle text-left leading-[1.35]">
                                 <span className={`text-[10px] font-semibold uppercase tracking-[0.12em] leading-none ${statusTone}`}>
                                   {order.status}
@@ -382,7 +517,6 @@ export default async function StudentOrdersPage({
                               <td className="px-3 py-2 align-middle text-center text-[12.5px] text-slate-700 dark:text-slate-200">
                                 {formatPlacedDate(order.createdAt)}
                               </td>
-                              <td className="px-3 py-2 align-middle text-left text-[12.5px] text-slate-700 dark:text-slate-200">{formatCurrencyInr(order.amount)}</td>
                             </tr>
                           );
                         })}
@@ -393,13 +527,16 @@ export default async function StudentOrdersPage({
 
                 <div className="mt-4 flex items-center justify-between gap-3 text-sm text-slate-600 dark:text-slate-300">
                   <div className="flex items-center gap-2">
-                    <StudentOrderExportActions
-                      rows={paginatedOrders.map((order) => ({
+                    <StudentPurchaseExportActions
+                      rows={filteredOrders.map((order) => ({
+                        studentId: order.user.id,
                         student: order.user.name ?? "Unnamed student",
+                        courseId: order.course.id,
                         course: order.course.title,
+                        category: order.course.category ?? "General",
                         status: order.status,
                         placedOn: formatPlacedDate(order.createdAt),
-                        price: formatCurrencyInr(order.amount),
+                        amount: Number(order.amount ?? 0),
                       }))}
                     />
                   </div>

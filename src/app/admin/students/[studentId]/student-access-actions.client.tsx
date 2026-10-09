@@ -52,17 +52,19 @@ export function StudentAccessActions({
     return null;
   }
 
+  const sortedCourses = [...availableCourses].sort((a, b) => a.title.localeCompare(b.title));
+
   return (
     <div className="flex flex-wrap items-center justify-center gap-2">
       <CourseSelect
         name="student-access-course"
-        label="Courses"
-        placeholder="Courses"
+        label="Course Name"
+        placeholder="Course Name"
         compact
         hideLabel
         syncUrl={false}
         defaultValue={selectedCourseId}
-        options={availableCourses.map((course) => ({
+        options={sortedCourses.map((course) => ({
           value: course.id,
           label: course.title,
         }))}

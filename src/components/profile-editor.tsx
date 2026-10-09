@@ -481,10 +481,10 @@ export function ProfileEditor({ user }: { user: ProfileUser }) {
       </div>
 
       {isEditing ? (
-        <div className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.05)] transition-colors duration-300 dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-[0_20px_42px_rgba(15,23,42,0.28)] sm:p-8">
+        <div className="flex min-h-[540px] flex-col rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.05)] transition-colors duration-300 dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-[0_20px_42px_rgba(15,23,42,0.28)] sm:p-8">
           <div className="mb-6">
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-indigo-600 dark:text-indigo-300">Edit details</p>
-            <h2 className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">Update your public profile</h2>
+            <h2 className="mt-2 text-xl font-bold text-slate-900 dark:text-white">Update your public profile</h2>
           </div>
 
           {profileMessage ? (
@@ -499,114 +499,117 @@ export function ProfileEditor({ user }: { user: ProfileUser }) {
             </div>
           ) : null}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/80">
-              <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-indigo-600 via-violet-600 to-sky-500 text-xl font-black text-white">
-                {avatarUrl ? <img src={avatarUrl} alt={name || user.email} className="h-full w-full object-cover" /> : initials}
-              </div>
-
-              <div className="flex-1">
-                <div className="text-sm font-medium text-slate-900 dark:text-white">Profile photo</div>
-                <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">Upload a clear photo for your student profile.</div>
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <label className="inline-flex cursor-pointer items-center justify-center rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-indigo-500">
-                    Upload photo
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(event) => {
-                        const file = event.target.files?.[0] ?? null;
-                        if (!file) return;
-                        setAvatarFile(file);
-                        setShowCropEditor(true);
-                        setAvatarUrl(URL.createObjectURL(file));
-                        setCrop({ x: 0.15, y: 0.15, size: 0.7 });
-                      }}
-                    />
-                  </label>
-                  {avatarUrl ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAvatarFile(null);
-                        setAvatarUrl("");
-                        setShowCropEditor(false);
-                      }}
-                      className="rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
-                    >
-                      Remove photo
-                    </button>
-                  ) : null}
+          <form onSubmit={handleSubmit} className="flex h-full flex-col space-y-6">
+            <div className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/80">
+              <div className="flex items-center gap-4">
+                <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-indigo-600 via-violet-600 to-sky-500 text-xl font-black text-white">
+                  {avatarUrl ? <img src={avatarUrl} alt={name || user.email} className="h-full w-full object-cover" /> : initials}
                 </div>
 
-                {avatarFile && showCropEditor ? (
-                  <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900/80">
-                    <div className="mb-2 flex items-center justify-between gap-3">
-                      <div>
-                        <div className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Adjust crop</div>
-                        <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">Drag the square to position your profile photo.</div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setCrop({ x: 0.15, y: 0.15, size: 0.7 })}
-                        className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                      >
-                        Reset
-                      </button>
-                    </div>
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-slate-900 dark:text-white">Profile photo</div>
+                  <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">Upload a clear photo for your student profile.</div>
+                </div>
+              </div>
 
-                    <div
-                      ref={cropRef}
-                      onPointerDown={handleCropPointerDown}
-                      onPointerMove={handleCropPointerMove}
-                      onPointerUp={handleCropPointerUp}
-                      onPointerLeave={handleCropPointerUp}
-                      className="relative mx-auto aspect-square w-full max-w-[260px] cursor-move overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-inner dark:border-slate-700 dark:bg-slate-800"
-                    >
-                      <img
-                        src={avatarUrl}
-                        alt="Selected avatar preview"
-                        className="pointer-events-none h-full w-full select-none object-cover"
-                      />
-
-                      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,transparent_calc(100%_-_28px),rgba(15,23,42,0.72)_100%)]" />
-
-                      <div
-                        className="pointer-events-none absolute rounded-xl border-2 border-indigo-500 bg-white/10 shadow-[0_0_0_9999px_rgba(15,23,42,0.38)]"
-                        style={{
-                          left: `${crop.x * 100}%`,
-                          top: `${crop.y * 100}%`,
-                          width: `${crop.size * 100}%`,
-                          height: `${crop.size * 100}%`,
-                        }}
-                      />
-                    </div>
-
-                    <div className="mt-4 flex justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setAvatarFile(null);
-                          setAvatarUrl(user.avatarUrl ?? "");
-                          setShowCropEditor(false);
-                        }}
-                        className="rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setShowCropEditor(false)}
-                        className="rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-indigo-500"
-                      >
-                        OK
-                      </button>
-                    </div>
-                  </div>
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                <label className="inline-flex cursor-pointer items-center justify-center rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-indigo-500">
+                  Upload photo
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0] ?? null;
+                      if (!file) return;
+                      setAvatarFile(file);
+                      setShowCropEditor(true);
+                      setAvatarUrl(URL.createObjectURL(file));
+                      setCrop({ x: 0.15, y: 0.15, size: 0.7 });
+                    }}
+                  />
+                </label>
+                {avatarUrl ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAvatarFile(null);
+                      setAvatarUrl("");
+                      setShowCropEditor(false);
+                    }}
+                    className="rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                  >
+                    Remove photo
+                  </button>
                 ) : null}
               </div>
             </div>
+
+            {avatarFile && showCropEditor ? (
+              <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900/80">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">Adjust crop</div>
+                    <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">Drag the square to position your profile photo.</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCrop({ x: 0.15, y: 0.15, size: 0.7 })}
+                    className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                  >
+                    Reset
+                  </button>
+                </div>
+
+                <div
+                  ref={cropRef}
+                  onPointerDown={handleCropPointerDown}
+                  onPointerMove={handleCropPointerMove}
+                  onPointerUp={handleCropPointerUp}
+                  onPointerLeave={handleCropPointerUp}
+                  className="relative mx-auto aspect-square w-full max-w-[260px] cursor-move overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-inner dark:border-slate-700 dark:bg-slate-800"
+                >
+                  <img
+                    src={avatarUrl}
+                    alt="Selected avatar preview"
+                    className="pointer-events-none h-full w-full select-none object-cover"
+                  />
+
+                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,transparent_calc(100%_-_28px),rgba(15,23,42,0.72)_100%)]" />
+
+                  <div
+                    className="pointer-events-none absolute rounded-xl border-2 border-indigo-500 bg-white/10 shadow-[0_0_0_9999px_rgba(15,23,42,0.38)]"
+                    style={{
+                      left: `${crop.x * 100}%`,
+                      top: `${crop.y * 100}%`,
+                      width: `${crop.size * 100}%`,
+                      height: `${crop.size * 100}%`,
+                    }}
+                  />
+                </div>
+
+                <div className="mt-4 flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAvatarFile(null);
+                      setAvatarUrl(user.avatarUrl ?? "");
+                      setShowCropEditor(false);
+                    }}
+                    className="rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowCropEditor(false)}
+                    className="rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-indigo-500"
+                  >
+                    OK
+                  </button>
+                </div>
+              </div>
+            ) : null}
 
             <div className="grid gap-6 md:grid-cols-2">
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -649,13 +652,13 @@ export function ProfileEditor({ user }: { user: ProfileUser }) {
               <textarea
                 value={bio}
                 onChange={(event) => setBio(event.target.value)}
-                rows={4}
+                rows={3}
                 placeholder="Tell us a little about yourself"
                 className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-400 focus:bg-white dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
               />
             </label>
 
-            <div className="flex justify-end gap-3">
+            <div className="mt-auto flex justify-end gap-3">
               <button
                 type="button"
                 onClick={() => {

@@ -5,15 +5,31 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { utils, writeFile } from "xlsx";
 
+import { adminPdfExportPreset, applyAdminPdfHeaderAndFooter, formatPdfCurrencyValue, getSafeExcelSheetName, getSingleLinePdfColumnStyles } from "../../pdf-export";
+
 export type StudentOrderExportRow = {
+  studentId: string;
   student: string;
+  courseId: string;
   course: string;
+  category: string;
   status: string;
   placedOn: string;
-  price: string;
+  amount: number;
 };
 
-export function StudentOrderExportActions({ rows }: { rows: StudentOrderExportRow[] }) {
+const STUDENT_ORDER_EXPORT_COLUMNS: string[] = [
+  "Student ID",
+  "Student Name",
+  "Course ID",
+  "Course Name",
+  "Category",
+  "Amount",
+  "Status",
+  "Placed on",
+];
+
+export function StudentPurchaseExportActions({ rows }: { rows: StudentOrderExportRow[] }) {
   const getExportFileDate = () => {
     const now = new Date();
     const year = now.getFullYear();
@@ -22,84 +38,77 @@ export function StudentOrderExportActions({ rows }: { rows: StudentOrderExportRo
     return `${day}-${month}-${year}`;
   };
 
+  const formatExcelCurrencyInr = (value: number | string | null) =>
+    new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(Number(value ?? 0));
+
+  const getExportRowValues = (row: StudentOrderExportRow) => [
+    row.studentId,
+    row.student,
+    row.courseId,
+    row.course,
+    row.category,
+    formatExcelCurrencyInr(row.amount),
+    row.status,
+    row.placedOn,
+  ];
+
   const handleExportExcel = () => {
     const worksheet = utils.json_to_sheet(
-      rows.map((row) => ({
-        "Student Name": row.student,
-        "Course": row.course,
-        "Status": row.status,
-        "Placed on": row.placedOn,
-        "Price": row.price,
-      })),
+      rows.map((row) => {
+        const values = getExportRowValues(row);
+        return STUDENT_ORDER_EXPORT_COLUMNS.reduce<Record<string, string>>((acc, column, index) => {
+          acc[column] = String(values[index] ?? "");
+          return acc;
+        }, {});
+      }),
     );
 
     const workbook = utils.book_new();
-    utils.book_append_sheet(workbook, worksheet, "Course Orders");
-    writeFile(workbook, `student-course-orders (${getExportFileDate()}).xlsx`);
+    utils.book_append_sheet(workbook, worksheet, getSafeExcelSheetName("Student purchases"));
+    writeFile(workbook, `student-purchases (${getExportFileDate()}).xlsx`);
   };
 
   const handleExportPdf = () => {
     const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-
-    const brandPrimary = [79, 70, 229];
-    const brandDark = [15, 23, 42];
-    const mutedText = [71, 85, 105];
-
-    const addFooter = (pageNumber: number, totalPages: number) => {
-      const footerY = pageHeight - 12;
-      const generatedAt = new Date().toLocaleString("en-IN", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      });
-
-      doc.setDrawColor(226, 232, 240);
-      doc.line(14, footerY - 5, pageWidth - 14, footerY - 5);
-      doc.setTextColor(mutedText[0], mutedText[1], mutedText[2]);
-      doc.setFontSize(8);
-      doc.setFont("helvetica", "normal");
-      doc.text("Cognive Academy", 14, footerY - 1);
-      doc.text(`Generated on: ${generatedAt}`, pageWidth / 2, footerY - 1, { align: "center" });
-      doc.text(`Page ${pageNumber} of ${totalPages}`, pageWidth - 24, footerY - 1, { align: "right" });
-    };
-
-    doc.setFillColor(brandPrimary[0], brandPrimary[1], brandPrimary[2]);
-    doc.rect(0, 0, pageWidth, 18, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
-    doc.text("Cognive Academy", 14, 11.5);
-
-    doc.setTextColor(brandDark[0], brandDark[1], brandDark[2]);
-    doc.setFontSize(14);
-    doc.text("Student course orders", 14, 30);
-
-    doc.setFontSize(9);
-    doc.setTextColor(mutedText[0], mutedText[1], mutedText[2]);
-    doc.text(`Generated on: ${new Date().toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}`, 14, 38);
+    const addFooter = applyAdminPdfHeaderAndFooter(doc, { title: "Student purchases" });
 
     autoTable(doc, {
-      head: [["Student Name", "Course", "Status", "Placed on", "Price"]],
-      body: rows.map((row) => [row.student, row.course, row.status, row.placedOn, row.price]),
+      head: [Array.from(STUDENT_ORDER_EXPORT_COLUMNS)],
+      body: rows.map((row) => [
+        row.studentId,
+        row.student,
+        row.courseId,
+        row.course,
+        row.category,
+        formatPdfCurrencyValue(Number(row.amount ?? 0)),
+        row.status,
+        row.placedOn,
+      ]),
       startY: 46,
       styles: {
-        fontSize: 8,
-        cellPadding: 3,
+        fontSize: adminPdfExportPreset.table.fontSize,
+        cellPadding: adminPdfExportPreset.table.cellPadding,
+        overflow: adminPdfExportPreset.table.bodyOverflow,
       },
+      columnStyles: getSingleLinePdfColumnStyles(STUDENT_ORDER_EXPORT_COLUMNS),
+      tableWidth: doc.internal.pageSize.getWidth() - 18,
       headStyles: {
-        fillColor: [79, 70, 229],
+        fillColor: adminPdfExportPreset.brandPrimary,
         textColor: [255, 255, 255],
         fontStyle: "bold",
+        fontSize: adminPdfExportPreset.table.headFontSize,
+        halign: "center",
+        overflow: adminPdfExportPreset.table.headOverflow,
       },
       alternateRowStyles: {
         fillColor: [248, 250, 252],
       },
-      margin: { left: 12, right: 12 },
+      margin: { left: 9, right: 9 },
       didDrawPage: (data) => {
         const totalPages = doc.getNumberOfPages();
         addFooter(data.pageNumber, totalPages);
@@ -112,7 +121,7 @@ export function StudentOrderExportActions({ rows }: { rows: StudentOrderExportRo
       addFooter(page, totalPages);
     }
 
-    doc.save(`student-course-orders (${getExportFileDate()}).pdf`);
+    doc.save(`student-purchases (${getExportFileDate()}).pdf`);
   };
 
   return (
