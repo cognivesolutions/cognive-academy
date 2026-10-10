@@ -1,5 +1,6 @@
 "use client";
 
+import { X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -105,6 +106,19 @@ export function StudentFilterBar({
       }
     };
   }, []);
+
+  const clearSearch = () => {
+    setQ("");
+    if (submitTimerRef.current) {
+      window.clearTimeout(submitTimerRef.current);
+    }
+
+    const params = new URLSearchParams(searchParams?.toString() ?? "");
+    params.delete("q");
+    params.set("page", "1");
+    const targetUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.replace(targetUrl, { scroll: false });
+  };
 
   const updateFilters = (
     nextQ: string,
@@ -478,6 +492,17 @@ export function StudentFilterBar({
               placeholder="Type to search..."
               className="w-full border-0 bg-transparent text-[0.92rem] text-slate-900 placeholder:text-slate-500 outline-none dark:text-slate-100 dark:placeholder:text-slate-400"
             />
+
+            {q ? (
+              <button
+                type="button"
+                onClick={clearSearch}
+                aria-label="Clear search"
+                className="inline-flex h-4 w-4 items-center justify-center rounded-full text-slate-400 transition hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-200"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            ) : null}
           </div>
         </div>
       </div>

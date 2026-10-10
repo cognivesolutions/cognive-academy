@@ -29,6 +29,15 @@ const menuItems = [
     ),
   },
   {
+    label: "Saved courses",
+    href: "/saved-courses",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+        <path d="M12 20.25s-7.5-4.35-9.33-8.29C1.35 9.28 3.03 5.25 7.2 5.25c2.08 0 3.27 1.1 4.08 2.1.81-1 .99-2.1 4.08-2.1 4.17 0 5.85 4.03 4.53 6.71C19.5 15.9 12 20.25 12 20.25Z" />
+      </svg>
+    ),
+  },
+  {
     label: "Transactions",
     href: "/transactions",
     icon: (
@@ -127,13 +136,13 @@ export function UserMenu() {
   }, [open]);
 
   return (
-    <div ref={menuRef} className="relative flex items-center justify-end mr-2">
+    <div ref={menuRef} className="relative flex items-center justify-end -mr-1 sm:-mr-4">
       <button
         ref={buttonRef}
         type="button"
         onClick={() => setOpen((current) => !current)}
         aria-label="Account menu"
-        className="mt-2 ml-[-0px] flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-indigo-600 via-violet-600 to-sky-500 text-sm font-black text-white shadow-[0_10px_25px_rgba(79,70,229,0.25)] ring-2 ring-indigo-100/70 transition hover:scale-[1.02] dark:ring-slate-700/80"
+        className="mt-2 ml-2 flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-indigo-600 via-violet-600 to-sky-500 text-sm font-black text-white shadow-[0_10px_25px_rgba(79,70,229,0.25)] ring-2 ring-indigo-100/70 transition hover:scale-[1.02] dark:ring-slate-700/80"
       >
         {avatarSrc ? (
           <img src={avatarSrc} alt={displayName} className="h-full w-full object-cover" />

@@ -9,9 +9,11 @@ type Course = any;
 export default function RecordedSection({
   courses,
   purchasedCourseIds = new Set<string>(),
+  savedCourseIds = [],
 }: {
   courses: Course[];
   purchasedCourseIds?: Set<string>;
+  savedCourseIds?: string[];
 }) {
   const [lang, setLang] = useState<string>("en");
 
@@ -41,7 +43,7 @@ export default function RecordedSection({
         />
       </div>
 
-      <RecordedCoursesCarousel courses={current} purchasedCourseIds={purchasedCourseIds} />
+      <RecordedCoursesCarousel courses={current} purchasedCourseIds={purchasedCourseIds} savedCourseIds={savedCourseIds} />
     </div>
   );
 }

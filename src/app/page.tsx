@@ -67,6 +67,12 @@ export default async function HomePage({
   });
 
   const session = await auth();
+  const savedCourseIds = session?.user?.id
+    ? (await prisma.savedCourse.findMany({
+        where: { userId: session.user.id },
+        select: { courseId: true },
+      })).map((savedCourse) => savedCourse.courseId)
+    : [];
   const purchasedCourseIds = session?.user?.id
     ? new Set(
         (await prisma.enrollment.findMany({
@@ -227,7 +233,7 @@ export default async function HomePage({
           <h2 className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">Join Live Classroom Courses</h2>
         </div>
         <div>
-          <LiveSection courses={curatedLiveCourses} purchasedCourseIds={purchasedCourseIds} />
+          <LiveSection courses={curatedLiveCourses} purchasedCourseIds={purchasedCourseIds} savedCourseIds={savedCourseIds} />
         </div>
       </section>
 
@@ -239,7 +245,7 @@ export default async function HomePage({
         </div>
 
         <div>
-          <RecordedSection courses={curatedRecordedCourses} purchasedCourseIds={purchasedCourseIds} />
+          <RecordedSection courses={curatedRecordedCourses} purchasedCourseIds={purchasedCourseIds} savedCourseIds={savedCourseIds} />
         </div>
       </section>
       </div>

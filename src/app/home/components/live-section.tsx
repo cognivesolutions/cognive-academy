@@ -9,9 +9,11 @@ type Course = any;
 export default function LiveSection({
   courses,
   purchasedCourseIds = new Set<string>(),
+  savedCourseIds = [],
 }: {
   courses: Course[];
   purchasedCourseIds?: Set<string>;
+  savedCourseIds?: string[];
 }) {
   const [lang, setLang] = useState<string>("en");
 
@@ -41,7 +43,7 @@ export default function LiveSection({
         />
       </div>
 
-      <LiveCoursesCarousel courses={current} purchasedCourseIds={purchasedCourseIds} />
+      <LiveCoursesCarousel courses={current} purchasedCourseIds={purchasedCourseIds} savedCourseIds={savedCourseIds} />
     </div>
   );
 }

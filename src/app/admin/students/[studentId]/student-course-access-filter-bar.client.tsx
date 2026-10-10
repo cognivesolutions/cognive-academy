@@ -1,5 +1,6 @@
 "use client";
 
+import { X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -118,6 +119,15 @@ export function StudentCourseAccessFilterBar({
       }
     };
   }, []);
+
+  const clearSearch = () => {
+    setQ("");
+    if (submitTimerRef.current) {
+      window.clearTimeout(submitTimerRef.current);
+    }
+
+    updateFilters("", status, type, courseId, course, category, joined);
+  };
 
   const updateFilters = (nextQ: string, nextStatus: string, nextType: string, nextCourseId: string, nextCourse: string, nextCategory: string, nextJoined: string) => {
     const params = new URLSearchParams(searchParams?.toString() ?? "");
@@ -472,6 +482,17 @@ export function StudentCourseAccessFilterBar({
             placeholder="Type to search..."
             className="w-full border-0 bg-transparent text-[0.92rem] text-slate-900 placeholder:text-slate-500 outline-none dark:text-slate-100 dark:placeholder:text-slate-400"
           />
+
+          {q ? (
+            <button
+              type="button"
+              onClick={clearSearch}
+              aria-label="Clear search"
+              className="inline-flex h-4 w-4 items-center justify-center rounded-full text-slate-400 transition hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-200"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          ) : null}
         </div>
       </div>
     </div>

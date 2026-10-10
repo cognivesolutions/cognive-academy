@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 
 import { AuthMessage } from "@/components/auth-message";
 
@@ -15,8 +15,35 @@ function AdminLoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const passwordHideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const callbackUrl = searchParams.get("callbackUrl") ?? "/admin";
+
+  useEffect(() => {
+    return () => {
+      if (passwordHideTimeoutRef.current) {
+        clearTimeout(passwordHideTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handlePasswordToggle = () => {
+    if (showPassword) {
+      setShowPassword(false);
+      if (passwordHideTimeoutRef.current) {
+        clearTimeout(passwordHideTimeoutRef.current);
+      }
+      return;
+    }
+
+    setShowPassword(true);
+    if (passwordHideTimeoutRef.current) {
+      clearTimeout(passwordHideTimeoutRef.current);
+    }
+    passwordHideTimeoutRef.current = setTimeout(() => {
+      setShowPassword(false);
+    }, 1800);
+  };
   const error = searchParams.get("error");
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -31,10 +58,15 @@ function AdminLoginForm() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: normalizedEmail }),
+        body: JSON.stringify({ email: normalizedEmail, role: "ADMIN" }),
       });
 
       const userStatus = await userStatusResponse.json();
+
+      if (userStatus?.status === "not_admin") {
+        setFormError("This account does not have admin access. Please use an admin account to continue.");
+        return;
+      }
 
       if (userStatus?.status === "inactive") {
         setFormError("This account is currently inactive. Please contact support.");
@@ -131,7 +163,7 @@ function AdminLoginForm() {
               <button
                 type="button"
                 aria-label={showPassword ? "Hide password" : "Show password"}
-                onClick={() => setShowPassword((currentValue) => !currentValue)}
+                onClick={handlePasswordToggle}
                 className="absolute inset-y-0 right-3 flex items-center text-slate-500 transition hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
               >
                 {showPassword ? "🙈" : "👁️"}

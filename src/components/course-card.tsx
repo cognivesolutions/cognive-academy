@@ -1,6 +1,7 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useSession } from "next-auth/react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import { getCourseMetricCards } from "@/lib/course-metrics";
 
@@ -43,6 +44,8 @@ type CourseCardProps = {
   cardClassName?: string;
   action?: ReactNode;
   showPrice?: boolean;
+  savedCourseIds?: Set<string> | string[];
+  searchQuery?: string;
 };
 
 const formatCategory = (value?: string | null) => {
@@ -81,6 +84,8 @@ export function CourseCard({
   cardClassName = "",
   action,
   showPrice = true,
+  savedCourseIds,
+  searchQuery = "",
 }: CourseCardProps) {
   const DEFAULT_IMG = "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1200&q=80";
   const imgSrc = course.coverImage ?? course.imageUrl ?? DEFAULT_IMG;
@@ -103,6 +108,93 @@ export function CourseCard({
   const limitedOfferBadge = showPromotionalOffer ? { label: "Limited-time offer", tone: "limited-offer" } : null;
   const featuredBadge = showFeaturedBadge && course.featured ? { label: "Featured", tone: "featured" } : null;
   const showNewStarBadge = Boolean(course.isNew);
+  const highlightText = (value: string | null | undefined, searchTerm: string): ReactNode => {
+    const text = value ?? "";
+    const trimmedTerm = searchTerm.trim();
+
+    if (!trimmedTerm || !text) {
+      return value ?? "";
+    }
+
+    const lowerText = text.toLowerCase();
+    const lowerTerm = trimmedTerm.toLowerCase();
+    const nodes: ReactNode[] = [];
+    let startIndex = 0;
+
+    while (startIndex < text.length) {
+      const matchIndex = lowerText.indexOf(lowerTerm, startIndex);
+
+      if (matchIndex === -1) {
+        nodes.push(text.slice(startIndex));
+        break;
+      }
+
+      if (matchIndex > startIndex) {
+        nodes.push(text.slice(startIndex, matchIndex));
+      }
+
+      const matchText = text.slice(matchIndex, matchIndex + trimmedTerm.length);
+      nodes.push(
+        <mark
+          key={`${matchIndex}-${startIndex}`}
+          className="rounded-sm bg-amber-100 px-0.5 py-0.5 font-semibold text-slate-900 shadow-[inset_0_0_0_1px_rgba(202,138,4,0.18)] dark:bg-yellow-200 dark:text-slate-900"
+        >
+          {matchText}
+        </mark>,
+      );
+
+      startIndex = matchIndex + trimmedTerm.length;
+    }
+
+    return nodes.length > 0 ? nodes : value ?? "";
+  };
+  const { data: session, status } = useSession();
+  const [isSaved, setIsSaved] = useState(() => {
+    if (!savedCourseIds) return false;
+    return (savedCourseIds instanceof Set ? savedCourseIds : new Set(savedCourseIds)).has(course.id);
+  });
+  const [isHoveringSave, setIsHoveringSave] = useState(false);
+
+  useEffect(() => {
+    if (!savedCourseIds) {
+      setIsSaved(false);
+      return;
+    }
+
+    const savedSet = savedCourseIds instanceof Set ? savedCourseIds : new Set(savedCourseIds);
+    setIsSaved(savedSet.has(course.id));
+  }, [course.id, savedCourseIds]);
+
+  const handleSaveToggle = async () => {
+    if (status === "loading") return;
+
+    if (!session?.user?.id) {
+      const redirectUrl = encodeURIComponent(`${window.location.pathname}${window.location.search}`);
+      window.location.href = `/login?callbackUrl=${redirectUrl}`;
+      return;
+    }
+
+    const nextSavedState = !isSaved;
+    setIsSaved(nextSavedState);
+
+    try {
+      const response = await fetch("/api/saved-courses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          courseId: course.id,
+          action: nextSavedState ? "save" : "unsave",
+        }),
+      });
+
+      if (!response.ok) {
+        setIsSaved(!nextSavedState);
+      }
+    } catch (error) {
+      setIsSaved(!nextSavedState);
+      console.error("Failed to update saved course", error);
+    }
+  };
 
   return (
     <article
@@ -160,12 +252,39 @@ export function CourseCard({
           ) : null}
 
           {featuredBadge ? (
-            <div className="absolute right-2.5 top-2.5 z-10">
+            <div className="absolute right-12 top-2.5 z-10">
               <span className="rounded-full border border-amber-300/60 bg-gradient-to-r from-yellow-100 via-amber-50 to-orange-100 px-2 py-1 text-[8px] font-bold uppercase tracking-[0.16em] text-amber-800 shadow-[0_0_0_1px_rgba(251,191,36,0.12)] dark:border-amber-400/30 dark:from-amber-500/15 dark:via-yellow-500/10 dark:to-orange-500/15 dark:text-amber-200">
                 {featuredBadge.label}
               </span>
             </div>
           ) : null}
+
+          <button
+            type="button"
+            aria-label={isSaved ? "Remove course from saved list" : "Save this course"}
+            aria-pressed={isSaved}
+            onMouseEnter={() => setIsHoveringSave(true)}
+            onMouseLeave={() => setIsHoveringSave(false)}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              void handleSaveToggle();
+            }}
+            className={`absolute right-2.5 top-2.5 z-20 inline-flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 ${
+              isSaved || isHoveringSave ? "text-red-500" : "text-slate-700 dark:text-slate-200"
+            }`}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill={isSaved || isHoveringSave ? "currentColor" : "none"}
+              stroke="currentColor"
+              strokeWidth="1.8"
+              className="h-6 w-6 drop-shadow-[0_2px_8px_rgba(15,23,42,0.25)] transition-all duration-200"
+              aria-hidden="true"
+            >
+              <path d="M12 20.25s-7.5-4.35-9.33-8.29C1.35 9.28 3.03 5.25 7.2 5.25c2.08 0 3.27 1.1 4.08 2.1.81-1 .99-2.1 4.08-2.1 4.17 0 5.85 4.03 4.53 6.71C19.5 15.9 12 20.25 12 20.25Z" />
+            </svg>
+          </button>
 
           {limitedOfferBadge ? (
             <div className="absolute bottom-2.5 right-2.5 z-10">
@@ -192,13 +311,13 @@ export function CourseCard({
             <span
               className={`inline-flex items-center justify-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${
                 statusTone === "live"
-                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
-                  : "bg-slate-100 text-slate-700 dark:bg-slate-700/80 dark:text-slate-200"
+                  ? "bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
+                  : "bg-slate-200 text-slate-700 dark:bg-slate-700/80 dark:text-slate-200"
               }`}
             >
               <span
                 className={`h-2 w-2 shrink-0 rounded-full ${
-                  statusTone === "live" ? "animate-pulse bg-emerald-500 dark:bg-emerald-400" : "bg-slate-400"
+                  statusTone === "live" ? "animate-pulse bg-emerald-500 dark:bg-emerald-400" : "bg-slate-500 dark:bg-slate-300"
                 }`}
               />
               {resolvedStatus}
@@ -210,10 +329,10 @@ export function CourseCard({
           </div>
 
           <h2 className="mt-2 min-h-[56px] text-[1.7rem] font-black leading-[1.08] tracking-[-0.04em] text-slate-900 dark:text-slate-50">
-            {course.title}
+            {highlightText(course.title, searchQuery)}
           </h2>
           <p className="mt-1 min-h-[62px] flex-1 pb-3 text-[0.9rem] leading-5 text-slate-600 dark:text-slate-300">
-            {course.shortDescription ?? course.description}
+            {highlightText(course.shortDescription ?? course.description, searchQuery)}
           </p>
 
           <div className="mt-0 grid grid-cols-2 gap-1.5 text-[10px] leading-none text-slate-700 dark:text-slate-200">
