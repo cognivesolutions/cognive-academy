@@ -435,8 +435,8 @@ export function SiteNav() {
                         const active = hoveredCourse;
                         if (!active || !hoveredItemRect) return null;
 
-                        const liveHref = buildCourseCategoryHref(active, "live");
-                        const recordedHref = buildCourseCategoryHref(active, "recorded");
+                        const liveHref = buildCourseSectionHref(active, "live");
+                        const recordedHref = buildCourseSectionHref(active, "recorded");
 
                         const style: React.CSSProperties = {
                           position: "absolute",

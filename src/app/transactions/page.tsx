@@ -200,27 +200,31 @@ export default async function TransactionsPage({
         </div>
 
         <div className="mb-8 overflow-visible rounded-[30px] border border-slate-200 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.10),_rgba(255,255,255,0.98)_38%,_rgba(241,245,249,1)_100%)] p-4 shadow-[0_18px_32px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.18),_rgba(10,18,31,0.96)_38%,_rgba(2,6,23,1)_100%)] dark:shadow-[0_18px_32px_rgba(15,23,42,0.28)]">
-          <form method="GET" className="flex w-full items-center justify-start gap-2">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <div className="flex w-full items-center justify-start gap-2 sm:w-auto">
-                <TransactionsSearchInput defaultValue={searchQuery} />
+          <form method="GET" className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center justify-start gap-3">
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                Purchased Date
+              </span>
 
-                <div className="relative z-20 flex items-center gap-2">
-                  <TransactionsDateRangeFilterField name="startDate" defaultValue={startDate} label="Start date" />
-                  <TransactionsDateRangeFilterField name="endDate" defaultValue={endDate} label="End date" />
-                </div>
-
-                {(startDate || endDate || searchQuery || statusFilter !== "ALL") && (
-                  <Link
-                    href="/transactions"
-                    className="inline-flex h-[38px] items-center justify-center rounded-full border border-red-200 bg-red-50/80 px-4 py-0 text-sm font-semibold text-red-700 shadow-[0_8px_20px_rgba(239,68,68,0.08)] transition hover:border-red-300 hover:bg-red-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200 dark:hover:border-red-400/50 dark:hover:bg-red-500/15"
-                  >
-                    Clear
-                  </Link>
-                )}
-
-                {statusFilter !== "ALL" ? <input type="hidden" name="status" value={statusFilter} /> : null}
+              <div className="relative z-20 flex items-center gap-2">
+                <TransactionsDateRangeFilterField name="startDate" defaultValue={startDate} label="Start date" />
+                <TransactionsDateRangeFilterField name="endDate" defaultValue={endDate} label="End date" />
               </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2">
+              <TransactionsSearchInput defaultValue={searchQuery} />
+
+              {(startDate || endDate || searchQuery || statusFilter !== "ALL") && (
+                <Link
+                  href="/transactions"
+                  className="inline-flex h-[38px] items-center justify-center rounded-full border border-red-200 bg-red-50/80 px-4 py-0 text-sm font-semibold text-red-700 shadow-[0_8px_20px_rgba(239,68,68,0.08)] transition hover:border-red-300 hover:bg-red-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200 dark:hover:border-red-400/50 dark:hover:bg-red-500/15"
+                >
+                  Clear
+                </Link>
+              )}
+
+              {statusFilter !== "ALL" ? <input type="hidden" name="status" value={statusFilter} /> : null}
             </div>
           </form>
         </div>
@@ -401,7 +405,16 @@ export default async function TransactionsPage({
                   <div className="flex items-center justify-end gap-1">
                     <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-600 dark:text-slate-300">
                       <span>Records per page</span>
-                      <PaginationPageSizeSelect defaultValue={requestedPageSize === "all" ? "all" : String(effectivePageSize)} />
+                      <PaginationPageSizeSelect
+                        defaultValue={requestedPageSize === "all" ? "10" : String(effectivePageSize)}
+                        options={[
+                          { value: "5", label: "5" },
+                          { value: "10", label: "10" },
+                          { value: "20", label: "20" },
+                          { value: "50", label: "50" },
+                          { value: "100", label: "100" },
+                        ]}
+                      />
                     </div>
 
                     <span className="min-w-[78px] text-right text-[11px] font-medium text-slate-600 dark:text-slate-300">

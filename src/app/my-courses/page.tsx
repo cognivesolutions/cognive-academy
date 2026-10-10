@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { Search } from "lucide-react";
 import { redirect } from "next/navigation";
+import type { ReactNode } from "react";
 
 import { auth } from "@/auth";
 import { PaginationDots } from "@/components/pagination-dots";
 import { prisma } from "@/lib/prisma";
 
 import { PaginationPageSizeSelect } from "../admin/components/pagination-page-size-select";
+import { MyCoursesSearchInput } from "./my-courses-search-input.client";
 
 const tabs = [
   { label: "All", value: "all" },
@@ -170,6 +171,47 @@ export default async function MyCoursesPage({
     return query ? `/my-courses?${query}` : "/my-courses";
   };
 
+  const highlightText = (value: string | null | undefined, searchTerm: string): ReactNode => {
+    const text = value ?? "";
+    const trimmedTerm = searchTerm.trim();
+
+    if (!trimmedTerm || !text) {
+      return value ?? "";
+    }
+
+    const lowerText = text.toLowerCase();
+    const lowerTerm = trimmedTerm.toLowerCase();
+    const nodes: ReactNode[] = [];
+    let startIndex = 0;
+
+    while (startIndex < text.length) {
+      const matchIndex = lowerText.indexOf(lowerTerm, startIndex);
+
+      if (matchIndex === -1) {
+        nodes.push(text.slice(startIndex));
+        break;
+      }
+
+      if (matchIndex > startIndex) {
+        nodes.push(text.slice(startIndex, matchIndex));
+      }
+
+      const matchText = text.slice(matchIndex, matchIndex + trimmedTerm.length);
+      nodes.push(
+        <mark
+          key={`${matchIndex}-${startIndex}`}
+          className="rounded-sm bg-amber-100 px-0.5 py-0.5 font-semibold text-slate-900 shadow-[inset_0_0_0_1px_rgba(202,138,4,0.18)] dark:bg-yellow-200 dark:text-slate-900"
+        >
+          {matchText}
+        </mark>,
+      );
+
+      startIndex = matchIndex + trimmedTerm.length;
+    }
+
+    return nodes.length > 0 ? nodes : value ?? "";
+  };
+
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
@@ -233,21 +275,7 @@ export default async function MyCoursesPage({
               })}
             </div>
 
-            <form action="/my-courses" method="get" className="relative w-full max-w-[220px]">
-              {activeTab !== "all" ? <input type="hidden" name="tab" value={activeTab} /> : null}
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <Search className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
-              </div>
-              <label className="block text-sm font-medium text-slate-600 dark:text-slate-300">
-                <span className="sr-only">Search courses</span>
-                <input
-                  defaultValue={rawQuery}
-                  name="q"
-                  className="h-10 w-full appearance-none rounded-full border border-slate-200 bg-white/90 pl-8 pr-8 text-[13px] text-slate-800 shadow-[0_5px_18px_rgba(15,23,42,0.04)] outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-indigo-300 focus:bg-white focus:shadow-[0_0_0_3px_rgba(99,102,241,0.1),0_8px_20px_rgba(79,70,229,0.08)] dark:border-slate-700 dark:bg-slate-900/85 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-indigo-500 dark:focus:bg-slate-900 dark:focus:shadow-[0_0_0_3px_rgba(129,140,248,0.12),0_8px_20px_rgba(99,102,241,0.12)] [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none"
-                  placeholder="Type to search..."
-                />
-              </label>
-            </form>
+            <MyCoursesSearchInput defaultValue={rawQuery} />
           </div>
 
           {filteredCourses.length === 0 ? (
@@ -278,9 +306,9 @@ export default async function MyCoursesPage({
                       </div>
 
                       <div className="mt-4 flex-1">
-                        <h3 className="text-xl font-bold text-slate-900 dark:text-white">{item.course.title}</h3>
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white">{highlightText(item.course.title, rawQuery)}</h3>
                         <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                          {item.course.shortDescription ?? "Continue your learning plan and build real-world outcomes."}
+                          {highlightText(item.course.shortDescription ?? "Continue your learning plan and build real-world outcomes.", rawQuery)}
                         </p>
                       </div>
 
@@ -322,7 +350,18 @@ export default async function MyCoursesPage({
                 <div className="flex items-center justify-end gap-1">
                   <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-600 dark:text-slate-300">
                     <span>Records per page</span>
-                    <PaginationPageSizeSelect defaultValue={requestedPageSize === "all" ? "all" : String(effectivePageSize)} />
+                    <PaginationPageSizeSelect
+                      defaultValue={requestedPageSize === "all" ? "6" : String(effectivePageSize)}
+                      options={[
+                        { value: "3", label: "3" },
+                        { value: "6", label: "6" },
+                        { value: "9", label: "9" },
+                        { value: "10", label: "10" },
+                        { value: "20", label: "20" },
+                        { value: "50", label: "50" },
+                        { value: "100", label: "100" },
+                      ]}
+                    />
                   </div>
 
                   <span className="min-w-[78px] text-right text-[11px] font-medium text-slate-600 dark:text-slate-300">

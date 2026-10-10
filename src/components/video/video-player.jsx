@@ -97,13 +97,14 @@ export default function VideoPlayer({
 
     const nextProgress = video.duration ? (video.currentTime / video.duration) * 100 : 0;
     const normalizedProgress = Number.isFinite(nextProgress) ? Math.min(100, Math.max(0, nextProgress)) : 0;
+    const effectiveProgress = video.ended ? 100 : normalizedProgress;
 
     setLastKnownTime(video.currentTime);
     setIsPlaying(!video.paused && !video.ended);
     setIsMuted(video.muted);
     setVolume(video.volume);
     setDuration(video.duration || 0);
-    setProgress(normalizedProgress);
+    setProgress(effectiveProgress);
 
     if (resumeKey) {
       try {
@@ -114,10 +115,10 @@ export default function VideoPlayer({
     }
 
     if (typeof onProgressUpdate === "function") {
-      const nextTrackedProgress = Math.max(lastReportedProgressRef.current, normalizedProgress);
+      const nextTrackedProgress = Math.max(lastReportedProgressRef.current, effectiveProgress);
       const delta = nextTrackedProgress - lastReportedProgressRef.current;
       const remainingTime = video.duration ? Math.max(0, video.duration - video.currentTime) : 0;
-      const isNearCompletion = remainingTime <= 10 || normalizedProgress >= 90;
+      const isNearCompletion = video.ended || remainingTime <= 10 || effectiveProgress >= 90;
 
       if (isNearCompletion || delta >= 0.5) {
         lastReportedProgressRef.current = nextTrackedProgress;

@@ -2,15 +2,19 @@
 
 import { useSession } from "next-auth/react";
 
-function readLocalProfileOverride() {
+function readLocalProfileOverride(currentEmail?: string | null) {
   if (typeof window === "undefined") return null;
 
   try {
     const rawValue = window.localStorage.getItem("cognive-profile-sync");
     if (!rawValue) return null;
 
-    const parsed = JSON.parse(rawValue) as { name?: string; avatarUrl?: string };
+    const parsed = JSON.parse(rawValue) as { name?: string; avatarUrl?: string; email?: string };
     if (!parsed || (!parsed.name && !parsed.avatarUrl)) return null;
+
+    if (currentEmail && parsed.email && parsed.email.toLowerCase() !== currentEmail.toLowerCase()) {
+      return null;
+    }
 
     return parsed;
   } catch {
@@ -23,7 +27,7 @@ export function HomeUserGreeting() {
 
   if (status === "loading") return null;
 
-  const overrideProfile = readLocalProfileOverride();
+  const overrideProfile = readLocalProfileOverride(session?.user?.email ?? null);
   const displayName = (overrideProfile?.name?.trim() || session?.user?.name?.trim() || "").trim();
   const avatarSrc = overrideProfile?.avatarUrl || session?.user?.image || undefined;
 

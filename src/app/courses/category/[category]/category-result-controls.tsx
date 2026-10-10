@@ -135,8 +135,10 @@ export default function CategoryResultControls({
               }`}
             >
               <span
-                className={`h-2 w-2 rounded-full ${
-                  sectionIsLive ? "bg-emerald-500 dark:bg-emerald-400" : "bg-violet-500 dark:bg-violet-400"
+                className={`h-2.5 w-2.5 rounded-full ${
+                  sectionIsLive
+                    ? "animate-pulse bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.75)] dark:bg-emerald-400"
+                    : "bg-violet-500 dark:bg-violet-400"
                 }`}
               />
               {sectionIsLive ? "Live cohort" : "Recorded track"}

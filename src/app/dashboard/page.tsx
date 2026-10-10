@@ -34,20 +34,87 @@ export default async function DashboardPage() {
     }),
   ]);
 
+  const courseIds = enrollments.map((enrollment) => enrollment.courseId);
+
+  const [lectureProgressEntries, lectureCounts] = await Promise.all([
+    prisma.lectureProgress.findMany({
+      where: {
+        userId: session.user.id,
+        courseId: { in: courseIds },
+      },
+      select: {
+        courseId: true,
+        watchedPercent: true,
+      },
+    }),
+    prisma.lecture.findMany({
+      where: {
+        module: {
+          courseId: { in: courseIds },
+        },
+      },
+      select: {
+        id: true,
+        module: {
+          select: {
+            courseId: true,
+          },
+        },
+      },
+    }),
+  ]);
+
+  const totalLecturesByCourse = new Map<string, number>();
+  for (const lecture of lectureCounts) {
+    totalLecturesByCourse.set(lecture.module.courseId, (totalLecturesByCourse.get(lecture.module.courseId) ?? 0) + 1);
+  }
+
+  const watchedPercentByCourse = new Map<string, number>();
+  const watchedLectureTotals = new Map<string, number>();
+
+  for (const entry of lectureProgressEntries) {
+    const total = watchedLectureTotals.get(entry.courseId) ?? 0;
+    watchedLectureTotals.set(entry.courseId, total + 1);
+    const current = watchedPercentByCourse.get(entry.courseId) ?? 0;
+    watchedPercentByCourse.set(entry.courseId, current + entry.watchedPercent);
+  }
+
+  const courseProgressById = new Map<string, number>();
+  for (const enrollment of enrollments) {
+    const totalLectures = totalLecturesByCourse.get(enrollment.courseId) ?? 0;
+    const watchedLectureTotal = watchedLectureTotals.get(enrollment.courseId) ?? 0;
+    const watchedPercentTotal = watchedPercentByCourse.get(enrollment.courseId) ?? 0;
+
+    const progress = totalLectures > 0
+      ? Math.min(100, Math.max(0, Math.round(watchedPercentTotal / totalLectures)))
+      : watchedLectureTotal > 0
+        ? Math.min(100, Math.max(0, Math.round(watchedPercentTotal / watchedLectureTotal)))
+        : 0;
+
+    courseProgressById.set(enrollment.courseId, progress);
+  }
+
   const userName = session.user.name ?? "Student";
   const formatLiveSessionLabel = (offsetDays = 0) => {
     const date = new Date();
     date.setHours(19, 30, 0, 0);
     date.setDate(date.getDate() + offsetDays);
 
-    return new Intl.DateTimeFormat("en-US", {
-      month: "short",
-      day: "numeric",
+    const datePart = new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
       year: "numeric",
+      timeZone: "Asia/Kolkata",
+    }).format(date);
+
+    const timePart = new Intl.DateTimeFormat("en-US", {
       hour: "numeric",
       minute: "2-digit",
+      hour12: true,
       timeZone: "Asia/Kolkata",
-    }).format(date).replace(",", "") + " IST";
+    }).format(date);
+
+    return `${datePart} ${timePart} IST`;
   };
   const liveCourses = enrollments.filter((item) => item.course?.isLive).length;
   const recordedCourses = enrollments.filter((item) => !item.course?.isLive).length;
@@ -118,7 +185,7 @@ export default async function DashboardPage() {
             </div>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
               <div className="rounded-2xl border border-indigo-200 bg-white/70 px-3 py-2.5 text-sm text-indigo-700 sm:px-4 sm:py-3 dark:border-white/15 dark:bg-white/5 dark:text-indigo-100">
-                Next live session: <span className="font-semibold text-slate-900 dark:text-white">{formatLiveSessionLabel(0)}</span>
+                Next live session: <span className="font-semibold text-slate-900 dark:text-white">{nextClass.time}</span>
               </div>
             </div>
           </div>
@@ -170,35 +237,32 @@ export default async function DashboardPage() {
               ) : (
                 <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
                   {enrollments.slice(0, 4).map((enrollment) => {
-                    const progress = enrollment.accessGranted ? 72 : 0;
+                    const progress = courseProgressById.get(enrollment.courseId) ?? 0;
                     const isLiveCourse = Boolean(enrollment.course?.isLive);
                     const courseHref = enrollment.course?.slug
-                      ? isLiveCourse
-                        ? `/courses/${enrollment.course.slug}/live`
+                      ? enrollment.accessGranted
+                        ? isLiveCourse
+                          ? `/courses/${enrollment.course.slug}/live`
+                          : `/courses/${enrollment.course.slug}/self-paced`
                         : `/courses/${enrollment.course.slug}`
                       : "/courses";
 
                     return (
-                      <div key={enrollment.id} className="group rounded-[24px] border border-slate-200 bg-[linear-gradient(180deg,_rgba(248,250,252,0.96),_rgba(241,245,249,0.9))] p-4 shadow-[0_10px_24px_rgba(15,23,42,0.03)] transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-200 hover:bg-indigo-50/30 hover:shadow-[0_16px_28px_rgba(79,70,229,0.08)] dark:border-slate-700 dark:bg-[linear-gradient(180deg,_rgba(15,23,42,0.92),_rgba(30,41,59,0.8))] dark:hover:border-indigo-500/40 dark:hover:bg-slate-800">
+                      <div key={enrollment.id} className="group flex h-full flex-col rounded-[24px] border border-slate-200 bg-[linear-gradient(180deg,_rgba(248,250,252,0.96),_rgba(241,245,249,0.9))] p-4 shadow-[0_10px_24px_rgba(15,23,42,0.03)] transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-200 hover:bg-indigo-50/30 hover:shadow-[0_16px_28px_rgba(79,70,229,0.08)] dark:border-slate-700 dark:bg-[linear-gradient(180deg,_rgba(15,23,42,0.92),_rgba(30,41,59,0.8))] dark:hover:border-indigo-500/40 dark:hover:bg-slate-800">
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <div className="flex items-center gap-2">
-                              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">
-                                {enrollment.accessGranted ? "Active" : "Queued"}
-                              </p>
-                              <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${isLiveCourse ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300" : "bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300"}`}>
-                                <span className={`h-1.5 w-1.5 rounded-full ${isLiveCourse ? "animate-pulse bg-emerald-500 dark:bg-emerald-400" : "bg-violet-500 dark:bg-violet-400"}`} aria-hidden="true" />
-                                {isLiveCourse ? "Live" : "Recorded"}
-                              </span>
-                            </div>
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">
+                              {enrollment.accessGranted ? "Active" : "Queued"}
+                            </p>
                             <h3 className="mt-2 text-lg font-bold text-slate-900 dark:text-white">{enrollment.course.title}</h3>
                           </div>
-                          <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-                            {progress}%
+                          <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${isLiveCourse ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300" : "bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300"}`}>
+                            <span className={`h-1.5 w-1.5 rounded-full ${isLiveCourse ? "animate-pulse bg-emerald-500 dark:bg-emerald-400" : "bg-violet-500 dark:bg-violet-400"}`} aria-hidden="true" />
+                            {isLiveCourse ? "Live" : "Recorded"}
                           </span>
                         </div>
 
-                        <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                        <p className="mt-3 flex-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
                           {enrollment.course.shortDescription ?? "Continue your learning path"}
                         </p>
 
@@ -254,7 +318,7 @@ export default async function DashboardPage() {
                   <h2 className="mt-2 text-xl font-black text-slate-900 dark:text-white">Live session</h2>
                 </div>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500 dark:bg-emerald-400" aria-hidden="true" />
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.7)] dark:bg-emerald-400" aria-hidden="true" />
                   {nextClass.type}
                 </span>
               </div>
@@ -263,7 +327,7 @@ export default async function DashboardPage() {
                 <div className="flex items-center justify-between gap-2">
                   <div className="text-sm text-slate-500 dark:text-slate-300">Upcoming</div>
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500 dark:bg-emerald-400" aria-hidden="true" />
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.7)] dark:bg-emerald-400" aria-hidden="true" />
                     Live
                   </span>
                 </div>
@@ -285,7 +349,8 @@ export default async function DashboardPage() {
                     <div key={session.id} className="rounded-[18px] border border-slate-200 bg-white/80 p-3 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-emerald-200 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 hover:shadow-[0_12px_22px_rgba(16,185,129,0.12)] dark:border-slate-700 dark:bg-slate-900/70 dark:hover:border-emerald-400/50 dark:hover:from-emerald-500/10 dark:hover:to-green-500/10">
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Upcoming</span>
-                        <span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.7)] dark:bg-emerald-400" aria-hidden="true" />
                           Live
                         </span>
                       </div>

@@ -58,20 +58,29 @@ function getLogoutRedirectPath() {
   return window.location.pathname.startsWith("/admin") ? "/admin/login" : "/login";
 }
 
-function readLocalProfileOverride() {
+function readLocalProfileOverride(currentEmail?: string | null) {
   if (typeof window === "undefined") return null;
 
   try {
     const rawValue = window.localStorage.getItem("cognive-profile-sync");
     if (!rawValue) return null;
 
-    const parsed = JSON.parse(rawValue) as { name?: string; avatarUrl?: string };
+    const parsed = JSON.parse(rawValue) as { name?: string; avatarUrl?: string; email?: string };
     if (!parsed || (!parsed.name && !parsed.avatarUrl)) return null;
+
+    if (currentEmail && parsed.email && parsed.email.toLowerCase() !== currentEmail.toLowerCase()) {
+      return null;
+    }
 
     return parsed;
   } catch {
     return null;
   }
+}
+
+function clearLocalProfileOverride() {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem("cognive-profile-sync");
 }
 
 export function UserMenu() {
@@ -80,7 +89,7 @@ export function UserMenu() {
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const overrideProfile = readLocalProfileOverride();
+  const overrideProfile = readLocalProfileOverride(session?.user?.email ?? null);
 
   const displayName = overrideProfile?.name?.trim() || session?.user?.name?.trim() || session?.user?.email?.split("@")[0] || "Student";
   const avatarSrc = overrideProfile?.avatarUrl || session?.user?.image || undefined;
@@ -175,6 +184,7 @@ export function UserMenu() {
         confirmLabel="Sign out"
         cancelLabel="Stay signed in"
         onConfirm={() => {
+          clearLocalProfileOverride();
           setLogoutDialogOpen(false);
           signOut({ callbackUrl: getLogoutRedirectPath(), redirect: true });
         }}
