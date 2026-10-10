@@ -40,9 +40,11 @@ const formatCategory = (value?: string | null) => {
 export default function LiveCoursesCarousel({
   courses,
   purchasedCourseIds = new Set<string>(),
+  savedCourseIds = [],
 }: {
   courses: Course[];
   purchasedCourseIds?: Set<string>;
+  savedCourseIds?: string[];
 }) {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -191,6 +193,7 @@ export default function LiveCoursesCarousel({
               statusLabel="Live"
               statusTone="live"
               showFeaturedBadge={false}
+              savedCourseIds={savedCourseIds}
               action={
                 <Link
                   href={destination}

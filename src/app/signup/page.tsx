@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phoneRegex = /^[0-9+()\-\s]{10,15}$/;
@@ -16,6 +16,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const passwordHideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [emailChecking, setEmailChecking] = useState(false);
   const [phoneChecking, setPhoneChecking] = useState(false);
   const [emailError, setEmailError] = useState("");
@@ -39,6 +40,32 @@ export default function SignupPage() {
   function validatePassword(value: string) {
     return passwordRegex.test(value);
   }
+
+  useEffect(() => {
+    return () => {
+      if (passwordHideTimeoutRef.current) {
+        clearTimeout(passwordHideTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handlePasswordToggle = () => {
+    if (showPassword) {
+      setShowPassword(false);
+      if (passwordHideTimeoutRef.current) {
+        clearTimeout(passwordHideTimeoutRef.current);
+      }
+      return;
+    }
+
+    setShowPassword(true);
+    if (passwordHideTimeoutRef.current) {
+      clearTimeout(passwordHideTimeoutRef.current);
+    }
+    passwordHideTimeoutRef.current = setTimeout(() => {
+      setShowPassword(false);
+    }, 1800);
+  };
 
   async function checkEmailAvailability(value: string) {
     const trimmedValue = value.trim().toLowerCase();
@@ -289,7 +316,7 @@ export default function SignupPage() {
               <button
                 type="button"
                 aria-label={showPassword ? "Hide password" : "Show password"}
-                onClick={() => setShowPassword((currentValue) => !currentValue)}
+                onClick={handlePasswordToggle}
                 className="absolute inset-y-0 right-3 flex items-center text-slate-500 transition hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
               >
                 {showPassword ? "🙈" : "👁️"}

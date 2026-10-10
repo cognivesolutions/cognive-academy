@@ -1,6 +1,6 @@
 'use client';
 
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -59,6 +59,21 @@ export function MyCoursesSearchInput({
     }, 250);
   };
 
+  const clearSearch = () => {
+    setValue("");
+
+    if (submitTimerRef.current) {
+      window.clearTimeout(submitTimerRef.current);
+    }
+
+    const params = new URLSearchParams(searchParams?.toString() ?? "");
+    params.delete("q");
+    params.set("page", "1");
+
+    const targetUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.replace(targetUrl, { scroll: false });
+  };
+
   return (
     <div
       className={`relative flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-white/90 pl-3 pr-3 text-sm text-slate-700 shadow-[0_5px_18px_rgba(15,23,42,0.04)] transition-all duration-200 focus-within:border-indigo-300 focus-within:bg-white focus-within:shadow-[0_0_0_3px_rgba(99,102,241,0.1),0_8px_20px_rgba(79,70,229,0.08)] dark:border-slate-700 dark:bg-slate-900/85 dark:text-slate-100 dark:focus-within:border-indigo-500 dark:focus-within:bg-slate-900 dark:focus-within:shadow-[0_0_0_3px_rgba(129,140,248,0.12),0_8px_20px_rgba(99,102,241,0.12)] ${className}`}
@@ -72,6 +87,17 @@ export function MyCoursesSearchInput({
         placeholder="Type to search..."
         aria-label="Search courses"
       />
+
+      {value ? (
+        <button
+          type="button"
+          onClick={clearSearch}
+          aria-label="Clear search"
+          className="inline-flex h-4 w-4 items-center justify-center rounded-full text-slate-400 transition hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-200"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      ) : null}
     </div>
   );
 }

@@ -7,6 +7,7 @@ const protectedPaths = [
   "/profile",
   "/transactions",
   "/my-courses",
+  "/saved-courses",
 ];
 
 export async function proxy(request: Request) {
@@ -20,7 +21,8 @@ export async function proxy(request: Request) {
     pathname.startsWith("/dashboard/") ||
     pathname.startsWith("/profile/") ||
     pathname.startsWith("/transactions/") ||
-    pathname.startsWith("/my-courses/");
+    pathname.startsWith("/my-courses/") ||
+    pathname.startsWith("/saved-courses/");
 
   const isAdminProtectedPath =
     pathname === "/admin" ||
@@ -52,7 +54,7 @@ export async function proxy(request: Request) {
     if (callbackUrl) {
       return NextResponse.redirect(new URL(callbackUrl, url.origin));
     }
-    return NextResponse.redirect(new URL(session.user.role === "ADMIN" ? "/admin" : "/profile", url.origin));
+    return NextResponse.redirect(new URL(session.user.role === "ADMIN" ? "/admin" : "/", url.origin));
   }
 
   return NextResponse.next();
@@ -64,6 +66,7 @@ export const config = {
     "/profile/:path*",
     "/transactions/:path*",
     "/my-courses/:path*",
+    "/saved-courses/:path*",
     "/admin/:path*",
     "/login",
     "/signup",

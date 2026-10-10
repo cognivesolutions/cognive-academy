@@ -6,6 +6,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
+    const requestedRole = typeof body?.role === "string" ? body.role.trim().toUpperCase() : "";
 
     if (!email) {
       return NextResponse.json({ status: "missing" });
@@ -27,6 +28,10 @@ export async function POST(request: Request) {
     }
 
     const isInternalAdmin = user.role?.toUpperCase?.() === "ADMIN";
+
+    if (requestedRole === "ADMIN" && !isInternalAdmin) {
+      return NextResponse.json({ status: "not_admin" });
+    }
 
     if (user.isActive === false) {
       return NextResponse.json({ status: "inactive" });

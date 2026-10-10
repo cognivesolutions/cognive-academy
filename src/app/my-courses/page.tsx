@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { auth } from "@/auth";
+import { CourseCard } from "@/components/course-card";
 import { PaginationDots } from "@/components/pagination-dots";
 import { prisma } from "@/lib/prisma";
 
@@ -214,7 +215,7 @@ export default async function MyCoursesPage({
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
-      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+      <div className="mx-auto max-w-6xl px-6 py-6 sm:py-8 lg:py-10">
         <section className="mb-6 overflow-hidden rounded-[30px] border border-indigo-100 bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.14),_transparent_28%),linear-gradient(135deg,_#f8fafc_0%,_#eef2ff_48%,_#e0e7ff_100%)] p-5 text-slate-900 shadow-[0_28px_70px_rgba(79,70,229,0.12)] dark:border-slate-700 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),linear-gradient(135deg,_#0f172a_0%,_#1e1b4b_52%,_#312e81_100%)] dark:text-white dark:shadow-[0_28px_70px_rgba(79,70,229,0.2)] sm:p-7">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
@@ -223,11 +224,11 @@ export default async function MyCoursesPage({
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <Link href="/courses#course-results" className="inline-flex items-center justify-center rounded-full border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100 dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/15">
-                Browse catalog
-              </Link>
-              <Link href="/dashboard" className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_16px_28px_rgba(79,70,229,0.25)] transition hover:shadow-[0_18px_32px_rgba(79,70,229,0.3)] dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
+              <Link href="/dashboard" className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-100 dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/15">
                 Dashboard
+              </Link>
+              <Link href="/courses#course-results" className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(99,102,241,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_34px_rgba(99,102,241,0.28)]">
+                Browse catalog
               </Link>
             </div>
           </div>
@@ -282,7 +283,7 @@ export default async function MyCoursesPage({
             <div className="rounded-[24px] border border-dashed border-slate-300 bg-slate-50 p-10 text-center text-slate-600 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-300">
               <div className="text-lg font-semibold text-slate-900 dark:text-white">No courses match this view</div>
               <p className="mt-2 text-sm">Try a different filter or browse more courses in the catalog.</p>
-              <Link href="/courses#course-results" className="mt-5 inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white">
+              <Link href="/courses#course-results" className="mt-5 inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(99,102,241,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_34px_rgba(99,102,241,0.28)]">
                 Explore catalog
               </Link>
             </div>
@@ -297,11 +298,19 @@ export default async function MyCoursesPage({
                   return (
                     <article key={item.id} className="group flex h-full flex-col rounded-[26px] border border-slate-200 bg-[linear-gradient(180deg,_rgba(248,250,252,0.9),_rgba(241,245,249,0.96))] p-4 shadow-[0_12px_24px_rgba(15,23,42,0.03)] transition-all duration-300 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-[0_18px_36px_rgba(99,102,241,0.08)] dark:border-slate-700 dark:bg-[linear-gradient(180deg,_rgba(15,23,42,0.92),_rgba(30,41,59,0.8))] dark:hover:border-indigo-500/40">
                       <div className="flex items-start justify-between gap-3">
-                        <div className="inline-flex rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
+                        <span
+                          className={`inline-flex items-center justify-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${
+                            item.type === "Live"
+                              ? "bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
+                              : "bg-slate-200 text-slate-700 dark:bg-slate-700/80 dark:text-slate-200"
+                          }`}
+                        >
+                          <span
+                            className={`h-2 w-2 shrink-0 rounded-full ${
+                              item.type === "Live" ? "animate-pulse bg-emerald-500 dark:bg-emerald-400" : "bg-slate-500 dark:bg-slate-300"
+                            }`}
+                          />
                           {item.type}
-                        </div>
-                        <span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-                          {item.progress}%
                         </span>
                       </div>
 
